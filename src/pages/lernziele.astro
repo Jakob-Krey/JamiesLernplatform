@@ -819,7 +819,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   function refreshSchreibheft() {
     const goal = StorageService.getSchreibheftGoal();
     const remainingPages = Math.max(0, goal.targetPage - goal.currentPage);
-    const dailyRate = (remainingPages / remainingDays).toFixed(1);
+    const rawRate = remainingPages / remainingDays;
+    // Immer in 0,5-Schritten aufrunden (z.B. 1,9 -> 2 | 2,1 -> 2,5)
+    const roundedRate = Math.ceil(rawRate * 2) / 2;
+    const formattedRate = roundedRate.toLocaleString('de-DE', {
+      minimumFractionDigits: roundedRate % 1 === 0 ? 0 : 1,
+      maximumFractionDigits: 1
+    });
 
     const remPagesEl = document.getElementById('schreib-remaining-pages');
     const remDaysEl = document.getElementById('schreib-remaining-days');
@@ -829,7 +835,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (remPagesEl) remPagesEl.textContent = `${remainingPages} Seiten`;
     if (remDaysEl) remDaysEl.textContent = `${remainingDays} Tage`;
     if (dailyRateEl) {
-      dailyRateEl.textContent = remainingPages === 0 ? 'Geschafft! 🏆' : `~${dailyRate} Seiten / Tag`;
+      dailyRateEl.textContent = remainingPages === 0
+        ? 'Geschafft! 🏆'
+        : `${formattedRate} ${roundedRate === 1 ? 'Seite' : 'Seiten'} / Tag`;
     }
     if (currPageEl) currPageEl.textContent = goal.currentPage.toString();
 
