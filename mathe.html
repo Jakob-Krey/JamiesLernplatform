@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jamies Mathe-Dschungel 🔢 • Blitzrechnen & 1x1</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🎒</div>
+        <div class="brand-title">
+          <span>Jamie's</span>
+          <span class="brand-subtitle">Lernplattform 🌟</span>
+        </div>
+      </a>
+
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">
+          <span class="nav-emoji">📅</span> Stundenplan
+        </a>
+        <a href="deutsch.html" class="nav-link">
+          <span class="nav-emoji">📖</span> Deutsch
+        </a>
+        <a href="mathe.html" class="nav-link active">
+          <span class="nav-emoji">🔢</span> Mathe
+        </a>
+        <a href="englisch.html" class="nav-link">
+          <span class="nav-emoji">🇬🇧</span> Englisch
+        </a>
+        <a href="pokemon.html" class="nav-link">
+          <span class="nav-emoji">⚡</span> Pokémon
+        </a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="star-counter" onclick="StorageService.addStars(1); showStarToast(1, 'Super gerechnet!');">
+          <span class="star-icon">⭐</span>
+          <span id="jamie-star-count">15</span>
+          <span style="font-size: 0.75rem; text-transform: uppercase;">Sterne</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <a href="index.html" style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2rem;">
+      <span style="background: #eff6ff; color: #1d4ed8; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+        🔢 Zahlen-Zauberin
+      </span>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
+        Kopfrechen-Trainer
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem;">
+        Wähle deinen Trainings-Modus und tippe auf das richtige Ergebnis!
+      </p>
+
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="math-mode-selector">
+        <button class="switch-btn active" onclick="setMathMode('plus_20')">➕ Plus bis 20</button>
+        <button class="switch-btn" onclick="setMathMode('minus_20')">➖ Minus bis 20</button>
+        <button class="switch-btn" onclick="setMathMode('einmaleins')">✖️ 1x1 Einmaleins</button>
+        <button class="switch-btn" onclick="setMathMode('mix_100')">🎯 Zahlenraum bis 100</button>
+      </div>
+    </div>
+
+    <!-- Math Game Box -->
+    <div class="math-game-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;" id="task-mode-tag">
+          Plus bis 20
+        </span>
+        <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="streak-counter">
+          🔥 Serie: 0
+        </span>
+      </div>
+
+      <div class="math-equation" id="math-problem">
+        7 + 5 = ?
+      </div>
+
+      <div class="math-options-grid" id="math-options">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Motivation Card -->
+    <div style="background: white; border-radius: 16px; border: 2px solid #e0e7ff; padding: 1.5rem; max-width: 550px; margin: 3rem auto; text-align: center;">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e40af; margin-bottom: 0.4rem;">
+        ⭐ Sammle Sterne für neue Pokémon-Karten!
+      </h3>
+      <p style="font-size: 0.95rem; color: #4b5563;">
+        Für jede richtige Antwort bekommst du Punkte. Bei einer 5er-Serie gibt es Bonus-Sterne für dein Sammelalbum!
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p style="font-weight: 800; color: #1e293b;">Jamie's Mathe-Dschungel • Rechnen macht Spaß! 🧮</p>
+    </div>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/stundenplan.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let currentMode = 'plus_20';
+    let currentAnswer = 0;
+    let streak = 0;
+
+    function setMathMode(mode) {
+      currentMode = mode;
+      streak = 0;
+      updateStreak();
+      const buttons = document.querySelectorAll('#math-mode-selector .switch-btn');
+      const modes = ['plus_20', 'minus_20', 'einmaleins', 'mix_100'];
+      buttons.forEach((btn, i) => {
+        if (modes[i] === mode) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      generateProblem();
+    }
+
+    function generateProblem() {
+      let a, b, op, equationText;
+      if (currentMode === 'plus_20') {
+        a = Math.floor(Math.random() * 11) + 2; // 2..12
+        b = Math.floor(Math.random() * 9) + 1; // 1..9
+        currentAnswer = a + b;
+        equationText = `${a} + ${b} = ?`;
+        document.getElementById('task-mode-tag').textContent = 'Plus bis 20';
+      } else if (currentMode === 'minus_20') {
+        a = Math.floor(Math.random() * 12) + 7; // 7..18
+        b = Math.floor(Math.random() * (a - 1)) + 1;
+        currentAnswer = a - b;
+        equationText = `${a} - ${b} = ?`;
+        document.getElementById('task-mode-tag').textContent = 'Minus bis 20';
+      } else if (currentMode === 'einmaleins') {
+        a = Math.floor(Math.random() * 9) + 2; // 2..10
+        b = Math.floor(Math.random() * 9) + 2; // 2..10
+        currentAnswer = a * b;
+        equationText = `${a} · ${b} = ?`;
+        document.getElementById('task-mode-tag').textContent = '1x1 Einmaleins';
+      } else {
+        // mix 100
+        a = Math.floor(Math.random() * 50) + 10;
+        b = Math.floor(Math.random() * 40) + 5;
+        const isPlus = Math.random() > 0.5;
+        if (isPlus) {
+          currentAnswer = a + b;
+          equationText = `${a} + ${b} = ?`;
+        } else {
+          currentAnswer = a > b ? a - b : b - a;
+          equationText = a > b ? `${a} - ${b} = ?` : `${b} - ${a} = ?`;
+        }
+        document.getElementById('task-mode-tag').textContent = 'Zahlenraum bis 100';
+      }
+
+      document.getElementById('math-problem').textContent = equationText;
+
+      // Generate 4 distinct options including the correct answer
+      const options = new Set([currentAnswer]);
+      while (options.size < 4) {
+        const delta = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+        const wrong = currentAnswer + delta;
+        if (wrong > 0 && wrong !== currentAnswer) {
+          options.add(wrong);
+        }
+      }
+
+      const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
+      const container = document.getElementById('math-options');
+      container.innerHTML = '';
+
+      shuffled.forEach(val => {
+        const btn = document.createElement('button');
+        btn.className = 'math-opt-btn';
+        btn.textContent = val;
+        btn.onclick = () => checkMathAnswer(val, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function checkMathAnswer(selectedVal, btnElement) {
+      if (selectedVal === currentAnswer) {
+        btnElement.classList.add('correct');
+        streak++;
+        updateStreak();
+        AudioFX.playChime();
+
+        if (streak % 5 === 0) {
+          StorageService.addStars(2);
+          showStarToast(2, `${streak}er Serie! Du bist ein Mathe-Genie! 🌟`);
+          triggerConfetti();
+        } else {
+          StorageService.addStars(1);
+          showStarToast(1, 'Richtig gerechnet! 🎯');
+        }
+
+        setTimeout(() => {
+          generateProblem();
+        }, 600);
+      } else {
+        btnElement.classList.add('wrong');
+        streak = 0;
+        updateStreak();
+        setTimeout(() => {
+          btnElement.classList.remove('wrong');
+        }, 500);
+      }
+    }
+
+    function updateStreak() {
+      const el = document.getElementById('streak-counter');
+      if (el) el.textContent = `🔥 Serie: ${streak}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateProblem();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+---
+import Navigation from '../components/Navigation.astro';
+import StarCounter from '../components/StarCounter.astro';
+import CloudSyncModal from '../components/CloudSyncModal.astro';
+import '../styles/style.css';
+import '../styles/cards.css';
+import '../styles/animations.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  activePage?: 'stundenplan' | 'deutsch' | 'mathe' | 'englisch' | 'pokemon';
+}
+
+const {
+  title = "Jamies Lernplattform 🎒 • Stundenplan & Lernwelten",
+  description = "Jamies persönliche Schul- und Lernplattform mit interaktivem Stundenplan, Ranzen-Checker, Lernkarten für Deutsch, Mathe, Englisch und Pokémon-Sammelalbum.",
+  activePage = 'stundenplan'
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Floating animated background elements -->
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href={`${base}/`} class="brand" aria-label="Zur Startseite">
+        <div class="brand-icon">🎒</div>
+        <div class="brand-title">
+          <span>Jamie's</span>
+          <span class="brand-subtitle">Lernplattform 🌟</span>
+        </div>
+      </a>
+
+      <Navigation activePage={activePage} />
+
+      <div class="header-actions">
+        <StarCounter />
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <slot />
+
+  <!-- Cloud Sync / Backup Modal -->
+  <CloudSyncModal />
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p style="font-weight: 800; font-size: 1.05rem; color: #1e293b;">
+        Gemacht für <span style="color: #ec4899;">Jamie</span> mit ganz viel <span class="footer-heart">❤️</span>
+      </p>
+      <p class="footer-note">
+        Stundenplan: Grundschule • Jeden Tag bestens vorbereitet für tolle Unterrichtsstunden!
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    import { StorageService } from '../lib/storage';
+    import { AudioFX, triggerConfetti, showStarToast, speakEnglish } from '../lib/audio';
+
+    // Expose to window for inline onclick handlers if needed
+    (window as any).StorageService = StorageService;
+    (window as any).AudioFX = AudioFX;
+    (window as any).triggerConfetti = triggerConfetti;
+    (window as any).showStarToast = showStarToast;
+    (window as any).speakEnglish = speakEnglish;
+  </script>
+</body>
+</html>

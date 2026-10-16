@@ -1,0 +1,213 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { POKEMON_DATA } from '../data/pokemon';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout title="Jamies Pokémon-Arena ⚡ • Sammelalbum & Belohnungen" activePage="pokemon">
+  <main class="container" style="padding-top: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <!-- Trainer Header Card -->
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg); margin-bottom: 2.5rem; position: relative; overflow: hidden;">
+      <div style="position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+        <div>
+          <span style="background: #fbbf24; color: #78350f; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            🏆 Offizieller Pokémon-Trainer-Pass
+          </span>
+          <h1 style="font-size: 2.4rem; font-weight: 900; margin: 0.5rem 0 0.25rem;">
+            Trainer Jamie's Sammelalbum ⚡
+          </h1>
+          <p style="color: #c7d2fe; font-size: 1rem;">
+            Bewege die Maus über die Karten, um den echten 3D-Hologramm Glanz zu sehen! Schalte mit Sternen neue Pokémon frei.
+          </p>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; padding: 1.25rem 1.75rem; text-align: center;">
+          <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #fde68a; font-weight: 800;">
+            Freigeschaltete Karten
+          </div>
+          <div style="font-size: 2rem; font-weight: 900; color: white;" id="unlocked-counter">
+            0 / 6
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pokemon Cards Grid -->
+    <div class="pokemon-grid" id="pokemon-collection"></div>
+  </main>
+
+  <!-- Modal for unlocking Pokémon -->
+  <div class="modal-overlay" id="unlock-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" style="text-align: center;">
+      <button type="button" class="modal-close-btn" id="close-unlock-modal-btn">✕</button>
+      <div id="unlock-modal-body"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { POKEMON_DATA, type PokemonCardData } from '../data/pokemon';
+  import { StorageService } from '../lib/storage';
+  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+
+  let targetPokeToUnlock: PokemonCardData | null = null;
+
+  function renderPokemonCollection() {
+    const container = document.getElementById('pokemon-collection');
+    if (!container) return;
+    const unlockedIds = StorageService.getUnlockedPokemon();
+
+    const counterEl = document.getElementById('unlocked-counter');
+    if (counterEl) {
+      counterEl.textContent = `${unlockedIds.length} / ${POKEMON_DATA.length}`;
+    }
+    container.innerHTML = '';
+
+    POKEMON_DATA.forEach(poke => {
+      const isUnlocked = unlockedIds.includes(poke.id);
+      const card = document.createElement('div');
+      card.className = `pokemon-card ${isUnlocked ? '' : 'locked'}`;
+      
+      card.innerHTML = `
+        <div class="pokemon-card-inner ${poke.typeClass}">
+          <div class="poke-card-header">
+            <span class="poke-name">${poke.name}</span>
+            <span class="poke-hp">${poke.hp}</span>
+          </div>
+
+          <div class="poke-image-frame">
+            <span class="poke-rarity">${poke.rarity}</span>
+            <div class="poke-icon-large">${poke.icon}</div>
+          </div>
+
+          <div class="poke-attack">
+            <div class="attack-name">
+              <span>${poke.attackName}</span>
+              <span>${poke.attackDmg}</span>
+            </div>
+            <div class="attack-desc">${poke.attackDesc}</div>
+          </div>
+        </div>
+        ${!isUnlocked ? `
+          <div class="locked-badge">
+            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🔒</div>
+            <div>Freischalten</div>
+            <div style="color: #fde047; margin-top: 0.25rem;">⭐ ${poke.cost} Sterne</div>
+          </div>
+        ` : ''}
+      `;
+
+      card.addEventListener('click', () => {
+        if (!isUnlocked) {
+          promptUnlock(poke);
+        } else {
+          AudioFX.playChime();
+          triggerConfetti();
+          showStarToast(0, `Glitzernde ${poke.name} Karte! ✨`);
+        }
+      });
+
+      // 3D tilt tracking for mouse / touch
+      card.addEventListener('mousemove', (e) => {
+        if (!isUnlocked) return;
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotX = -((y - centerY) / centerY) * 12;
+        const rotY = ((x - centerX) / centerX) * 12;
+        card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function promptUnlock(poke: PokemonCardData) {
+    targetPokeToUnlock = poke;
+    const modal = document.getElementById('unlock-modal');
+    const body = document.getElementById('unlock-modal-body');
+    const starsAvailable = StorageService.getStars();
+    if (!modal || !body) return;
+
+    body.innerHTML = `
+      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">${poke.icon}</div>
+      <h2 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem;">
+        ${poke.name} freischalten?
+      </h2>
+      <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem;">
+        Diese Karte kostet <strong>${poke.cost} Sterne</strong>.<br>
+        Du hast aktuell <strong>⭐ ${starsAvailable} Sterne</strong>.
+      </p>
+
+      ${starsAvailable >= poke.cost ? `
+        <button type="button" class="btn-trainer btn-primary" id="confirm-unlock-btn" style="width: 100%; justify-content: center; margin-bottom: 0.75rem;">
+          🎉 Jetzt für ${poke.cost} Sterne freischalten!
+        </button>
+      ` : `
+        <div style="background: #fef2f2; color: #991b1b; padding: 0.85rem; border-radius: 12px; font-weight: 700; margin-bottom: 1rem;">
+          Dir fehlen noch ${poke.cost - starsAvailable} Sterne! Übe etwas Mathe oder Englisch, um dir mehr Sterne zu verdienen. 🎒
+        </div>
+      `}
+
+      <button type="button" class="btn-trainer btn-secondary" id="cancel-unlock-btn" style="width: 100%; justify-content: center;">
+        Abbrechen
+      </button>
+    `;
+
+    const confirmBtn = body.querySelector('#confirm-unlock-btn');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', confirmUnlock);
+    }
+
+    const cancelBtn = body.querySelector('#cancel-unlock-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeUnlockModal);
+    }
+
+    modal.classList.add('active');
+  }
+
+  function confirmUnlock() {
+    if (!targetPokeToUnlock) return;
+    const stars = StorageService.getStars();
+    if (stars >= targetPokeToUnlock.cost) {
+      StorageService.addStars(-targetPokeToUnlock.cost);
+      StorageService.unlockPokemon(targetPokeToUnlock.id);
+      closeUnlockModal();
+      triggerConfetti();
+      AudioFX.playSuccessFanfare();
+      showStarToast(0, `Juhu! ${targetPokeToUnlock.name} gehört jetzt dir! ⚡`);
+      renderPokemonCollection();
+    }
+  }
+
+  function closeUnlockModal() {
+    const modal = document.getElementById('unlock-modal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  const closeBtn = document.getElementById('close-unlock-modal-btn');
+  if (closeBtn) closeBtn.addEventListener('click', closeUnlockModal);
+
+  const modal = document.getElementById('unlock-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeUnlockModal();
+    });
+  }
+
+  renderPokemonCollection();
+</script>

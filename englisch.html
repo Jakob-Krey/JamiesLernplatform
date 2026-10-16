@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jamies Englisch-Abenteuer 🇬🇧 • Vokabeltrainer</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🎒</div>
+        <div class="brand-title">
+          <span>Jamie's</span>
+          <span class="brand-subtitle">Lernplattform 🌟</span>
+        </div>
+      </a>
+
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">
+          <span class="nav-emoji">📅</span> Stundenplan
+        </a>
+        <a href="deutsch.html" class="nav-link">
+          <span class="nav-emoji">📖</span> Deutsch
+        </a>
+        <a href="mathe.html" class="nav-link">
+          <span class="nav-emoji">🔢</span> Mathe
+        </a>
+        <a href="englisch.html" class="nav-link active">
+          <span class="nav-emoji">🇬🇧</span> Englisch
+        </a>
+        <a href="pokemon.html" class="nav-link">
+          <span class="nav-emoji">⚡</span> Pokémon
+        </a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="star-counter" onclick="StorageService.addStars(1); showStarToast(1, 'Good job, Jamie!');">
+          <span class="star-icon">⭐</span>
+          <span id="jamie-star-count">15</span>
+          <span style="font-size: 0.75rem; text-transform: uppercase;">Sterne</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 2rem;">
+    <!-- Breadcrumb / Back Link -->
+    <div style="margin-bottom: 1.5rem;">
+      <a href="index.html" style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <!-- Header Section -->
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem;">
+      <span style="background: #ede9fe; color: #6d28d9; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+        🇬🇧 Englisch Vokabel-Heldin
+      </span>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
+        Englisch-Vokabeltrainer
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem;">
+        Tippe auf die Karte, um sie umzudrehen. Klicke auf den Lautsprecher, um die echte englische Aussprache zu hören! 🔊
+      </p>
+
+      <!-- Category Filter Buttons -->
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="category-filter-bar">
+        <button class="switch-btn active" onclick="setCategory('tiere')">🐾 Tiere (Animals)</button>
+        <button class="switch-btn" onclick="setCategory('farben')">🎨 Farben (Colors)</button>
+        <button class="switch-btn" onclick="setCategory('schule')">🎒 Schule (School)</button>
+        <button class="switch-btn" onclick="setCategory('essen')">🍎 Essen (Food)</button>
+      </div>
+    </div>
+
+    <!-- Interactive Flashcard Area -->
+    <div class="flashcard-container" id="vocab-card" onclick="toggleCardFlip()">
+      <div class="flashcard-inner">
+        <!-- Front of card -->
+        <div class="flashcard-front">
+          <div class="flashcard-category" id="card-cat-label">Animals 🐾</div>
+          <div class="flashcard-emoji" id="card-emoji">🐶</div>
+          <div class="flashcard-word" id="card-en-word">Dog</div>
+          <p class="flashcard-hint">Tippen zum Umdrehen • [Deutsch]</p>
+          <button class="flashcard-audio-btn" onclick="event.stopPropagation(); speakCurrentWord();" title="Englisch vorlesen">
+            🔊 Vorlesen
+          </button>
+        </div>
+
+        <!-- Back of card -->
+        <div class="flashcard-back">
+          <div class="flashcard-category" style="color: #166534;">Übersetzung auf Deutsch</div>
+          <div class="flashcard-emoji" id="card-back-emoji">🐶</div>
+          <div class="flashcard-word" id="card-de-word" style="color: #166534;">Der Hund</div>
+          <p class="flashcard-hint" style="color: #15803d;">Tippen, um zurückzudrehen</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flashcard-actions">
+      <button class="btn-trainer btn-secondary" onclick="prevVocabCard()">
+        ⬅️ Vorherige
+      </button>
+      <button class="btn-trainer btn-primary" onclick="markKnownAndNext()">
+        ⭐ Kann ich schon! (+1 Stern) ➔
+      </button>
+      <button class="btn-trainer btn-secondary" onclick="nextVocabCard()">
+        Nächste ➡️
+      </button>
+    </div>
+
+    <!-- Fun Note -->
+    <div style="background: white; border-radius: 16px; border: 2px solid #e0e7ff; padding: 1.5rem; max-width: 600px; margin: 3.5rem auto; text-align: center;">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: #3730a3; margin-bottom: 0.5rem;">
+        💡 Jamie's Lerntipp für Englisch
+      </h3>
+      <p style="font-size: 0.95rem; color: #4b5563;">
+        Höre dir das Wort an und sprich es laut zweimal nach! So trainierst du deine Ohren und deine Zunge für den Englischunterricht am Montag, Mittwoch und Donnerstag.
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p style="font-weight: 800; color: #1e293b;">Jamie's Englisch-Trainer • Mit Sprachausgabe 🎧</p>
+    </div>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/stundenplan.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const VOCAB_DATA = {
+      tiere: [
+        { en: 'Dog', de: 'Der Hund', emoji: '🐶' },
+        { en: 'Cat', de: 'Die Katze', emoji: '🐱' },
+        { en: 'Rabbit', de: 'Das Kaninchen / Der Hase', emoji: '🐰' },
+        { en: 'Horse', de: 'Das Pferd', emoji: '🐴' },
+        { en: 'Lion', de: 'Der Löwe', emoji: '🦁' },
+        { en: 'Butterfly', de: 'Der Schmetterling', emoji: '🦋' }
+      ],
+      farben: [
+        { en: 'Blue', de: 'Blau', emoji: '💙' },
+        { en: 'Red', de: 'Rot', emoji: '❤️' },
+        { en: 'Yellow', de: 'Gelb', emoji: '💛' },
+        { en: 'Green', de: 'Grün', emoji: '💚' },
+        { en: 'Purple', de: 'Lila / Violett', emoji: '💜' },
+        { en: 'Pink', de: 'Rosa', emoji: '🩷' }
+      ],
+      schule: [
+        { en: 'Schoolbag', de: 'Der Schulranzen', emoji: '🎒' },
+        { en: 'Pencil', de: 'Der Bleistift', emoji: '✏️' },
+        { en: 'Book', de: 'Das Buch', emoji: '📖' },
+        { en: 'Ruler', de: 'Das Lineal', emoji: '📐' },
+        { en: 'Scissors', de: 'Die Schere', emoji: '✂️' },
+        { en: 'Teacher', de: 'Die Lehrerin / Der Lehrer', emoji: '👩‍🏫' }
+      ],
+      essen: [
+        { en: 'Apple', de: 'Der Apfel', emoji: '🍎' },
+        { en: 'Banana', de: 'Die Banane', emoji: '🍌' },
+        { en: 'Sandwich', de: 'Das Pausenbrot', emoji: '🥪' },
+        { en: 'Water', de: 'Das Wasser', emoji: '💧' },
+        { en: 'Cookie', de: 'Der Keks', emoji: '🍪' }
+      ]
+    };
+
+    let activeCat = 'tiere';
+    let cardIdx = 0;
+
+    function setCategory(cat) {
+      activeCat = cat;
+      cardIdx = 0;
+      document.querySelectorAll('#category-filter-bar .switch-btn').forEach((b, i) => {
+        const cats = ['tiere', 'farben', 'schule', 'essen'];
+        if (cats[i] === cat) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      renderCurrentCard();
+    }
+
+    function renderCurrentCard() {
+      const card = document.getElementById('vocab-card');
+      if (card) card.classList.remove('is-flipped');
+
+      const items = VOCAB_DATA[activeCat];
+      const current = items[cardIdx];
+
+      document.getElementById('card-cat-label').textContent = activeCat.toUpperCase();
+      document.getElementById('card-emoji').textContent = current.emoji;
+      document.getElementById('card-en-word').textContent = current.en;
+      document.getElementById('card-back-emoji').textContent = current.emoji;
+      document.getElementById('card-de-word').textContent = current.de;
+    }
+
+    function toggleCardFlip() {
+      const card = document.getElementById('vocab-card');
+      if (card) card.classList.toggle('is-flipped');
+    }
+
+    function speakCurrentWord() {
+      const items = VOCAB_DATA[activeCat];
+      const current = items[cardIdx];
+      speakEnglish(current.en);
+    }
+
+    function nextVocabCard() {
+      const items = VOCAB_DATA[activeCat];
+      cardIdx = (cardIdx + 1) % items.length;
+      renderCurrentCard();
+    }
+
+    function prevVocabCard() {
+      const items = VOCAB_DATA[activeCat];
+      cardIdx = (cardIdx - 1 + items.length) % items.length;
+      renderCurrentCard();
+    }
+
+    function markKnownAndNext() {
+      StorageService.addStars(1);
+      showStarToast(1, 'Super gemerkt!');
+      triggerConfetti();
+      nextVocabCard();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCurrentCard();
+    });
+  </script>
+</body>
+</html>

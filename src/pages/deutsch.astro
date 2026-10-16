@@ -1,0 +1,179 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { DEUTSCH_DATA, DEUTSCH_TOPICS } from '../data/deutsch';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout title="Jamies Deutsch-Wortschatz 📖 • Lernkarten & Rechtschreibung" activePage="deutsch">
+  <main class="container" style="padding-top: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem;">
+      <span style="background: #fff7ed; color: #c2410c; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+        📖 Wörter-Entdeckerin
+      </span>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
+        Deutsch-Lernkarten
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem;">
+        Trainiere Wortarten (Nomen, Verben, Adjektive) und knifflige Rechtschreib-Wörter!
+      </p>
+
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="deutsch-cat-bar">
+        {DEUTSCH_TOPICS.map((topic, idx) => (
+          <button 
+            type="button" 
+            class:list={['switch-btn', { active: idx === 0 }]} 
+            data-topic={topic.id}
+          >
+            {topic.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Flashcard for Deutsch -->
+    <div class="flashcard-container" id="deutsch-card">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="flashcard-category" id="de-card-cat">WORTARTEN</div>
+          <div class="flashcard-emoji" id="de-card-emoji">🐕</div>
+          <div class="flashcard-word" id="de-card-word">Hund</div>
+          <p class="flashcard-hint">Welche Wortart ist das? Tippen zum Aufdecken!</p>
+        </div>
+
+        <div class="flashcard-back">
+          <div class="flashcard-category" style="color: #c2410c;">Lösung & Erklärung</div>
+          <div class="flashcard-word" id="de-card-solution" style="color: #9a3412; font-size: 1.8rem;">
+            Nomen (Namenwort)
+          </div>
+          <p class="flashcard-hint" id="de-card-explanation" style="color: #431407; max-width: 320px; text-align: center; margin-top: 0.5rem;">
+            Nomen schreibt man immer groß! Man kann 'der', 'die' oder 'das' davor setzen (der Hund).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flashcard-actions">
+      <button type="button" class="btn-trainer btn-secondary" id="de-prev-btn">
+        ⬅️ Vorherige
+      </button>
+      <button type="button" class="btn-trainer btn-primary" id="de-known-btn">
+        ⭐ Gewusst! (+1 Stern) ➔
+      </button>
+      <button type="button" class="btn-trainer btn-secondary" id="de-next-btn">
+        Nächste ➡️
+      </button>
+    </div>
+
+    <!-- Rule Guide Box -->
+    <div style="background: white; border-radius: 16px; border: 2px solid #fed7aa; padding: 1.75rem; max-width: 650px; margin: 3.5rem auto;">
+      <h3 style="font-size: 1.2rem; font-weight: 800; color: #9a3412; margin-bottom: 0.75rem;">
+        🌟 Die 3 wichtigsten Wortarten-Regeln
+      </h3>
+      <div style="display: grid; gap: 0.75rem; font-size: 0.92rem;">
+        <div style="background: #fff7ed; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>1. Nomen (Namenwörter):</strong> Menschen, Tiere, Pflanzen, Dinge. Werden IMMER großgeschrieben! (z.B. <em>die Katze, das Heft</em>)
+        </div>
+        <div style="background: #fdf2f8; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>2. Verben (Tunwörter):</strong> Was jemand tut oder was geschieht. Werden kleingeschrieben! (z.B. <em>laufen, singen, rechnen</em>)
+        </div>
+        <div style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>3. Adjektive (Wie-Wörter):</strong> Beschreiben, wie etwas ist oder aussieht. (z.B. <em>schnell, bunt, fröhlich</em>)
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { DEUTSCH_DATA, type DeutschTopicId } from '../data/deutsch';
+  import { StorageService } from '../lib/storage';
+  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+
+  let activeTopic: DeutschTopicId = 'wortarten';
+  let cardIdx = 0;
+
+  function renderDeCard() {
+    const card = document.getElementById('deutsch-card');
+    if (card) card.classList.remove('is-flipped');
+    const list = DEUTSCH_DATA[activeTopic];
+    const item = list[cardIdx];
+
+    const catEl = document.getElementById('de-card-cat');
+    const emojiEl = document.getElementById('de-card-emoji');
+    const wordEl = document.getElementById('de-card-word');
+    const solEl = document.getElementById('de-card-solution');
+    const expEl = document.getElementById('de-card-explanation');
+
+    if (catEl) catEl.textContent = activeTopic.toUpperCase();
+    if (emojiEl) emojiEl.textContent = item.emoji;
+    if (wordEl) wordEl.textContent = item.word;
+    if (solEl) solEl.textContent = item.sol;
+    if (expEl) expEl.textContent = item.exp;
+  }
+
+  function setTopic(topic: DeutschTopicId) {
+    activeTopic = topic;
+    cardIdx = 0;
+    document.querySelectorAll('#deutsch-cat-bar .switch-btn').forEach(btn => {
+      if (btn.getAttribute('data-topic') === topic) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    renderDeCard();
+  }
+
+  const topicBtns = document.querySelectorAll('#deutsch-cat-bar .switch-btn');
+  topicBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const topic = btn.getAttribute('data-topic') as DeutschTopicId;
+      if (topic) setTopic(topic);
+    });
+  });
+
+  const card = document.getElementById('deutsch-card');
+  if (card) {
+    card.addEventListener('click', () => {
+      card.classList.toggle('is-flipped');
+    });
+  }
+
+  const prevBtn = document.getElementById('de-prev-btn');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      const list = DEUTSCH_DATA[activeTopic];
+      cardIdx = (cardIdx - 1 + list.length) % list.length;
+      renderDeCard();
+    });
+  }
+
+  const nextBtn = document.getElementById('de-next-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const list = DEUTSCH_DATA[activeTopic];
+      cardIdx = (cardIdx + 1) % list.length;
+      renderDeCard();
+    });
+  }
+
+  const knownBtn = document.getElementById('de-known-btn');
+  if (knownBtn) {
+    knownBtn.addEventListener('click', () => {
+      StorageService.addStars(1);
+      AudioFX.playChime();
+      showStarToast(1, 'Klasse gewusst!');
+      triggerConfetti();
+      const list = DEUTSCH_DATA[activeTopic];
+      cardIdx = (cardIdx + 1) % list.length;
+      renderDeCard();
+    });
+  }
+
+  renderDeCard();
+</script>

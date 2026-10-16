@@ -1,0 +1,18 @@
+{
+  "name": "jamies-lernplattform",
+  "version": "1.0.0",
+  "description": "Willkommen auf Jamies interaktiver Lernplattform! Sie wurde speziell für den Schulalltag, zum spielerischen Wiederholen und für ganz viel Lernspaß gestaltet.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "astro": "^7.3.8"
+  }
+}

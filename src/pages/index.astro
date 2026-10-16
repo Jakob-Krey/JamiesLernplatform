@@ -1,0 +1,543 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS } from '../data/stundenplan';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout title="Jamies Lernplattform 🎒 • Stundenplan & Lernwelten" activePage="stundenplan">
+  <main class="container">
+
+    <!-- Hero / Greeting Banner -->
+    <section class="hero-banner">
+      <div>
+        <div class="greeting-tag">
+          <span>✨</span> Schön, dass du da bist!
+        </div>
+        <h1 class="hero-title">
+          Hallo, liebe <span class="name-highlight">Jamie!</span> 👋
+        </h1>
+        <p class="hero-subtitle">
+          Hier ist dein persönlicher Schul-Begleiter! Schau dir deinen Stundenplan an, packe deinen Ranzen oder trainiere Vokabeln & Kopfrechnen für dein nächstes Pokémon!
+        </p>
+      </div>
+
+      <div class="hero-status-card">
+        <span class="status-badge-today">Heute im Blick</span>
+        <div class="today-day-name" id="hero-today-name">Schultag</div>
+        <div class="today-hours-count" id="hero-today-count">Lade Unterrichtsplan...</div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         STUNDENPLAN SECTION
+         ==================================================================== -->
+    <section class="stundenplan-section" id="stundenplan">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="section-icon-badge">📅</div>
+          <div>
+            <h2 class="section-title">Dein Stundenplan</h2>
+            <p class="section-description">Klicke auf ein Schulfach, um Tipps & Packlisten zu sehen!</p>
+          </div>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-switch-controls">
+          <button type="button" class="switch-btn active" id="btn-view-week">
+            <span>📅</span> Ganze Woche
+          </button>
+          <button type="button" class="switch-btn" id="btn-view-day">
+            <span>🔍</span> Einzeltag-Fokus
+          </button>
+          <button type="button" class="switch-btn" id="btn-view-ranzen">
+            <span>🎒</span> Ranzen-Check
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Day Filter Tabs (Montag bis Freitag) -->
+      <div class="day-tabs" id="day-tabs-container"></div>
+
+      <!-- Weekly Grid View -->
+      <div class="timetable-grid" id="timetable-week-view"></div>
+
+      <!-- Single Day Focused View -->
+      <div id="timetable-day-view" style="display: none;"></div>
+    </section>
+
+    <!-- ====================================================================
+         SCHULRANZEN-CHECKER / PACKLISTE
+         ==================================================================== -->
+    <section class="ranzen-section" id="schulranzen-section">
+      <div class="ranzen-header">
+        <div class="ranzen-title-wrap">
+          <div class="ranzen-badge">🎒</div>
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #78350f;" id="ranzen-day-name">
+              Schulranzen-Checker
+            </h2>
+            <p style="color: #92400e; font-size: 0.92rem; font-weight: 600;">
+              Hake alle Sachen ab, wenn du sie in die Schultasche packst. Für eine volle Tasche gibt es Bonus-Sterne! ⭐
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ranzen-checklist" id="ranzen-items-container"></div>
+
+      <div class="ranzen-success-banner" id="ranzen-success" style="display: none;">
+        🎉 Juhu, Jamie! Dein Ranzen ist perfekt gepackt! Du bist startklar für die Schule! 🚀
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         LERNWELTEN & INTERAKTIVE MODULE
+         ==================================================================== -->
+    <section class="modules-section" id="lernwelten">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">🚀</div>
+          <div>
+            <h2 class="section-title">Jamies Lernwelten</h2>
+            <p class="section-description">Hier kannst du Unterrichtsstoff vertiefen, Vokabeln hören & Pokémon freispielen!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modules-grid">
+        <!-- Modul 1: Englisch -->
+        <a href={`${base}/englisch`} class="module-card mod-englisch">
+          <div class="module-top">
+            <div class="module-icon-wrap">🇬🇧</div>
+            <span class="module-status-badge badge-ready">Mit Vorlese-Funktion</span>
+          </div>
+          <h3 class="module-title">Englisch-Abenteuer</h3>
+          <p class="module-desc">
+            Lerne englische Wörter für Tiere, Farben & Schule! Mit Audio-Aussprache zum Nachsprechen.
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">🔊 Sprachausgabe</span>
+            <span class="module-tag">🗂️ Bildkarten</span>
+            <span class="module-tag">⭐ Sternen-Quiz</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Jetzt Vokabeln üben</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 2: Mathe -->
+        <a href={`${base}/mathe`} class="module-card mod-mathe">
+          <div class="module-top">
+            <div class="module-icon-wrap">🔢</div>
+            <span class="module-status-badge badge-ready">Blitzrechnen</span>
+          </div>
+          <h3 class="module-title">Mathe-Dschungel</h3>
+          <p class="module-desc">
+            Plus, Minus und das kleine Einmaleins! Trainiere spielerisch dein Kopfrechnen und knacke den Highscore.
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">➕ Plus & Minus</span>
+            <span class="module-tag">✖️ 1x1 Tabellen</span>
+            <span class="module-tag">⏱️ Tempo-Challenge</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Mathe-Training starten</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 3: Deutsch -->
+        <a href={`${base}/deutsch`} class="module-card mod-deutsch">
+          <div class="module-top">
+            <div class="module-icon-wrap">📖</div>
+            <span class="module-status-badge badge-ready">Lernkarten</span>
+          </div>
+          <h3 class="module-title">Deutsch-Wortschatz</h3>
+          <p class="module-desc">
+            Rechtschreibung, Silben trennen und Nomen, Verben & Adjektive entdecken. Mit Wendekarten zum Selbsttesten!
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">🔤 Wörter des Tages</span>
+            <span class="module-tag">✍️ Rechtschreibung</span>
+            <span class="module-tag">📚 Lesespaß</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Wörterkarten ansehen</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 4: Pokémon Album -->
+        <a href={`${base}/pokemon`} class="module-card mod-pokemon">
+          <div class="module-top">
+            <div class="module-icon-wrap">⚡</div>
+            <span class="module-status-badge badge-fun">Sammel-Belohnung</span>
+          </div>
+          <h3 class="module-title">Pokémon-Arena</h3>
+          <p class="module-desc">
+            Tausche deine verdienten Lern-Sterne gegen neue coole 3D-Hologramm Pokémon-Karten ein!
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">✨ Holo-Glitzereffekt</span>
+            <span class="module-tag">🏆 Sammelalbum</span>
+            <span class="module-tag">🔓 Neue Karten</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Sammelalbum öffnen</span>
+            <span>➔</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Lesson Detail Modal -->
+  <div class="modal-overlay" id="lesson-detail-modal">
+    <div class="modal-content" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" id="close-lesson-modal-btn" aria-label="Schließen">✕</button>
+      <div id="modal-lesson-body"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS } from '../data/stundenplan';
+  import { StorageService } from '../lib/storage';
+  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+  // Determine current day of week (1: Monday .. 5: Friday, else default to Monday)
+  const currentDayNum = new Date().getDay();
+  let activeDayKey = 'montag';
+  if (currentDayNum === 2) activeDayKey = 'dienstag';
+  else if (currentDayNum === 3) activeDayKey = 'mittwoch';
+  else if (currentDayNum === 4) activeDayKey = 'donnerstag';
+  else if (currentDayNum === 5) activeDayKey = 'freitag';
+
+  // Render hero banner day indicator
+  const todayBadge = document.getElementById('hero-today-name');
+  const todayCount = document.getElementById('hero-today-count');
+  if (todayBadge && todayCount) {
+    const todayInfo = (SCHEDULE_DATA as any)[activeDayKey];
+    todayBadge.textContent = todayInfo.name;
+    todayCount.textContent = `${todayInfo.lessons.length} Schulstunden heute`;
+  }
+
+  let currentView = 'week';
+  let selectedTabDay = activeDayKey;
+
+  // Render Day Tabs
+  const tabsContainer = document.getElementById('day-tabs-container');
+  if (tabsContainer) {
+    tabsContainer.innerHTML = '';
+    Object.keys(SCHEDULE_DATA).forEach(dayKey => {
+      const day = (SCHEDULE_DATA as any)[dayKey];
+      const btn = document.createElement('button');
+      btn.className = `day-tab-btn ${dayKey === selectedTabDay ? 'active' : ''} ${dayKey === activeDayKey ? 'today-indicator' : ''}`;
+      btn.innerHTML = `
+        <span class="day-tab-name">${day.name}</span>
+        <span class="day-tab-sub">${day.lessons.length} Stunden</span>
+      `;
+      btn.addEventListener('click', () => {
+        selectedTabDay = dayKey;
+        document.querySelectorAll('.day-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (currentView === 'day') {
+          renderSingleDayView(selectedTabDay);
+        }
+        renderRanzenPackliste(selectedTabDay);
+      });
+      tabsContainer.appendChild(btn);
+    });
+  }
+
+  // View Switchers
+  const btnViewWeek = document.getElementById('btn-view-week');
+  const btnViewDay = document.getElementById('btn-view-day');
+  const btnViewRanzen = document.getElementById('btn-view-ranzen');
+
+  function setView(view: string) {
+    currentView = view;
+    [btnViewWeek, btnViewDay, btnViewRanzen].forEach(b => b && b.classList.remove('active'));
+    const weekEl = document.getElementById('timetable-week-view');
+    const dayEl = document.getElementById('timetable-day-view');
+
+    if (view === 'week') {
+      btnViewWeek && btnViewWeek.classList.add('active');
+      if (weekEl) weekEl.style.display = 'grid';
+      if (dayEl) dayEl.style.display = 'none';
+    } else if (view === 'day') {
+      btnViewDay && btnViewDay.classList.add('active');
+      if (weekEl) weekEl.style.display = 'none';
+      if (dayEl) dayEl.style.display = 'block';
+      renderSingleDayView(selectedTabDay);
+    } else if (view === 'ranzen') {
+      btnViewRanzen && btnViewRanzen.classList.add('active');
+      const ranzenSection = document.getElementById('schulranzen-section');
+      if (ranzenSection) ranzenSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  if (btnViewWeek) btnViewWeek.addEventListener('click', () => setView('week'));
+  if (btnViewDay) btnViewDay.addEventListener('click', () => setView('day'));
+  if (btnViewRanzen) btnViewRanzen.addEventListener('click', () => setView('ranzen'));
+
+  // Render Full Weekly Grid
+  const weekGrid = document.getElementById('timetable-week-view');
+  if (weekGrid) {
+    weekGrid.innerHTML = '';
+    Object.keys(SCHEDULE_DATA).forEach(dayKey => {
+      const day = (SCHEDULE_DATA as any)[dayKey];
+      const isToday = dayKey === activeDayKey;
+      const col = document.createElement('div');
+      col.className = `day-column ${isToday ? 'is-today' : ''}`;
+      
+      let lessonsHtml = '';
+      
+      LESSON_TIMES.forEach(timeSlot => {
+        if (timeSlot.isBreak) {
+          lessonsHtml += `
+            <div class="break-indicator" title="${timeSlot.title}">
+              <span>${timeSlot.title}</span>
+              <span>(${timeSlot.start} - ${timeSlot.end})</span>
+            </div>
+          `;
+        } else {
+          const lesson = day.lessons.find((l: any) => l.num === timeSlot.num);
+          if (lesson) {
+            const subjMeta = SUBJECT_DETAILS[lesson.subject] || {
+              icon: '📝',
+              class: 'lesson-mathe',
+              description: 'Unterricht'
+            };
+            lessonsHtml += `
+              <div class="lesson-card ${subjMeta.class}" data-day="${day.name}" data-subject="${lesson.subject}" data-num="${lesson.num}" data-time="${timeSlot.start} - ${timeSlot.end}">
+                <div class="lesson-num">${lesson.num}</div>
+                <div class="lesson-info">
+                  <div class="lesson-name">${lesson.subject}</div>
+                  <div class="lesson-time">${timeSlot.start} - ${timeSlot.end}</div>
+                </div>
+                <div class="lesson-icon">${subjMeta.icon}</div>
+              </div>
+            `;
+          }
+        }
+      });
+
+      col.innerHTML = `
+        <div class="day-col-header">
+          <div class="day-col-title">${day.name}</div>
+          <div class="day-col-hours">${day.lessons.length} Stunden • ${day.short}</div>
+        </div>
+        <div class="lessons-list">
+          ${lessonsHtml}
+        </div>
+      `;
+      weekGrid.appendChild(col);
+    });
+
+    // Add click listeners to cards in week view
+    weekGrid.querySelectorAll('.lesson-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const subject = card.getAttribute('data-subject') || '';
+        const day = card.getAttribute('data-day') || '';
+        const num = card.getAttribute('data-num') || '';
+        const time = card.getAttribute('data-time') || '';
+        openLessonModal(subject, day, num, time);
+      });
+    });
+  }
+
+  // Render Single Day View
+  function renderSingleDayView(dayKey: string) {
+    const dayEl = document.getElementById('timetable-day-view');
+    if (!dayEl) return;
+    const day = (SCHEDULE_DATA as any)[dayKey];
+    let cardsHtml = '';
+    
+    LESSON_TIMES.forEach(slot => {
+      if (slot.isBreak) {
+        cardsHtml += `
+          <div class="break-indicator" style="margin: 0.75rem 0; font-size: 0.9rem; padding: 0.75rem;">
+            <span>${slot.title} (${slot.start} - ${slot.end})</span>
+          </div>
+        `;
+      } else {
+        const lesson = day.lessons.find((l: any) => l.num === slot.num);
+        if (lesson) {
+          const meta = SUBJECT_DETAILS[lesson.subject] || { icon: '📝', class: 'lesson-mathe', description: '' };
+          cardsHtml += `
+            <div class="lesson-card ${meta.class}" style="padding: 1.15rem; margin-bottom: 0.85rem;" data-day="${day.name}" data-subject="${lesson.subject}" data-num="${lesson.num}" data-time="${slot.start} - ${slot.end}">
+              <div class="lesson-num" style="width: 38px; height: 38px; font-size: 1.1rem;">${lesson.num}</div>
+              <div class="lesson-info" style="margin-left: 0.5rem;">
+                <div class="lesson-name" style="font-size: 1.25rem;">${lesson.subject}</div>
+                <div class="lesson-time" style="font-size: 0.88rem;">Uhrzeit: ${slot.start} - ${slot.end}</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">${meta.description}</div>
+              </div>
+              <div class="lesson-icon" style="font-size: 2.2rem;">${meta.icon}</div>
+            </div>
+          `;
+        }
+      }
+    });
+
+    dayEl.innerHTML = `
+      <div style="background: white; border-radius: 20px; border: 2px solid #e0e7ff; padding: 1.75rem; box-shadow: var(--shadow-md); max-width: 650px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="font-size: 1.7rem; font-weight: 800; color: #1e293b;">${day.name}</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">${day.motto}</p>
+          </div>
+          <span style="background: #eef2ff; color: #4338ca; padding: 0.4rem 0.9rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;">
+            ${day.lessons.length} Stunden
+          </span>
+        </div>
+        <div>${cardsHtml}</div>
+      </div>
+    `;
+
+    dayEl.querySelectorAll('.lesson-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const subject = card.getAttribute('data-subject') || '';
+        const dayName = card.getAttribute('data-day') || '';
+        const num = card.getAttribute('data-num') || '';
+        const time = card.getAttribute('data-time') || '';
+        openLessonModal(subject, dayName, num, time);
+      });
+    });
+  }
+
+  // Render Ranzen Packliste
+  function renderRanzenPackliste(dayKey: string) {
+    const container = document.getElementById('ranzen-items-container');
+    const dayTitleEl = document.getElementById('ranzen-day-name');
+    const successBanner = document.getElementById('ranzen-success');
+    if (!container) return;
+
+    const day = (SCHEDULE_DATA as any)[dayKey];
+    if (dayTitleEl) {
+      dayTitleEl.textContent = `Packliste für ${day.name}`;
+    }
+
+    const requiredItems = new Set(BASE_RANZEN_ITEMS);
+    day.lessons.forEach((l: any) => {
+      const meta = SUBJECT_DETAILS[l.subject];
+      if (meta && meta.pack) {
+        meta.pack.forEach(p => requiredItems.add(p));
+      }
+    });
+
+    const packedList = StorageService.getPackedItems(dayKey);
+    container.innerHTML = '';
+
+    const itemsArray = Array.from(requiredItems);
+    itemsArray.forEach(itemText => {
+      const isChecked = packedList.includes(itemText);
+      const itemEl = document.createElement('div');
+      itemEl.className = `check-item ${isChecked ? 'checked' : ''}`;
+      itemEl.innerHTML = `
+        <div class="check-box">${isChecked ? '✓' : ''}</div>
+        <span class="check-label">${itemText}</span>
+      `;
+
+      itemEl.addEventListener('click', () => {
+        let currentPacked = StorageService.getPackedItems(dayKey);
+        if (currentPacked.includes(itemText)) {
+          currentPacked = currentPacked.filter(i => i !== itemText);
+          itemEl.classList.remove('checked');
+          itemEl.querySelector('.check-box')!.textContent = '';
+        } else {
+          currentPacked.push(itemText);
+          itemEl.classList.add('checked');
+          itemEl.querySelector('.check-box')!.textContent = '✓';
+          AudioFX.playChime();
+        }
+        StorageService.setPackedItems(dayKey, currentPacked);
+
+        if (currentPacked.length === itemsArray.length) {
+          if (successBanner) successBanner.style.display = 'block';
+          triggerConfetti();
+          AudioFX.playSuccessFanfare();
+          StorageService.addStars(2);
+          showStarToast(2, 'Ranzen komplett gepackt! 🎒✨');
+        } else {
+          if (successBanner) successBanner.style.display = 'none';
+        }
+      });
+
+      container.appendChild(itemEl);
+    });
+
+    if (successBanner) {
+      successBanner.style.display = packedList.length === itemsArray.length && itemsArray.length > 0 ? 'block' : 'none';
+    }
+  }
+
+  // Modal Logic
+  function openLessonModal(subject: string, dayName: string, lessonNum: string, timeRange: string) {
+    const modal = document.getElementById('lesson-detail-modal');
+    const modalBody = document.getElementById('modal-lesson-body');
+    if (!modal || !modalBody) return;
+
+    const meta = SUBJECT_DETAILS[subject] || {
+      icon: '📚',
+      description: 'Schulfach',
+      pack: ['Mappe & Schreibzeug']
+    };
+
+    let subpageLink = '';
+    if (subject === 'Englisch') {
+      subpageLink = `<a href="${base}/englisch" class="btn-trainer btn-primary" style="margin-top: 1rem; width: 100%; justify-content: center; text-decoration: none;">🇬🇧 Jetzt Englisch Vokabeln üben!</a>`;
+    } else if (subject === 'Mathe') {
+      subpageLink = `<a href="${base}/mathe" class="btn-trainer btn-primary" style="margin-top: 1rem; width: 100%; justify-content: center; text-decoration: none;">🔢 Jetzt Mathe Kopfrechnen trainieren!</a>`;
+    } else if (subject === 'Deutsch') {
+      subpageLink = `<a href="${base}/deutsch" class="btn-trainer btn-primary" style="margin-top: 1rem; width: 100%; justify-content: center; text-decoration: none;">📖 Jetzt Deutsch Lernkarten öffnen!</a>`;
+    }
+
+    modalBody.innerHTML = `
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">${meta.icon}</div>
+        <h2 style="font-size: 1.8rem; font-weight: 900; color: #0f172a;">${subject}</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600;">${dayName} • ${lessonNum}. Stunde (${timeRange})</p>
+      </div>
+      
+      <div style="background: #f8fafc; border-radius: 12px; padding: 1.15rem; margin-bottom: 1.25rem; border: 1px solid #e2e8f0;">
+        <h4 style="font-size: 0.95rem; font-weight: 800; color: #334155; margin-bottom: 0.4rem;">Worum geht's?</h4>
+        <p style="font-size: 0.92rem; color: #64748b;">${meta.description}</p>
+      </div>
+
+      <div style="background: #fffbeb; border-radius: 12px; padding: 1.15rem; margin-bottom: 1rem; border: 1px solid #fef3c7;">
+        <h4 style="font-size: 0.95rem; font-weight: 800; color: #b45309; margin-bottom: 0.4rem;">Was gehört in den Ranzen?</h4>
+        <ul style="padding-left: 1.2rem; font-size: 0.9rem; color: #78350f;">
+          ${meta.pack.map(p => `<li style="margin-bottom: 0.25rem;">${p}</li>`).join('')}
+        </ul>
+      </div>
+
+      ${subpageLink}
+    `;
+
+    modal.classList.add('active');
+  }
+
+  function closeLessonModal() {
+    const modal = document.getElementById('lesson-detail-modal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  const closeBtn = document.getElementById('close-lesson-modal-btn');
+  if (closeBtn) closeBtn.addEventListener('click', closeLessonModal);
+
+  const modal = document.getElementById('lesson-detail-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeLessonModal();
+    });
+  }
+
+  // Initial render of packlist
+  renderRanzenPackliste(selectedTabDay);
+</script>

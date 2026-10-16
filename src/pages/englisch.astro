@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { VOCAB_DATA, VOCAB_CATEGORIES } from '../data/vocab';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout title="Jamies Englisch-Abenteuer 🇬🇧 • Vokabeltrainer" activePage="englisch">
+  <main class="container" style="padding-top: 2rem;">
+    <!-- Breadcrumb / Back Link -->
+    <div style="margin-bottom: 1.5rem;">
+      <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <!-- Header Section -->
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem;">
+      <span style="background: #ede9fe; color: #6d28d9; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+        🇬🇧 Englisch Vokabel-Heldin
+      </span>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
+        Englisch-Vokabeltrainer
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem;">
+        Tippe auf die Karte, um sie umzudrehen. Klicke auf den Lautsprecher, um die echte englische Aussprache zu hören! 🔊
+      </p>
+
+      <!-- Category Filter Buttons -->
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="category-filter-bar">
+        {VOCAB_CATEGORIES.map((cat, idx) => (
+          <button 
+            type="button" 
+            class:list={['switch-btn', { active: idx === 0 }]} 
+            data-cat={cat.id}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Interactive Flashcard Area -->
+    <div class="flashcard-container" id="vocab-card">
+      <div class="flashcard-inner">
+        <!-- Front of card -->
+        <div class="flashcard-front">
+          <div class="flashcard-category" id="card-cat-label">ANIMALS 🐾</div>
+          <div class="flashcard-emoji" id="card-emoji">🐶</div>
+          <div class="flashcard-word" id="card-en-word">Dog</div>
+          <p class="flashcard-hint">Tippen zum Umdrehen • [Deutsch]</p>
+          <button type="button" class="flashcard-audio-btn" id="card-audio-btn" title="Englisch vorlesen">
+            🔊 Vorlesen
+          </button>
+        </div>
+
+        <!-- Back of card -->
+        <div class="flashcard-back">
+          <div class="flashcard-category" style="color: #166534;">Übersetzung auf Deutsch</div>
+          <div class="flashcard-emoji" id="card-back-emoji">🐶</div>
+          <div class="flashcard-word" id="card-de-word" style="color: #166534;">Der Hund</div>
+          <p class="flashcard-hint" style="color: #15803d;">Tippen, um zurückzudrehen</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flashcard-actions">
+      <button type="button" class="btn-trainer btn-secondary" id="en-prev-btn">
+        ⬅️ Vorherige
+      </button>
+      <button type="button" class="btn-trainer btn-primary" id="en-known-btn">
+        ⭐ Kann ich schon! (+1 Stern) ➔
+      </button>
+      <button type="button" class="btn-trainer btn-secondary" id="en-next-btn">
+        Nächste ➡️
+      </button>
+    </div>
+
+    <!-- Fun Note -->
+    <div style="background: white; border-radius: 16px; border: 2px solid #e0e7ff; padding: 1.5rem; max-width: 600px; margin: 3.5rem auto; text-align: center;">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: #3730a3; margin-bottom: 0.5rem;">
+        💡 Jamie's Lerntipp für Englisch
+      </h3>
+      <p style="font-size: 0.95rem; color: #4b5563;">
+        Höre dir das Wort an und sprich es laut zweimal nach! So trainierst du deine Ohren und deine Zunge für den Englischunterricht am Montag, Mittwoch und Donnerstag.
+      </p>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { VOCAB_DATA, type VocabCategoryId } from '../data/vocab';
+  import { StorageService } from '../lib/storage';
+  import { AudioFX, speakEnglish, triggerConfetti, showStarToast } from '../lib/audio';
+
+  let activeCat: VocabCategoryId = 'tiere';
+  let cardIdx = 0;
+
+  function renderCurrentCard() {
+    const card = document.getElementById('vocab-card');
+    if (card) card.classList.remove('is-flipped');
+
+    const items = VOCAB_DATA[activeCat];
+    const current = items[cardIdx];
+
+    const catEl = document.getElementById('card-cat-label');
+    const emojiEl = document.getElementById('card-emoji');
+    const wordEl = document.getElementById('card-en-word');
+    const backEmojiEl = document.getElementById('card-back-emoji');
+    const deWordEl = document.getElementById('card-de-word');
+
+    if (catEl) catEl.textContent = activeCat.toUpperCase();
+    if (emojiEl) emojiEl.textContent = current.emoji;
+    if (wordEl) wordEl.textContent = current.en;
+    if (backEmojiEl) backEmojiEl.textContent = current.emoji;
+    if (deWordEl) deWordEl.textContent = current.de;
+  }
+
+  function setCategory(cat: VocabCategoryId) {
+    activeCat = cat;
+    cardIdx = 0;
+    document.querySelectorAll('#category-filter-bar .switch-btn').forEach(btn => {
+      if (btn.getAttribute('data-cat') === cat) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    renderCurrentCard();
+  }
+
+  const catBtns = document.querySelectorAll('#category-filter-bar .switch-btn');
+  catBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.getAttribute('data-cat') as VocabCategoryId;
+      if (cat) setCategory(cat);
+    });
+  });
+
+  const card = document.getElementById('vocab-card');
+  if (card) {
+    card.addEventListener('click', (e) => {
+      // Don't flip if clicking the audio button
+      if ((e.target as HTMLElement).closest('#card-audio-btn')) return;
+      card.classList.toggle('is-flipped');
+    });
+  }
+
+  const audioBtn = document.getElementById('card-audio-btn');
+  if (audioBtn) {
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const items = VOCAB_DATA[activeCat];
+      const current = items[cardIdx];
+      speakEnglish(current.en);
+    });
+  }
+
+  const prevBtn = document.getElementById('en-prev-btn');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      const items = VOCAB_DATA[activeCat];
+      cardIdx = (cardIdx - 1 + items.length) % items.length;
+      renderCurrentCard();
+    });
+  }
+
+  const nextBtn = document.getElementById('en-next-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const items = VOCAB_DATA[activeCat];
+      cardIdx = (cardIdx + 1) % items.length;
+      renderCurrentCard();
+    });
+  }
+
+  const knownBtn = document.getElementById('en-known-btn');
+  if (knownBtn) {
+    knownBtn.addEventListener('click', () => {
+      StorageService.addStars(1);
+      AudioFX.playChime();
+      showStarToast(1, 'Super gemerkt!');
+      triggerConfetti();
+      const items = VOCAB_DATA[activeCat];
+      cardIdx = (cardIdx + 1) % items.length;
+      renderCurrentCard();
+    });
+  }
+
+  renderCurrentCard();
+</script>

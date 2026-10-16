@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jamies Deutsch-Wortschatz 📖 • Lernkarten & Rechtschreibung</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🎒</div>
+        <div class="brand-title">
+          <span>Jamie's</span>
+          <span class="brand-subtitle">Lernplattform 🌟</span>
+        </div>
+      </a>
+
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">
+          <span class="nav-emoji">📅</span> Stundenplan
+        </a>
+        <a href="deutsch.html" class="nav-link active">
+          <span class="nav-emoji">📖</span> Deutsch
+        </a>
+        <a href="mathe.html" class="nav-link">
+          <span class="nav-emoji">🔢</span> Mathe
+        </a>
+        <a href="englisch.html" class="nav-link">
+          <span class="nav-emoji">🇬🇧</span> Englisch
+        </a>
+        <a href="pokemon.html" class="nav-link">
+          <span class="nav-emoji">⚡</span> Pokémon
+        </a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="star-counter" onclick="StorageService.addStars(1); showStarToast(1, 'Super gelesen!');">
+          <span class="star-icon">⭐</span>
+          <span id="jamie-star-count">15</span>
+          <span style="font-size: 0.75rem; text-transform: uppercase;">Sterne</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <a href="index.html" style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Stundenplan
+      </a>
+    </div>
+
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem;">
+      <span style="background: #fff7ed; color: #c2410c; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+        📖 Wörter-Entdeckerin
+      </span>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
+        Deutsch-Lernkarten
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem;">
+        Trainiere Wortarten (Nomen, Verben, Adjektive) und knifflige Rechtschreib-Wörter!
+      </p>
+
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="deutsch-cat-bar">
+        <button class="switch-btn active" onclick="setDeutschTopic('wortarten')">🏷️ Wortarten</button>
+        <button class="switch-btn" onclick="setDeutschTopic('doppelkonsonanten')">⚡ Doppelte Mitlaute</button>
+        <button class="switch-btn" onclick="setDeutschTopic('silben')">🎶 Silben trennen</button>
+      </div>
+    </div>
+
+    <!-- Flashcard for Deutsch -->
+    <div class="flashcard-container" id="deutsch-card" onclick="toggleDeutschCard()">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="flashcard-category" id="de-card-cat">Wortart bestimmen</div>
+          <div class="flashcard-emoji" id="de-card-emoji">🐕</div>
+          <div class="flashcard-word" id="de-card-word">Hund</div>
+          <p class="flashcard-hint">Welche Wortart ist das? Tippen zum Aufdecken!</p>
+        </div>
+
+        <div class="flashcard-back">
+          <div class="flashcard-category" style="color: #c2410c;">Lösung & Erklärung</div>
+          <div class="flashcard-word" id="de-card-solution" style="color: #9a3412; font-size: 1.8rem;">
+            Nomen (Namenwort)
+          </div>
+          <p class="flashcard-hint" id="de-card-explanation" style="color: #431407; max-width: 320px; text-align: center; margin-top: 0.5rem;">
+            Nomen schreibt man immer groß! Man kann 'der', 'die' oder 'das' davor setzen (der Hund).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flashcard-actions">
+      <button class="btn-trainer btn-secondary" onclick="prevDeCard()">
+        ⬅️ Vorherige
+      </button>
+      <button class="btn-trainer btn-primary" onclick="markDeKnown()">
+        ⭐ Gewusst! (+1 Stern) ➔
+      </button>
+      <button class="btn-trainer btn-secondary" onclick="nextDeCard()">
+        Nächste ➡️
+      </button>
+    </div>
+
+    <!-- Rule Guide Box -->
+    <div style="background: white; border-radius: 16px; border: 2px solid #fed7aa; padding: 1.75rem; max-width: 650px; margin: 3.5rem auto;">
+      <h3 style="font-size: 1.2rem; font-weight: 800; color: #9a3412; margin-bottom: 0.75rem;">
+        🌟 Die 3 wichtigsten Wortarten-Regeln
+      </h3>
+      <div style="display: grid; gap: 0.75rem; font-size: 0.92rem;">
+        <div style="background: #fff7ed; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>1. Nomen (Namenwörter):</strong> Menschen, Tiere, Pflanzen, Dinge. Werden IMMER großgeschrieben! (z.B. <em>die Katze, das Heft</em>)
+        </div>
+        <div style="background: #fdf2f8; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>2. Verben (Tunwörter):</strong> Was jemand tut oder was geschieht. Werden kleingeschrieben! (z.B. <em>laufen, singen, rechnen</em>)
+        </div>
+        <div style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 10px;">
+          <strong>3. Adjektive (Wie-Wörter):</strong> Beschreiben, wie etwas ist oder aussieht. (z.B. <em>schnell, bunt, fröhlich</em>)
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p style="font-weight: 800; color: #1e293b;">Jamie's Deutsch-Wortschatz • Schreiben & Lesen mit Freude ✍️</p>
+    </div>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/stundenplan.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const DEUTSCH_DATA = {
+      wortarten: [
+        { word: 'Katze', emoji: '🐱', sol: 'Nomen (Namenwort)', exp: 'Großgeschrieben! Begleiter: "die Katze".' },
+        { word: 'rennen', emoji: '🏃‍♀️', sol: 'Verb (Tunwort)', exp: 'Kleingeschrieben! Es beschreibt, was Jamie tut.' },
+        { word: 'bunt', emoji: '🎨', sol: 'Adjektiv (Wie-Wort)', exp: 'Kleingeschrieben! Wie ist das Bild? Es ist bunt!' },
+        { word: 'Schule', emoji: '🏫', sol: 'Nomen (Namenwort)', exp: 'Ein Ort / Ding. Immer mit großem Anfangsbuchstaben!' },
+        { word: 'lachen', emoji: '😄', sol: 'Verb (Tunwort)', exp: 'Jamie lacht. Etwas, das man tun kann!' },
+        { word: 'klug', emoji: '💡', sol: 'Adjektiv (Wie-Wort)', exp: 'Wie ist Jamie? Super klug!' }
+      ],
+      doppelkonsonanten: [
+        { word: 'So...e (Sonne)', emoji: '☀️', sol: 'Sonne (mit doppeltem nn)', exp: 'Weil das "o" kurz gesprochen wird, kommt danach ein Doppel-n!' },
+        { word: 'Wa...er (Wasser)', emoji: '💧', sol: 'Wasser (mit doppeltem ss)', exp: 'Kurzer Selbstlaut "a" -> doppeltes "ss"!' },
+        { word: 'Ba... (Ball)', emoji: '⚽', sol: 'Ball (mit doppeltem ll)', exp: 'Kurzes "a" -> doppelter Mitlaut "ll".' },
+        { word: 'Re...en (Rennen)', emoji: '🏎️', sol: 'Rennen (mit doppeltem nn)', exp: 'Kurzes "e" -> Doppel-n!' }
+      ],
+      silben: [
+        { word: 'Schmetterling', emoji: '🦋', sol: 'Schmet - ter - ling (3 Silben)', exp: 'Klatsche mit in die Hände: Schmet • ter • ling!' },
+        { word: 'Krokodil', emoji: '🐊', sol: 'Kro - ko - dil (3 Silben)', exp: 'Drei Silbenschwünge: Kro • ko • dil!' },
+        { word: 'Schule', emoji: '🎒', sol: 'Schu - le (2 Silben)', exp: 'Zwei Silben: Schu • le!' }
+      ]
+    };
+
+    let activeTopic = 'wortarten';
+    let cardIdx = 0;
+
+    function setDeutschTopic(topic) {
+      activeTopic = topic;
+      cardIdx = 0;
+      document.querySelectorAll('#deutsch-cat-bar .switch-btn').forEach((b, i) => {
+        const topics = ['wortarten', 'doppelkonsonanten', 'silben'];
+        if (topics[i] === topic) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      renderDeCard();
+    }
+
+    function renderDeCard() {
+      const card = document.getElementById('deutsch-card');
+      if (card) card.classList.remove('is-flipped');
+      const list = DEUTSCH_DATA[activeTopic];
+      const item = list[cardIdx];
+
+      document.getElementById('de-card-cat').textContent = activeTopic.toUpperCase();
+      document.getElementById('de-card-emoji').textContent = item.emoji;
+      document.getElementById('de-card-word').textContent = item.word;
+      document.getElementById('de-card-solution').textContent = item.sol;
+      document.getElementById('de-card-explanation').textContent = item.exp;
+    }
+
+    function toggleDeutschCard() {
+      const card = document.getElementById('deutsch-card');
+      if (card) card.classList.toggle('is-flipped');
+    }
+
+    function nextDeCard() {
+      const list = DEUTSCH_DATA[activeTopic];
+      cardIdx = (cardIdx + 1) % list.length;
+      renderDeCard();
+    }
+
+    function prevDeCard() {
+      const list = DEUTSCH_DATA[activeTopic];
+      cardIdx = (cardIdx - 1 + list.length) % list.length;
+      renderDeCard();
+    }
+
+    function markDeKnown() {
+      StorageService.addStars(1);
+      showStarToast(1, 'Klasse gewusst!');
+      triggerConfetti();
+      nextDeCard();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDeCard();
+    });
+  </script>
+</body>
+</html>

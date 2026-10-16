@@ -1,0 +1,185 @@
+---
+// CloudSyncModal.astro
+---
+
+<div class="modal-overlay" id="cloud-sync-modal" style="display: none;">
+  <div class="modal-content" role="dialog" aria-modal="true" style="max-width: 540px; text-align: left;">
+    <button class="modal-close-btn" id="close-sync-modal-btn" aria-label="Schließen">✕</button>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+      <div style="font-size: 2rem; background: #eff6ff; padding: 0.5rem; border-radius: 14px; border: 1px solid #bfdbfe;">
+        ☁️
+      </div>
+      <div>
+        <h3 style="font-size: 1.4rem; font-weight: 800; color: #1e3a8a; margin: 0;">
+          Lernfortschritt & Cloud-Sync
+        </h3>
+        <p style="margin: 0; font-size: 0.88rem; color: #64748b;">
+          Sichere Jamies Sterne & gesammelte Pokémon dauerhaft!
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 1: Backup Export / Import -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;">
+      <h4 style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 0.5rem;">
+        💾 1. Schnelles Backup (Kostenlos & ohne Registrierung)
+      </h4>
+      <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.75rem;">
+        Du kannst Jamies Fortschritt jederzeit als kleine Datei sichern oder auf einem anderen Gerät (z.B. iPad) wieder einspielen:
+      </p>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn-trainer btn-secondary" id="export-backup-btn" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">
+          📥 Backup herunterladen
+        </button>
+        <label class="btn-trainer btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; cursor: pointer; margin: 0;">
+          📤 Backup laden
+          <input type="file" id="import-backup-input" accept=".json" style="display: none;" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Section 2: Free Supabase Cloud Sync -->
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h4 style="font-size: 1rem; font-weight: 700; color: #166534; margin: 0;">
+          ⚡ 2. Kostenlose Cloud-Datenbank (Supabase)
+        </h4>
+        <span style="background: #dcfce7; color: #15803d; font-size: 0.75rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 9999px;">
+          100% Kostenlos
+        </span>
+      </div>
+      <p style="font-size: 0.85rem; color: #166534; margin-bottom: 0.75rem;">
+        Verbindet Jamies Fortschritt live zwischen Mac, iPad und Handy. Erstelle ein kostenloses Supabase-Projekt und trage die Keys hier ein:
+      </p>
+
+      <div style="display: grid; gap: 0.6rem; margin-bottom: 0.75rem;">
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 700; color: #374151; display: block; margin-bottom: 0.2rem;">
+            Supabase Project URL:
+          </label>
+          <input 
+            type="text" 
+            id="supabase-url-input" 
+            placeholder="https://xyzcompany.supabase.co" 
+            style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem;"
+          />
+        </div>
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 700; color: #374151; display: block; margin-bottom: 0.2rem;">
+            Supabase Anon Public Key:
+          </label>
+          <input 
+            type="password" 
+            id="supabase-key-input" 
+            placeholder="eyJhbGciOiJIUzI1NiIsIn..." 
+            style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem;"
+          />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" class="btn-trainer btn-primary" id="save-cloud-config-btn" style="padding: 0.55rem 1rem; font-size: 0.85rem;">
+          Cloud-Sync aktivieren ✨
+        </button>
+        <span id="cloud-sync-status" style="font-size: 0.8rem; font-weight: 700; color: #15803d;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { StorageService } from '../lib/storage';
+  import { showStarToast } from '../lib/audio';
+
+  const modal = document.getElementById('cloud-sync-modal');
+  const closeBtn = document.getElementById('close-sync-modal-btn');
+  const exportBtn = document.getElementById('export-backup-btn');
+  const importInput = document.getElementById('import-backup-input') as HTMLInputElement;
+  const saveCloudBtn = document.getElementById('save-cloud-config-btn');
+  const urlInput = document.getElementById('supabase-url-input') as HTMLInputElement;
+  const keyInput = document.getElementById('supabase-key-input') as HTMLInputElement;
+  const statusEl = document.getElementById('cloud-sync-status');
+
+  // Load existing cloud config if saved
+  const savedConfig = localStorage.getItem('jamie_cloud_config');
+  if (savedConfig) {
+    try {
+      const parsed = JSON.parse(savedConfig);
+      if (urlInput) urlInput.value = parsed.url || '';
+      if (keyInput) keyInput.value = parsed.anonKey || '';
+      if (statusEl && parsed.url) statusEl.textContent = '✓ Verbunden';
+    } catch (e) {}
+  }
+
+  function closeModal() {
+    if (modal) modal.style.display = 'none';
+  }
+
+  function openModal() {
+    if (modal) modal.style.display = 'flex';
+  }
+
+  // Handle open from button
+  window.addEventListener('open-cloud-sync-modal', openModal);
+
+  // Close handlers
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
+  // Backup Export
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const json = StorageService.exportBackup();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `jamies-lernfortschritt-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showStarToast(0, 'Backup erfolgreich heruntergeladen! 📁');
+    });
+  }
+
+  // Backup Import
+  if (importInput) {
+    importInput.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        const success = StorageService.importBackup(text);
+        if (success) {
+          showStarToast(0, 'Fortschritt erfolgreich geladen! 🎉');
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          alert('Das Backup konnte nicht gelesen werden.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // Cloud Config Save
+  if (saveCloudBtn) {
+    saveCloudBtn.addEventListener('click', () => {
+      const url = urlInput?.value.trim();
+      const anonKey = keyInput?.value.trim();
+      if (!url || !anonKey) {
+        alert('Bitte gib URL und Anon Key ein.');
+        return;
+      }
+      localStorage.setItem('jamie_cloud_config', JSON.stringify({ url, anonKey }));
+      if (statusEl) statusEl.textContent = '✓ Gespeichert! Synchronisiere...';
+      StorageService.syncToCloud();
+      showStarToast(0, 'Cloud-Sync aktiviert! ☁️');
+    });
+  }
+</script>

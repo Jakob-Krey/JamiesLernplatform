@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jamies Lernplattform 🎒 • Stundenplan & Lernwelten</title>
+  <meta name="description" content="Jamies persönliche Schul- und Lernplattform mit interaktivem Stundenplan, Ranzen-Checker, Lernkarten für Deutsch, Mathe, Englisch und Pokémon-Sammelalbum.">
+  
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <!-- Floating animated background elements -->
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="Zur Startseite">
+        <div class="brand-icon">🎒</div>
+        <div class="brand-title">
+          <span>Jamie's</span>
+          <span class="brand-subtitle">Lernplattform 🌟</span>
+        </div>
+      </a>
+
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <a href="index.html" class="nav-link active">
+          <span class="nav-emoji">📅</span> Stundenplan
+        </a>
+        <a href="deutsch.html" class="nav-link">
+          <span class="nav-emoji">📖</span> Deutsch
+        </a>
+        <a href="mathe.html" class="nav-link">
+          <span class="nav-emoji">🔢</span> Mathe
+        </a>
+        <a href="englisch.html" class="nav-link">
+          <span class="nav-emoji">🇬🇧</span> Englisch
+        </a>
+        <a href="pokemon.html" class="nav-link">
+          <span class="nav-emoji">⚡</span> Pokémon
+        </a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="star-counter" id="star-btn" title="Klicke für einen Bonus-Stern!" onclick="StorageService.addStars(1); showStarToast(1, 'Du fleißige Lernerin!'); triggerConfetti();">
+          <span class="star-icon">⭐</span>
+          <span id="jamie-star-count">15</span>
+          <span style="font-size: 0.75rem; text-transform: uppercase;">Sterne</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+
+    <!-- Hero / Greeting Banner -->
+    <section class="hero-banner">
+      <div>
+        <div class="greeting-tag">
+          <span>✨</span> Schön, dass du da bist!
+        </div>
+        <h1 class="hero-title">
+          Hallo, liebe <span class="name-highlight">Jamie!</span> 👋
+        </h1>
+        <p class="hero-subtitle">
+          Hier ist dein persönlicher Schul-Begleiter! Schau dir deinen Stundenplan an, packe deinen Ranzen oder trainiere Vokabeln & Kopfrechnen für dein nächstes Pokémon!
+        </p>
+      </div>
+
+      <div class="hero-status-card">
+        <span class="status-badge-today">Heute im Blick</span>
+        <div class="today-day-name" id="hero-today-name">Schultag</div>
+        <div class="today-hours-count" id="hero-today-count">Lade Unterrichtsplan...</div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         STUNDENPLAN SECTION
+         ==================================================================== -->
+    <section class="stundenplan-section" id="stundenplan">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="section-icon-badge">📅</div>
+          <div>
+            <h2 class="section-title">Dein Stundenplan</h2>
+            <p class="section-description">Klicke auf ein Schulfach, um Tipps & Packlisten zu sehen!</p>
+          </div>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-switch-controls">
+          <button type="button" class="switch-btn active" id="btn-view-week">
+            <span>📅</span> Ganze Woche
+          </button>
+          <button type="button" class="switch-btn" id="btn-view-day">
+            <span>🔍</span> Einzeltag-Fokus
+          </button>
+          <button type="button" class="switch-btn" id="btn-view-ranzen">
+            <span>🎒</span> Ranzen-Check
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Day Filter Tabs (Montag bis Freitag) -->
+      <div class="day-tabs" id="day-tabs-container">
+        <!-- Generated dynamically via JS -->
+      </div>
+
+      <!-- Weekly Grid View -->
+      <div class="timetable-grid" id="timetable-week-view">
+        <!-- Generated dynamically via JS -->
+      </div>
+
+      <!-- Single Day Focused View (Hidden by default, shown when user switches) -->
+      <div id="timetable-day-view" style="display: none;">
+        <!-- Generated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCHULRANZEN-CHECKER / PACKLISTE
+         ==================================================================== -->
+    <section class="ranzen-section" id="schulranzen-section">
+      <div class="ranzen-header">
+        <div class="ranzen-title-wrap">
+          <div class="ranzen-badge">🎒</div>
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #78350f;" id="ranzen-day-name">
+              Schulranzen-Checker
+            </h2>
+            <p style="color: #92400e; font-size: 0.92rem; font-weight: 600;">
+              Hake alle Sachen ab, wenn du sie in die Schultasche packst. Für eine volle Tasche gibt es Bonus-Sterne! ⭐
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ranzen-checklist" id="ranzen-items-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="ranzen-success-banner" id="ranzen-success">
+        🎉 Juhu, Jamie! Dein Ranzen ist perfekt gepackt! Du bist startklar für die Schule! 🚀
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         LERNWELTEN & INTERAKTIVE MODULE
+         ==================================================================== -->
+    <section class="modules-section" id="lernwelten">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">🚀</div>
+          <div>
+            <h2 class="section-title">Jamies Lernwelten</h2>
+            <p class="section-description">Hier kannst du Unterrichtsstoff vertiefen, Vokabeln hören & Pokémon freispielen!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modules-grid">
+        <!-- Modul 1: Englisch -->
+        <a href="englisch.html" class="module-card mod-englisch">
+          <div class="module-top">
+            <div class="module-icon-wrap">🇬🇧</div>
+            <span class="module-status-badge badge-ready">Mit Vorlese-Funktion</span>
+          </div>
+          <h3 class="module-title">Englisch-Abenteuer</h3>
+          <p class="module-desc">
+            Lerne englische Wörter für Tiere, Farben & Schule! Mit Audio-Aussprache zum Nachsprechen.
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">🔊 Sprachausgabe</span>
+            <span class="module-tag">🗂️ Bildkarten</span>
+            <span class="module-tag">⭐ Sternen-Quiz</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Jetzt Vokabeln üben</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 2: Mathe -->
+        <a href="mathe.html" class="module-card mod-mathe">
+          <div class="module-top">
+            <div class="module-icon-wrap">🔢</div>
+            <span class="module-status-badge badge-ready">Blitzrechnen</span>
+          </div>
+          <h3 class="module-title">Mathe-Dschungel</h3>
+          <p class="module-desc">
+            Plus, Minus und das kleine Einmaleins! Trainiere spielerisch dein Kopfrechnen und knacke den Highscore.
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">➕ Plus & Minus</span>
+            <span class="module-tag">✖️ 1x1 Tabellen</span>
+            <span class="module-tag">⏱️ Tempo-Challenge</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Mathe-Training starten</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 3: Deutsch -->
+        <a href="deutsch.html" class="module-card mod-deutsch">
+          <div class="module-top">
+            <div class="module-icon-wrap">📖</div>
+            <span class="module-status-badge badge-ready">Lernkarten</span>
+          </div>
+          <h3 class="module-title">Deutsch-Wortschatz</h3>
+          <p class="module-desc">
+            Rechtschreibung, Silben trennen und Nomen, Verben & Adjektive entdecken. Mit Wendekarten zum Selbsttesten!
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">🔤 Wörter des Tages</span>
+            <span class="module-tag">✍️ Rechtschreibung</span>
+            <span class="module-tag">📚 Lesespaß</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Wörterkarten ansehen</span>
+            <span>➔</span>
+          </div>
+        </a>
+
+        <!-- Modul 4: Pokémon Album -->
+        <a href="pokemon.html" class="module-card mod-pokemon">
+          <div class="module-top">
+            <div class="module-icon-wrap">⚡</div>
+            <span class="module-status-badge badge-fun">Sammel-Belohnung</span>
+          </div>
+          <h3 class="module-title">Pokémon-Arena</h3>
+          <p class="module-desc">
+            Tausche deine verdienten Lern-Sterne gegen neue coole 3D-Hologramm Pokémon-Karten ein!
+          </p>
+          <div class="module-features-list">
+            <span class="module-tag">✨ Holo-Glitzereffekt</span>
+            <span class="module-tag">🏆 Sammelalbum</span>
+            <span class="module-tag">🔓 Neue Karten</span>
+          </div>
+          <div class="module-cta-btn">
+            <span>Sammelalbum öffnen</span>
+            <span>➔</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Lesson Detail Modal -->
+  <div class="modal-overlay" id="lesson-detail-modal" onclick="if(event.target === this) closeLessonModal();">
+    <div class="modal-content" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" onclick="closeLessonModal();" aria-label="Schließen">✕</button>
+      <div id="modal-lesson-body">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p style="font-weight: 800; font-size: 1.05rem; color: #1e293b;">
+        Gemacht für <span style="color: #ec4899;">Jamie</span> mit ganz viel <span class="footer-heart">❤️</span>
+      </p>
+      <p class="footer-note">
+        Stundenplan: Grundschule • Jeden Tag bestens vorbereitet für tolle Unterrichtsstunden!
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/stundenplan.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
