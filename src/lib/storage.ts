@@ -3,10 +3,32 @@
    Supports LocalStorage persistence + optional Supabase Cloud Sync
    ========================================================================== */
 
+export interface SchreibheftGoal {
+  startPage: number;
+  targetPage: number;
+  currentPage: number;
+  targetDate: string;
+}
+
+export interface MatheGoal {
+  yellowDoneTotal: number;
+  blueDoneTotal: number;
+  targetDate: string;
+}
+
+export interface DailyGoalLog {
+  date: string;
+  schreibheftPagesToday: number;
+  yellowDoneToday: boolean;
+  blueDoneToday: boolean;
+}
+
 export interface JamieProgressState {
   stars: number;
   unlockedPokemon: string[];
   packedItems: Record<string, string[]>;
+  schreibheftGoal?: SchreibheftGoal;
+  matheGoal?: MatheGoal;
   lastUpdated: string;
 }
 
@@ -15,7 +37,10 @@ const STORAGE_KEYS = {
   UNLOCKED_POKEMON: 'jamie_unlocked_pokemon',
   PACKED_ITEMS: 'jamie_packed_items_date',
   LAST_LOGIN: 'jamie_last_login',
-  CLOUD_CONFIG: 'jamie_cloud_config'
+  CLOUD_CONFIG: 'jamie_cloud_config',
+  GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft',
+  GOAL_MATHE: 'jamie_goal_mathe',
+  GOAL_DAILY_LOG: 'jamie_goal_daily_log'
 };
 
 export const StorageService = {
@@ -82,11 +107,96 @@ export const StorageService = {
     this.syncToCloud();
   },
 
+  getSchreibheftGoal(): SchreibheftGoal {
+    if (typeof window === 'undefined') {
+      return { startPage: 35, targetPage: 70, currentPage: 35, targetDate: '2026-11-02' };
+    }
+    const raw = localStorage.getItem(STORAGE_KEYS.GOAL_SCHREIBHEFT);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {}
+    }
+    return { startPage: 35, targetPage: 70, currentPage: 35, targetDate: '2026-11-02' };
+  },
+
+  setSchreibheftCurrentPage(page: number): SchreibheftGoal {
+    const goal = this.getSchreibheftGoal();
+    goal.currentPage = Math.min(goal.targetPage, Math.max(goal.startPage, page));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.GOAL_SCHREIBHEFT, JSON.stringify(goal));
+      this.dispatchUpdate('goal_schreibheft', goal);
+      this.syncToCloud();
+    }
+    return goal;
+  },
+
+  getMatheGoal(): MatheGoal {
+    if (typeof window === 'undefined') {
+      return { yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
+    }
+    const raw = localStorage.getItem(STORAGE_KEYS.GOAL_MATHE);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {}
+    }
+    return { yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
+  },
+
+  updateMatheGoal(delta: { yellow?: number; blue?: number }): MatheGoal {
+    const goal = this.getMatheGoal();
+    if (typeof delta.yellow === 'number') {
+      goal.yellowDoneTotal = Math.max(0, goal.yellowDoneTotal + delta.yellow);
+    }
+    if (typeof delta.blue === 'number') {
+      goal.blueDoneTotal = Math.max(0, goal.blueDoneTotal + delta.blue);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(goal));
+      this.dispatchUpdate('goal_mathe', goal);
+      this.syncToCloud();
+    }
+    return goal;
+  },
+
+  getDailyGoalLog(): DailyGoalLog {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const defaultLog: DailyGoalLog = {
+      date: todayStr,
+      schreibheftPagesToday: 0,
+      yellowDoneToday: false,
+      blueDoneToday: false
+    };
+    if (typeof window === 'undefined') return defaultLog;
+    const raw = localStorage.getItem(`${STORAGE_KEYS.GOAL_DAILY_LOG}_${todayStr}`);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {}
+    }
+    return defaultLog;
+  },
+
+  updateDailyGoalLog(update: Partial<DailyGoalLog>): DailyGoalLog {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const log = this.getDailyGoalLog();
+    const updated: DailyGoalLog = { ...log, ...update, date: todayStr };
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`${STORAGE_KEYS.GOAL_DAILY_LOG}_${todayStr}`, JSON.stringify(updated));
+      this.dispatchUpdate('goal_daily_log', updated);
+      this.syncToCloud();
+    }
+    return updated;
+  },
+
   exportBackup(): string {
     const state: JamieProgressState = {
       stars: this.getStars(),
       unlockedPokemon: this.getUnlockedPokemon(),
       packedItems: {},
+      schreibheftGoal: this.getSchreibheftGoal(),
+      matheGoal: this.getMatheGoal(),
       lastUpdated: new Date().toISOString()
     };
     return JSON.stringify(state, null, 2);
@@ -99,6 +209,14 @@ export const StorageService = {
       if (Array.isArray(data.unlockedPokemon)) {
         localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(data.unlockedPokemon));
         this.dispatchUpdate('pokemon', data.unlockedPokemon);
+      }
+      if (data.schreibheftGoal) {
+        localStorage.setItem(STORAGE_KEYS.GOAL_SCHREIBHEFT, JSON.stringify(data.schreibheftGoal));
+        this.dispatchUpdate('goal_schreibheft', data.schreibheftGoal);
+      }
+      if (data.matheGoal) {
+        localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(data.matheGoal));
+        this.dispatchUpdate('goal_mathe', data.matheGoal);
       }
       return true;
     } catch (e) {
