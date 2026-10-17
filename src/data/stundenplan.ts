@@ -28,14 +28,14 @@ export interface DaySchedule {
 }
 
 export const LESSON_TIMES: LessonTime[] = [
-  { num: 1, start: '08:00', end: '08:45' },
-  { num: 2, start: '08:50', end: '09:35' },
-  { isBreak: true, title: 'Große Hofpause 🍎 & frische Luft', start: '09:35', end: '09:55' },
-  { num: 3, start: '09:55', end: '10:40' },
-  { num: 4, start: '10:45', end: '11:30' },
-  { isBreak: true, title: 'Kleine Pause 🥪 & Durchatmen', start: '11:30', end: '11:45' },
-  { num: 5, start: '11:45', end: '12:30' },
-  { num: 6, start: '12:35', end: '13:20' }
+  { num: 1, start: '08:10', end: '08:55' },
+  { num: 2, start: '09:00', end: '09:45' },
+  { isBreak: true, title: 'Große Hofpause 🍎 & frische Luft', start: '09:45', end: '10:05' },
+  { num: 3, start: '10:05', end: '10:50' },
+  { num: 4, start: '10:55', end: '11:40' },
+  { isBreak: true, title: 'Kleine Pause 🥪 & Durchatmen', start: '11:40', end: '11:55' },
+  { num: 5, start: '11:55', end: '12:40' },
+  { num: 6, start: '12:45', end: '13:30' }
 ];
 
 export const SUBJECT_DETAILS: Record<string, SubjectDetail> = {
