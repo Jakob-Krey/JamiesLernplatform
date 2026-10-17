@@ -99,24 +99,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <span class="station-label">Basislager (S. 35)</span>
           </div>
 
-          <div class="station-point st-2" title="Waldgrenze (Seite 44)">
+          <div class="station-point st-2" title="Waldgrenze (Seite 45)">
             <span class="station-icon">🌲</span>
-            <span class="station-label">Waldgrenze (S. 44)</span>
+            <span class="station-label">Waldgrenze (S. 45)</span>
           </div>
 
-          <div class="station-point st-3" title="Aussichtsfels (Seite 53)">
+          <div class="station-point st-3" title="Aussichtsfels (Seite 55)">
             <span class="station-icon">🪨</span>
-            <span class="station-label">Aussichtsfels (S. 53)</span>
+            <span class="station-label">Aussichtsfels (S. 55)</span>
           </div>
 
-          <div class="station-point st-4" title="Schneegrenze (Seite 62)">
+          <div class="station-point st-4" title="Schneegrenze (Seite 65)">
             <span class="station-icon">❄️</span>
-            <span class="station-label">Schneegrenze (S. 62)</span>
+            <span class="station-label">Schneegrenze (S. 65)</span>
           </div>
 
-          <div class="station-point st-5" title="Goldenes Gipfelkreuz (Seite 70)">
+          <div class="station-point st-5" title="Goldenes Gipfelkreuz (Seite 76)">
             <span class="station-icon">🚩</span>
-            <span class="station-label">Gipfel & Ziel! 🏆</span>
+            <span class="station-label">Gipfel & Ziel! (S. 76) 🏆</span>
           </div>
 
           <!-- Dynamic Climber Pin -->
@@ -144,19 +144,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <div class="goal-icon-wrap" style="background: #fff7ed; border-color: #ffedd5;">✍️</div>
           <div>
             <span class="goal-tag tag-orange">Deutsch-Mission</span>
-            <h3 class="goal-title">Schreiblernheft bis Seite 70</h3>
+            <h3 class="goal-title">Schreiblernheft bis Seite 76</h3>
           </div>
         </div>
 
         <p class="goal-desc">
-          Du bist gestartet bei <strong>Seite 35</strong> und möchtest bis zum <strong>2. November</strong> bei <strong>Seite 70</strong> ankommen!
+          Du bist gestartet bei <strong>Seite 35</strong> und möchtest bis zum <strong>2. November</strong> bei <strong>Seite 76</strong> ankommen!
         </p>
 
         <!-- Dynamic Calculation Banner -->
         <div class="calc-box">
           <div class="calc-row">
             <span>Verbleibende Seiten:</span>
-            <strong id="schreib-remaining-pages">35 Seiten</strong>
+            <strong id="schreib-remaining-pages">41 Seiten</strong>
           </div>
           <div class="calc-row">
             <span>Verbleibende Tage:</span>
@@ -177,7 +177,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <div class="current-page-badge">
               <span class="page-label">SEITE</span>
               <span class="page-number" id="schreib-current-page-text">35</span>
-              <span class="page-target">von 70</span>
+              <span class="page-target">von 76</span>
             </div>
             <button type="button" class="btn-step" id="schreib-plus-btn" title="Eine Seite vor">+ 1 📖</button>
           </div>
@@ -207,58 +207,80 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <p class="goal-desc">
-          Jeden Tag fleißig rechnen: <strong>1 Seite Gelbes</strong> und <strong>1 Seite Blaues</strong> Flex & Floh Heft!
+          Ziel bis zum <strong>2. November</strong>: jeweils <strong>17 Seiten im gelben</strong> und <strong>17 Seiten im blauen</strong> Heft schaffen (34 Seiten gesamt)!
         </p>
 
         <!-- Dynamic Calculation Banner -->
         <div class="calc-box">
           <div class="calc-row">
-            <span>Plan pro Schultag:</span>
-            <strong>1x 🟡 Gelb + 1x 🔵 Blau (2 Seiten)</strong>
+            <span>Verbleibende Seiten:</span>
+            <strong id="mathe-remaining-pages">34 Seiten</strong>
           </div>
           <div class="calc-row">
-            <span>Hochrechnung bis 02. Nov:</span>
-            <strong id="mathe-total-calculated">-- Seiten gesamt</strong>
+            <span>Verbleibende Tage:</span>
+            <strong id="mathe-remaining-days">-- Tage</strong>
           </div>
           <div class="calc-divider"></div>
           <div class="calc-row target-highlight" style="color: #1e40af;">
-            <span>🎯 Gelb-Ziel: <span id="mathe-yellow-target">--</span> S.</span>
-            <span>🎯 Blau-Ziel: <span id="mathe-blue-target">--</span> S.</span>
+            <span>🎯 Dein Tages-Soll:</span>
+            <strong id="mathe-daily-rate">~2 Seiten / Tag</strong>
           </div>
         </div>
 
-        <!-- Today Checkbox Checklist -->
+        <!-- Interactive Progress Controls for Gelb & Blau -->
         <div class="control-box">
-          <div class="control-title" style="margin-bottom: 0.75rem;">Dein Mathe-Pensum für heute:</div>
+          <div class="control-title" style="margin-bottom: 0.75rem;">Aktueller Stand in den Heften:</div>
 
-          <div class="mathe-check-row" id="check-yellow-row">
-            <div class="check-box" id="check-yellow-box"></div>
-            <div class="check-info">
-              <div class="check-name">🟡 1 Seite Gelbes Flex & Floh</div>
-              <div class="check-sub">Kopfrechnen & Grundlagen</div>
+          <!-- Gelbes Heft Control -->
+          <div style="background: #fefce8; border: 1.5px solid #fef08a; border-radius: 14px; padding: 0.85rem; margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 800; font-size: 0.95rem; color: #854d0e;">🟡 Gelbes Flex & Floh</span>
+              <span style="font-size: 0.8rem; font-weight: 700; color: #a16207;" id="mathe-yellow-rate-badge">1 S. / Tag</span>
             </div>
-            <span class="check-status" id="check-yellow-status">Noch offen</span>
+            <div class="page-display-wrap">
+              <button type="button" class="btn-step" id="mathe-yellow-minus-btn" title="Eine Seite zurück">➖</button>
+              <div class="current-page-badge" style="background: #ffffff; border-color: #fef08a; min-width: 125px;">
+                <span class="page-label" style="color: #a16207;">GESCHAFFT</span>
+                <span class="page-number" style="color: #ca8a04;" id="mathe-yellow-done-text">0</span>
+                <span class="page-target" style="color: #854d0e;">von 17 Seiten</span>
+              </div>
+              <button type="button" class="btn-step" id="mathe-yellow-plus-btn" title="Eine Seite Gelb geschafft" style="background: #fef9c3; border-color: #fde047;">+ 1 🟡</button>
+            </div>
           </div>
 
-          <div class="mathe-check-row" id="check-blue-row" style="margin-top: 0.6rem;">
-            <div class="check-box" id="check-blue-box"></div>
-            <div class="check-info">
-              <div class="check-name">🔵 1 Seite Blaues Flex & Floh</div>
-              <div class="check-sub">Geometrie & Sachrechnen</div>
+          <!-- Blaues Heft Control -->
+          <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 800; font-size: 0.95rem; color: #1e40af;">🔵 Blaues Flex & Floh</span>
+              <span style="font-size: 0.8rem; font-weight: 700; color: #2563eb;" id="mathe-blue-rate-badge">1 S. / Tag</span>
             </div>
-            <span class="check-status" id="check-blue-status">Noch offen</span>
+            <div class="page-display-wrap">
+              <button type="button" class="btn-step" id="mathe-blue-minus-btn" title="Eine Seite zurück">➖</button>
+              <div class="current-page-badge" style="background: #ffffff; border-color: #bfdbfe; min-width: 125px;">
+                <span class="page-label" style="color: #1d4ed8;">GESCHAFFT</span>
+                <span class="page-number" style="color: #2563eb;" id="mathe-blue-done-text">0</span>
+                <span class="page-target" style="color: #1e3a8a;">von 17 Seiten</span>
+              </div>
+              <button type="button" class="btn-step" id="mathe-blue-plus-btn" title="Eine Seite Blau geschafft" style="background: #dbeafe; border-color: #93c5fd;">+ 1 🔵</button>
+            </div>
           </div>
         </div>
 
         <!-- Total solved tracker -->
-        <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid #e2e8f0; margin-top: 1rem;">
+        <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid #e2e8f0; margin-bottom: 0.85rem;">
           <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.4rem;">
-            <span>Insgesamt erledigt:</span>
-            <span id="mathe-completed-stats">0 gelb • 0 blau</span>
+            <span>Gesamtfortschritt:</span>
+            <span id="mathe-completed-stats">0 gelb • 0 blau (Gesamt: 0/34)</span>
           </div>
           <div class="mini-progress-track">
             <div class="mini-progress-fill" id="mathe-progress-fill" style="width: 0%;"></div>
           </div>
+        </div>
+
+        <!-- Today log for Mathe -->
+        <div class="today-done-box" style="background: #eff6ff; margin-top: auto;">
+          <span style="font-size: 0.88rem; font-weight: 700; color: #1e40af;">Heute gerechnet:</span>
+          <span class="today-counter-pill" id="mathe-today-done" style="background: #2563eb;">0 Seiten heute</span>
         </div>
       </div>
 
@@ -851,64 +873,77 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     updateMountainProgress();
   }
 
-  // Goal 2: Mathe Flex & Floh
+  // Goal 2: Mathe Flex & Floh (Target: 17 yellow + 17 blue = 34 total)
   function refreshMathe() {
     const goal = StorageService.getMatheGoal();
     const dailyLog = StorageService.getDailyGoalLog();
 
-    const yellowTarget = remainingDays * 1;
-    const blueTarget = remainingDays * 1;
-    const totalTarget = yellowTarget + blueTarget;
+    const yellowTarget = 17;
+    const blueTarget = 17;
 
-    const totalCalcEl = document.getElementById('mathe-total-calculated');
-    const yellowTargetEl = document.getElementById('mathe-yellow-target');
-    const blueTargetEl = document.getElementById('mathe-blue-target');
+    const remYellow = Math.max(0, yellowTarget - goal.yellowDoneTotal);
+    const remBlue = Math.max(0, blueTarget - goal.blueDoneTotal);
+    const totalRemaining = remYellow + remBlue;
+
+    // Daily rate rounded up in 0.5 steps
+    const rawRateYellow = remYellow / remainingDays;
+    const roundedRateYellow = Math.ceil(rawRateYellow * 2) / 2;
+    const formattedRateYellow = roundedRateYellow.toLocaleString('de-DE', {
+      minimumFractionDigits: roundedRateYellow % 1 === 0 ? 0 : 1,
+      maximumFractionDigits: 1
+    });
+
+    const rawRateBlue = remBlue / remainingDays;
+    const roundedRateBlue = Math.ceil(rawRateBlue * 2) / 2;
+    const formattedRateBlue = roundedRateBlue.toLocaleString('de-DE', {
+      minimumFractionDigits: roundedRateBlue % 1 === 0 ? 0 : 1,
+      maximumFractionDigits: 1
+    });
+
+    const totalDailyRate = roundedRateYellow + roundedRateBlue;
+    const formattedTotalRate = totalDailyRate.toLocaleString('de-DE', {
+      minimumFractionDigits: totalDailyRate % 1 === 0 ? 0 : 1,
+      maximumFractionDigits: 1
+    });
+
+    const remPagesEl = document.getElementById('mathe-remaining-pages');
+    const remDaysEl = document.getElementById('mathe-remaining-days');
+    const dailyRateEl = document.getElementById('mathe-daily-rate');
+    const yellowDoneText = document.getElementById('mathe-yellow-done-text');
+    const blueDoneText = document.getElementById('mathe-blue-done-text');
+    const yellowBadge = document.getElementById('mathe-yellow-rate-badge');
+    const blueBadge = document.getElementById('mathe-blue-rate-badge');
     const statsEl = document.getElementById('mathe-completed-stats');
     const progressFillEl = document.getElementById('mathe-progress-fill');
+    const todayDoneEl = document.getElementById('mathe-today-done');
 
-    if (totalCalcEl) totalCalcEl.textContent = `${totalTarget} Seiten gesamt (${remainingDays} Tage × 2 S.)`;
-    if (yellowTargetEl) yellowTargetEl.textContent = yellowTarget.toString();
-    if (blueTargetEl) blueTargetEl.textContent = blueTarget.toString();
+    if (remPagesEl) remPagesEl.textContent = `${totalRemaining} Seiten (🟡 ${remYellow} | 🔵 ${remBlue})`;
+    if (remDaysEl) remDaysEl.textContent = `${remainingDays} Tage`;
+    if (dailyRateEl) {
+      dailyRateEl.textContent = totalRemaining === 0
+        ? 'Geschafft! 🏆'
+        : `${formattedTotalRate} ${totalDailyRate === 1 ? 'Seite' : 'Seiten'} / Tag (${formattedRateYellow} 🟡 + ${formattedRateBlue} 🔵)`;
+    }
+    if (yellowBadge) {
+      yellowBadge.textContent = remYellow === 0 ? '✓ Fertig' : `${formattedRateYellow} S. / Tag`;
+    }
+    if (blueBadge) {
+      blueBadge.textContent = remBlue === 0 ? '✓ Fertig' : `${formattedRateBlue} S. / Tag`;
+    }
+    if (yellowDoneText) yellowDoneText.textContent = goal.yellowDoneTotal.toString();
+    if (blueDoneText) blueDoneText.textContent = goal.blueDoneTotal.toString();
 
     const totalDone = goal.yellowDoneTotal + goal.blueDoneTotal;
     if (statsEl) {
-      statsEl.textContent = `${goal.yellowDoneTotal} gelb • ${goal.blueDoneTotal} blau (Gesamt: ${totalDone}/${totalTarget})`;
+      statsEl.textContent = `${goal.yellowDoneTotal} gelb • ${goal.blueDoneTotal} blau (Gesamt: ${totalDone}/34)`;
     }
 
-    const pct = Math.min(100, Math.round((totalDone / Math.max(1, totalTarget)) * 100));
+    const pct = Math.min(100, Math.round((totalDone / 34) * 100));
     if (progressFillEl) progressFillEl.style.width = `${pct}%`;
 
-    // Today checkboxes
-    const yellowRow = document.getElementById('check-yellow-row');
-    const yellowBox = document.getElementById('check-yellow-box');
-    const yellowStatus = document.getElementById('check-yellow-status');
-
-    if (yellowRow && yellowBox && yellowStatus) {
-      if (dailyLog.yellowDoneToday) {
-        yellowRow.classList.add('checked');
-        yellowBox.textContent = '✓';
-        yellowStatus.textContent = 'Erledigt! ⭐';
-      } else {
-        yellowRow.classList.remove('checked');
-        yellowBox.textContent = '';
-        yellowStatus.textContent = 'Noch offen';
-      }
-    }
-
-    const blueRow = document.getElementById('check-blue-row');
-    const blueBox = document.getElementById('check-blue-box');
-    const blueStatus = document.getElementById('check-blue-status');
-
-    if (blueRow && blueBox && blueStatus) {
-      if (dailyLog.blueDoneToday) {
-        blueRow.classList.add('checked');
-        blueBox.textContent = '✓';
-        blueStatus.textContent = 'Erledigt! ⭐';
-      } else {
-        blueRow.classList.remove('checked');
-        blueBox.textContent = '';
-        blueStatus.textContent = 'Noch offen';
-      }
+    const pagesToday = (dailyLog.yellowPagesToday || 0) + (dailyLog.bluePagesToday || 0);
+    if (todayDoneEl) {
+      todayDoneEl.textContent = `${pagesToday} ${pagesToday === 1 ? 'Seite' : 'Seiten'} heute (${dailyLog.yellowPagesToday || 0} 🟡, ${dailyLog.bluePagesToday || 0} 🔵)`;
     }
 
     updateMountainProgress();
@@ -920,11 +955,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const schreibPct = (schreibGoal.currentPage - schreibGoal.startPage) / (schreibGoal.targetPage - schreibGoal.startPage);
 
     const matheGoal = StorageService.getMatheGoal();
-    const totalMatheTarget = remainingDays * 2;
-    const mathePct = (matheGoal.yellowDoneTotal + matheGoal.blueDoneTotal) / Math.max(1, totalMatheTarget);
+    const mathePct = (matheGoal.yellowDoneTotal + matheGoal.blueDoneTotal) / 34;
 
-    // Combined score (Schreibheft 60%, Mathe 40%)
-    const combinedPct = Math.min(100, Math.max(0, Math.round((schreibPct * 0.65 + mathePct * 0.35) * 100)));
+    // Combined score (Schreibheft 50%, Mathe 50%)
+    const combinedPct = Math.min(100, Math.max(0, Math.round((schreibPct * 0.5 + mathePct * 0.5) * 100)));
 
     const pctEl = document.getElementById('mountain-progress-percent');
     const fillEl = document.getElementById('mountain-progress-fill');
@@ -993,38 +1027,65 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     });
   }
 
-  // Mathe Checkbox Event Listeners
-  const yellowRow = document.getElementById('check-yellow-row');
-  if (yellowRow) {
-    yellowRow.addEventListener('click', () => {
-      const log = StorageService.getDailyGoalLog();
-      const newState = !log.yellowDoneToday;
-      StorageService.updateDailyGoalLog({ yellowDoneToday: newState });
-      StorageService.updateMatheGoal({ yellow: newState ? 1 : -1 });
-      if (newState) {
-        StorageService.addStars(1);
-        AudioFX.playChime();
-        showStarToast(1, '1 Seite Gelbes Flex & Floh erledigt! 🟡');
-        triggerConfetti();
+  // Mathe Gelb & Blau Event Listeners
+  const yMinus = document.getElementById('mathe-yellow-minus-btn');
+  const yPlus = document.getElementById('mathe-yellow-plus-btn');
+  const bMinus = document.getElementById('mathe-blue-minus-btn');
+  const bPlus = document.getElementById('mathe-blue-plus-btn');
+
+  if (yMinus) {
+    yMinus.addEventListener('click', () => {
+      const goal = StorageService.getMatheGoal();
+      if (goal.yellowDoneTotal > 0) {
+        StorageService.updateMatheGoal({ yellow: -1 });
+        const log = StorageService.getDailyGoalLog();
+        StorageService.updateDailyGoalLog({ yellowPagesToday: Math.max(0, (log.yellowPagesToday || 0) - 1) });
+        refreshMathe();
       }
-      refreshMathe();
     });
   }
 
-  const blueRow = document.getElementById('check-blue-row');
-  if (blueRow) {
-    blueRow.addEventListener('click', () => {
-      const log = StorageService.getDailyGoalLog();
-      const newState = !log.blueDoneToday;
-      StorageService.updateDailyGoalLog({ blueDoneToday: newState });
-      StorageService.updateMatheGoal({ blue: newState ? 1 : -1 });
-      if (newState) {
+  if (yPlus) {
+    yPlus.addEventListener('click', () => {
+      const goal = StorageService.getMatheGoal();
+      if (goal.yellowDoneTotal < 17) {
+        StorageService.updateMatheGoal({ yellow: 1 });
+        const log = StorageService.getDailyGoalLog();
+        StorageService.updateDailyGoalLog({ yellowPagesToday: (log.yellowPagesToday || 0) + 1 });
         StorageService.addStars(1);
         AudioFX.playChime();
-        showStarToast(1, '1 Seite Blaues Flex & Floh erledigt! 🔵');
+        showStarToast(1, '1 Seite Gelbes Flex & Floh geschafft! 🟡');
         triggerConfetti();
+        refreshMathe();
       }
-      refreshMathe();
+    });
+  }
+
+  if (bMinus) {
+    bMinus.addEventListener('click', () => {
+      const goal = StorageService.getMatheGoal();
+      if (goal.blueDoneTotal > 0) {
+        StorageService.updateMatheGoal({ blue: -1 });
+        const log = StorageService.getDailyGoalLog();
+        StorageService.updateDailyGoalLog({ bluePagesToday: Math.max(0, (log.bluePagesToday || 0) - 1) });
+        refreshMathe();
+      }
+    });
+  }
+
+  if (bPlus) {
+    bPlus.addEventListener('click', () => {
+      const goal = StorageService.getMatheGoal();
+      if (goal.blueDoneTotal < 17) {
+        StorageService.updateMatheGoal({ blue: 1 });
+        const log = StorageService.getDailyGoalLog();
+        StorageService.updateDailyGoalLog({ bluePagesToday: (log.bluePagesToday || 0) + 1 });
+        StorageService.addStars(1);
+        AudioFX.playChime();
+        showStarToast(1, '1 Seite Blaues Flex & Floh geschafft! 🔵');
+        triggerConfetti();
+        refreshMathe();
+      }
     });
   }
 

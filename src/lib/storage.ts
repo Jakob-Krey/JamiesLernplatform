@@ -11,6 +11,8 @@ export interface SchreibheftGoal {
 }
 
 export interface MatheGoal {
+  yellowTarget: number;
+  blueTarget: number;
   yellowDoneTotal: number;
   blueDoneTotal: number;
   targetDate: string;
@@ -19,6 +21,8 @@ export interface MatheGoal {
 export interface DailyGoalLog {
   date: string;
   schreibheftPagesToday: number;
+  yellowPagesToday: number;
+  bluePagesToday: number;
   yellowDoneToday: boolean;
   blueDoneToday: boolean;
 }
@@ -109,15 +113,16 @@ export const StorageService = {
 
   getSchreibheftGoal(): SchreibheftGoal {
     if (typeof window === 'undefined') {
-      return { startPage: 35, targetPage: 70, currentPage: 35, targetDate: '2026-11-02' };
+      return { startPage: 35, targetPage: 76, currentPage: 35, targetDate: '2026-11-02' };
     }
     const raw = localStorage.getItem(STORAGE_KEYS.GOAL_SCHREIBHEFT);
     if (raw) {
       try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return { startPage: 35, currentPage: 35, targetDate: '2026-11-02', ...parsed, targetPage: 76 };
       } catch (e) {}
     }
-    return { startPage: 35, targetPage: 70, currentPage: 35, targetDate: '2026-11-02' };
+    return { startPage: 35, targetPage: 76, currentPage: 35, targetDate: '2026-11-02' };
   },
 
   setSchreibheftCurrentPage(page: number): SchreibheftGoal {
@@ -133,15 +138,25 @@ export const StorageService = {
 
   getMatheGoal(): MatheGoal {
     if (typeof window === 'undefined') {
-      return { yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
+      return { yellowTarget: 17, blueTarget: 17, yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
     }
     const raw = localStorage.getItem(STORAGE_KEYS.GOAL_MATHE);
     if (raw) {
       try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return {
+          yellowTarget: 17,
+          blueTarget: 17,
+          yellowDoneTotal: 0,
+          blueDoneTotal: 0,
+          targetDate: '2026-11-02',
+          ...parsed,
+          yellowTarget: 17,
+          blueTarget: 17
+        };
       } catch (e) {}
     }
-    return { yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
+    return { yellowTarget: 17, blueTarget: 17, yellowDoneTotal: 0, blueDoneTotal: 0, targetDate: '2026-11-02' };
   },
 
   updateMatheGoal(delta: { yellow?: number; blue?: number }): MatheGoal {
@@ -165,6 +180,8 @@ export const StorageService = {
     const defaultLog: DailyGoalLog = {
       date: todayStr,
       schreibheftPagesToday: 0,
+      yellowPagesToday: 0,
+      bluePagesToday: 0,
       yellowDoneToday: false,
       blueDoneToday: false
     };
