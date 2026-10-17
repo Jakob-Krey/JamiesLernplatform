@@ -43,17 +43,22 @@ const STORAGE_KEYS = {
   UNLOCKED_POKEMON: 'jamie_unlocked_pokemon',
   PACKED_ITEMS: 'jamie_packed_items_date',
   LAST_LOGIN: 'jamie_last_login',
+  RESET_VERSION: 'jamie_reset_version',
   CLOUD_CONFIG: 'jamie_cloud_config',
   GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft',
   GOAL_MATHE: 'jamie_goal_mathe',
   GOAL_DAILY_LOG: 'jamie_goal_daily_log'
 };
 
+// Einmaliger Reset (lokal + Firestore): Sterne 0, alle Pokémon-Karten gesperrt.
+// Für einen weiteren Reset einfach den Wert ändern.
+const RESET_VERSION = '2026-10-17';
+
 export const StorageService = {
   getStars(): number {
-    if (typeof window === 'undefined') return 15;
+    if (typeof window === 'undefined') return 0;
     const stars = localStorage.getItem(STORAGE_KEYS.STARS);
-    return stars ? parseInt(stars, 10) : 15; // 15 Bonus-Startsterne für Jamie!
+    return stars ? parseInt(stars, 10) : 0;
   },
 
   setStars(amount: number): number {
@@ -71,7 +76,7 @@ export const StorageService = {
   },
 
   getUnlockedPokemon(): string[] {
-    if (typeof window === 'undefined') return ['pikachu', 'evoli'];
+    if (typeof window === 'undefined') return [];
     const raw = localStorage.getItem(STORAGE_KEYS.UNLOCKED_POKEMON);
     if (raw) {
       try {
@@ -81,7 +86,7 @@ export const StorageService = {
         console.error('Error parsing unlocked pokemon', e);
       }
     }
-    return ['pikachu', 'evoli'];
+    return [];
   },
 
   unlockPokemon(id: string): boolean {
@@ -263,6 +268,7 @@ export const StorageService = {
         unlockedPokemon: this.getUnlockedPokemon(),
         schreibheftGoal: this.getSchreibheftGoal(),
         matheGoal: this.getMatheGoal(),
+        resetVersion: RESET_VERSION,
         lastUpdated: new Date().toISOString()
       };
       await FirebaseSync.save(state);
@@ -304,6 +310,11 @@ export const StorageService = {
     // Live-Update von Firebase empfangen (z. B. wenn auf dem iPad Sterne verdient werden)
     FirebaseSync.subscribe((remoteData: any) => {
       if (!remoteData) return;
+      // Veraltete Cloud-Daten (vor dem Reset) nicht übernehmen, sondern überschreiben
+      if (remoteData.resetVersion !== RESET_VERSION) {
+        this.syncToCloud();
+        return;
+      }
       if (typeof remoteData.stars === 'number') {
         const localStars = this.getStars();
         if (remoteData.stars !== localStars) {
@@ -338,5 +349,10 @@ export const StorageService = {
 // Auto-Init im Browser
 if (typeof window !== 'undefined') {
   (window as any).StorageService = StorageService;
+  if (localStorage.getItem(STORAGE_KEYS.RESET_VERSION) !== RESET_VERSION) {
+    localStorage.setItem(STORAGE_KEYS.STARS, '0');
+    localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, '[]');
+    localStorage.setItem(STORAGE_KEYS.RESET_VERSION, RESET_VERSION);
+  }
   StorageService.initCloudSync();
 }
