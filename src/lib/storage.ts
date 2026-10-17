@@ -1,7 +1,9 @@
 /* ==========================================================================
    JAMIE'S STORAGE & PROGRESS SERVICE
-   Supports LocalStorage persistence + optional Supabase Cloud Sync
+   Supports LocalStorage persistence + Firebase Realtime Cloud Sync
    ========================================================================== */
+
+import { FirebaseSync } from './firebase';
 
 export interface SchreibheftGoal {
   startPage: number;
@@ -250,37 +252,91 @@ export const StorageService = {
     }));
   },
 
-  // Cloud Sync Vorbereitung (Supabase / REST)
+  // Cloud Sync mit Firebase Firestore + Supabase Fallback
   async syncToCloud(): Promise<void> {
     if (typeof window === 'undefined') return;
-    const cloudConfigStr = localStorage.getItem(STORAGE_KEYS.CLOUD_CONFIG);
-    if (!cloudConfigStr) return; // Kein Cloud Sync eingerichtet -> LocalStorage genügt
+    
+    // 1. Firebase Firestore Sync
     try {
-      const config = JSON.parse(cloudConfigStr);
-      if (!config.url || !config.anonKey) return;
-      
-      // Send to Supabase table 'jamie_progress'
-      await fetch(`${config.url}/rest/v1/jamie_progress?id=eq.default`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': config.anonKey,
-          'Authorization': `Bearer ${config.anonKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          stars: this.getStars(),
-          unlocked_pokemon: this.getUnlockedPokemon(),
-          updated_at: new Date().toISOString()
-        })
-      });
+      const state = {
+        stars: this.getStars(),
+        unlockedPokemon: this.getUnlockedPokemon(),
+        schreibheftGoal: this.getSchreibheftGoal(),
+        matheGoal: this.getMatheGoal(),
+        lastUpdated: new Date().toISOString()
+      };
+      await FirebaseSync.save(state);
     } catch (err) {
-      console.warn('Cloud Sync nicht erreichbar (Offline):', err);
+      console.warn('Firebase Sync Warnung:', err);
     }
+
+    // 2. Optional Supabase REST Sync
+    const cloudConfigStr = localStorage.getItem(STORAGE_KEYS.CLOUD_CONFIG);
+    if (cloudConfigStr) {
+      try {
+        const config = JSON.parse(cloudConfigStr);
+        if (config.url && config.anonKey) {
+          await fetch(`${config.url}/rest/v1/jamie_progress?id=eq.default`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': config.anonKey,
+              'Authorization': `Bearer ${config.anonKey}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              stars: this.getStars(),
+              unlocked_pokemon: this.getUnlockedPokemon(),
+              updated_at: new Date().toISOString()
+            })
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase Sync Warnung:', err);
+      }
+    }
+  },
+
+  // Realtime Cloud Synchronisierung starten
+  initCloudSync(): void {
+    if (typeof window === 'undefined') return;
+    
+    // Live-Update von Firebase empfangen (z. B. wenn auf dem iPad Sterne verdient werden)
+    FirebaseSync.subscribe((remoteData: any) => {
+      if (!remoteData) return;
+      if (typeof remoteData.stars === 'number') {
+        const localStars = this.getStars();
+        if (remoteData.stars !== localStars) {
+          localStorage.setItem(STORAGE_KEYS.STARS, remoteData.stars.toString());
+          this.dispatchUpdate('stars', remoteData.stars);
+        }
+      }
+      if (Array.isArray(remoteData.unlockedPokemon)) {
+        const localPoke = this.getUnlockedPokemon();
+        if (JSON.stringify(remoteData.unlockedPokemon) !== JSON.stringify(localPoke)) {
+          localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(remoteData.unlockedPokemon));
+          this.dispatchUpdate('pokemon', remoteData.unlockedPokemon);
+        }
+      }
+      if (remoteData.schreibheftGoal) {
+        localStorage.setItem(STORAGE_KEYS.GOAL_SCHREIBHEFT, JSON.stringify(remoteData.schreibheftGoal));
+        this.dispatchUpdate('goal_schreibheft', remoteData.schreibheftGoal);
+      }
+      if (remoteData.matheGoal) {
+        localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(remoteData.matheGoal));
+        this.dispatchUpdate('goal_mathe', remoteData.matheGoal);
+      }
+    });
+
+    // Ersten Sync anstoßen, falls Firestore noch leer ist
+    setTimeout(() => {
+      this.syncToCloud();
+    }, 1500);
   }
 };
 
-// Global for inline handlers if needed
+// Auto-Init im Browser
 if (typeof window !== 'undefined') {
   (window as any).StorageService = StorageService;
+  StorageService.initCloudSync();
 }
