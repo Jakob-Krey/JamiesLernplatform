@@ -8,38 +8,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <BaseLayout title="Jamies Lernplattform 🎒 • Stundenplan & Lernwelten" activePage="stundenplan">
   <main class="container">
 
-    <!-- Hero / Greeting Banner -->
-    <section class="hero-banner">
-      <div>
-        <div class="greeting-tag">
-          <span>✨</span> Schön, dass du da bist!
-        </div>
-        <h1 class="hero-title">
-          Hallo, liebe <span class="name-highlight">Jamie!</span> 👋
-        </h1>
-        <p class="hero-subtitle">
-          Hier ist dein persönlicher Schul-Begleiter! Schau dir deinen Stundenplan an, packe deinen Ranzen oder trainiere Vokabeln & Kopfrechnen für dein nächstes Pokémon!
-        </p>
-      </div>
+    <!-- Compact Top Bar: Sofortige Übersicht ohne Ablenkung -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+      <h1 style="font-size: 1.85rem; font-weight: 900; color: #0f172a; margin: 0;">
+        Hallo, <span class="name-highlight">Jamie!</span> 👋
+      </h1>
 
-      <div class="hero-status-card">
-        <span class="status-badge-today">Heute im Blick</span>
-        <div class="today-day-name" id="hero-today-name">Schultag</div>
-        <div class="today-hours-count" id="hero-today-count">Lade Unterrichtsplan...</div>
+      <div style="background: white; border: 2px solid #e2e8f0; border-radius: 9999px; padding: 0.35rem 1rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-sm);">
+        <span style="font-size: 0.85rem; font-weight: 800; color: #1d4ed8;" id="hero-today-name">Schultag</span>
+        <span style="color: #cbd5e1;">•</span>
+        <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;" id="hero-today-count">Lade Plan...</span>
       </div>
-    </section>
+    </div>
 
     <!-- ====================================================================
          STUNDENPLAN SECTION
          ==================================================================== -->
-    <section class="stundenplan-section" id="stundenplan">
-      <div class="section-header">
-        <div class="section-title-group">
-          <div class="section-icon-badge">📅</div>
-          <div>
-            <h2 class="section-title">Dein Stundenplan</h2>
-            <p class="section-description">Klicke auf ein Schulfach, um Tipps & Packlisten zu sehen!</p>
-          </div>
+    <section class="stundenplan-section" id="stundenplan" style="margin-bottom: 2rem;">
+      <div class="section-header" style="margin-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">📅</span>
+          <h2 class="section-title" style="margin: 0; font-size: 1.5rem;">Stundenplan</h2>
         </div>
 
         <!-- View Switcher -->
@@ -48,7 +37,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <span>📅</span> Ganze Woche
           </button>
           <button type="button" class="switch-btn" id="btn-view-day">
-            <span>🔍</span> Einzeltag-Fokus
+            <span>🔍</span> Einzeltag
           </button>
           <button type="button" class="switch-btn" id="btn-view-ranzen">
             <span>🎒</span> Ranzen-Check
@@ -69,25 +58,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <!-- ====================================================================
          SCHULRANZEN-CHECKER / PACKLISTE
          ==================================================================== -->
-    <section class="ranzen-section" id="schulranzen-section">
-      <div class="ranzen-header">
-        <div class="ranzen-title-wrap">
-          <div class="ranzen-badge">🎒</div>
-          <div>
-            <h2 style="font-size: 1.5rem; font-weight: 800; color: #78350f;" id="ranzen-day-name">
-              Schulranzen-Checker
-            </h2>
-            <p style="color: #92400e; font-size: 0.92rem; font-weight: 600;">
-              Hake alle Sachen ab, wenn du sie in die Schultasche packst. Für eine volle Tasche gibt es Bonus-Sterne! ⭐
-            </p>
-          </div>
+    <section class="ranzen-section" id="schulranzen-section" style="margin-bottom: 2.5rem;">
+      <div class="ranzen-header" style="margin-bottom: 0.85rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.5rem;">🎒</span>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: #78350f; margin: 0;" id="ranzen-day-name">
+            Ranzen-Packliste
+          </h2>
         </div>
       </div>
 
       <div class="ranzen-checklist" id="ranzen-items-container"></div>
 
       <div class="ranzen-success-banner" id="ranzen-success" style="display: none;">
-        🎉 Juhu, Jamie! Dein Ranzen ist perfekt gepackt! Du bist startklar für die Schule! 🚀
+        🎉 Ranzen fertig gepackt! (+2 Sterne) 🚀
       </div>
     </section>
 
@@ -95,13 +79,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
          LERNWELTEN & INTERAKTIVE MODULE
          ==================================================================== -->
     <section class="modules-section" id="lernwelten">
-      <div class="section-header">
-        <div class="section-title-group">
-          <div class="section-icon-badge" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">🚀</div>
-          <div>
-            <h2 class="section-title">Jamies Lernwelten</h2>
-            <p class="section-description">Hier kannst du Unterrichtsstoff vertiefen, Vokabeln hören & Pokémon freispielen!</p>
-          </div>
+      <div class="section-header" style="margin-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">🚀</span>
+          <h2 class="section-title" style="margin: 0; font-size: 1.5rem;">Lernwelten</h2>
         </div>
       </div>
 
@@ -110,20 +91,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <a href={`${base}/lernziele`} class="module-card" style="border: 2px solid #fed7aa; background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);">
           <div class="module-top">
             <div class="module-icon-wrap" style="background: #fef3c7; border: 2px solid #fde68a;">🏔️</div>
-            <span class="module-status-badge badge-fun" style="background: #fef3c7; color: #b45309;">Ziel: 02. November</span>
+            <span class="module-status-badge badge-fun" style="background: #fef3c7; color: #b45309;">Ziel: 02. Nov</span>
           </div>
-          <h3 class="module-title">Gipfel-Expedition 🎒</h3>
-          <p class="module-desc">
-            Schreibheft bis Seite 76 & Mathe Flex & Floh! Erklimme spielerisch den Berg und hake dein Tages-Soll ab.
-          </p>
+          <h3 class="module-title">Gipfel-Expedition</h3>
           <div class="module-features-list">
-            <span class="module-tag">✍️ Schreibheft (S. 35 ➔ 76)</span>
+            <span class="module-tag">✍️ Schreibheft (bis S. 76)</span>
             <span class="module-tag">🔢 Flex & Floh (je 17 S.)</span>
-            <span class="module-tag">🧗‍♀️ Berg-Fortschritt</span>
           </div>
-          <div class="module-cta-btn" style="background: #ea580c;">
-            <span>Zu den Lernzielen</span>
-            <span>➔</span>
+          <div class="module-cta-btn" style="background: #ea580c; margin-top: auto;">
+            <span>Öffnen ➔</span>
           </div>
         </a>
 
@@ -131,20 +107,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <a href={`${base}/englisch`} class="module-card mod-englisch">
           <div class="module-top">
             <div class="module-icon-wrap">🇬🇧</div>
-            <span class="module-status-badge badge-ready">Mit Vorlese-Funktion</span>
+            <span class="module-status-badge badge-ready">Mit Ton</span>
           </div>
           <h3 class="module-title">Englisch-Abenteuer</h3>
-          <p class="module-desc">
-            Lerne englische Wörter für Tiere, Farben & Schule! Mit Audio-Aussprache zum Nachsprechen.
-          </p>
           <div class="module-features-list">
             <span class="module-tag">🔊 Sprachausgabe</span>
             <span class="module-tag">🗂️ Bildkarten</span>
-            <span class="module-tag">⭐ Sternen-Quiz</span>
           </div>
-          <div class="module-cta-btn">
-            <span>Jetzt Vokabeln üben</span>
-            <span>➔</span>
+          <div class="module-cta-btn" style="margin-top: auto;">
+            <span>Vokabeln ➔</span>
           </div>
         </a>
 
@@ -155,17 +126,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <span class="module-status-badge badge-ready">Blitzrechnen</span>
           </div>
           <h3 class="module-title">Mathe-Dschungel</h3>
-          <p class="module-desc">
-            Plus, Minus und das kleine Einmaleins! Trainiere spielerisch dein Kopfrechnen und knacke den Highscore.
-          </p>
           <div class="module-features-list">
             <span class="module-tag">➕ Plus & Minus</span>
-            <span class="module-tag">✖️ 1x1 Tabellen</span>
-            <span class="module-tag">⏱️ Tempo-Challenge</span>
+            <span class="module-tag">✖️ 1x1 Einmaleins</span>
           </div>
-          <div class="module-cta-btn">
-            <span>Mathe-Training starten</span>
-            <span>➔</span>
+          <div class="module-cta-btn" style="margin-top: auto;">
+            <span>Kopfrechnen ➔</span>
           </div>
         </a>
 
@@ -176,17 +142,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <span class="module-status-badge badge-ready">Lernkarten</span>
           </div>
           <h3 class="module-title">Deutsch-Wortschatz</h3>
-          <p class="module-desc">
-            Rechtschreibung, Silben trennen und Nomen, Verben & Adjektive entdecken. Mit Wendekarten zum Selbsttesten!
-          </p>
           <div class="module-features-list">
-            <span class="module-tag">🔤 Wörter des Tages</span>
-            <span class="module-tag">✍️ Rechtschreibung</span>
-            <span class="module-tag">📚 Lesespaß</span>
+            <span class="module-tag">🏷️ Wortarten</span>
+            <span class="module-tag">⚡ Doppelte Mitlaute</span>
           </div>
-          <div class="module-cta-btn">
-            <span>Wörterkarten ansehen</span>
-            <span>➔</span>
+          <div class="module-cta-btn" style="margin-top: auto;">
+            <span>Karten ➔</span>
           </div>
         </a>
 
@@ -194,20 +155,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <a href={`${base}/pokemon`} class="module-card mod-pokemon">
           <div class="module-top">
             <div class="module-icon-wrap">⚡</div>
-            <span class="module-status-badge badge-fun">Sammel-Belohnung</span>
+            <span class="module-status-badge badge-fun">Belohnung</span>
           </div>
           <h3 class="module-title">Pokémon-Arena</h3>
-          <p class="module-desc">
-            Tausche deine verdienten Lern-Sterne gegen neue coole 3D-Hologramm Pokémon-Karten ein!
-          </p>
           <div class="module-features-list">
-            <span class="module-tag">✨ Holo-Glitzereffekt</span>
+            <span class="module-tag">✨ 3D-Karten</span>
             <span class="module-tag">🏆 Sammelalbum</span>
-            <span class="module-tag">🔓 Neue Karten</span>
           </div>
-          <div class="module-cta-btn">
-            <span>Sammelalbum öffnen</span>
-            <span>➔</span>
+          <div class="module-cta-btn" style="margin-top: auto;">
+            <span>Sammelalbum ➔</span>
           </div>
         </a>
       </div>

@@ -14,24 +14,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </a>
     </div>
 
-    <!-- Hero / Expedition Header -->
-    <section class="expedition-hero">
+    <!-- Compact Expedition Header -->
+    <section class="expedition-hero" style="padding: 1.25rem 2rem; margin-bottom: 1.5rem;">
       <div class="hero-left">
-        <span class="expedition-badge">
-          🏔️ Expedition bis zum 02. November
-        </span>
-        <h1 class="expedition-title">
-          Gipfelstürmerin <span class="name-highlight">Jamie!</span> 🎒
+        <h1 class="expedition-title" style="font-size: 1.85rem; margin: 0 0 0.25rem 0;">
+          Gipfel-Expedition 🎒
         </h1>
-        <p class="expedition-subtitle">
-          Gemeinsam erklimmen wir den Lern-Berg! Jeder Buchstabe und jede gerechnete Seite bringt dich dem goldenen Gipfelkreuz am 2. November näher.
-        </p>
+        <span style="font-size: 0.9rem; color: #93c5fd; font-weight: 700;">
+          Ziel: 02. November 2026
+        </span>
       </div>
 
-      <div class="countdown-card">
-        <div class="countdown-label">Zeit bis zum Zieldatum</div>
-        <div class="countdown-days" id="countdown-days-count">--</div>
-        <div class="countdown-target">02. November 2026</div>
+      <div class="countdown-card" style="padding: 0.6rem 1.5rem; min-width: 140px;">
+        <div class="countdown-days" id="countdown-days-count" style="font-size: 2.2rem; margin: 0;">--</div>
+        <div class="countdown-label">Tage übrig</div>
       </div>
     </section>
 
@@ -148,10 +144,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           </div>
         </div>
 
-        <p class="goal-desc">
-          Du bist gestartet bei <strong>Seite 35</strong> und möchtest bis zum <strong>2. November</strong> bei <strong>Seite 76</strong> ankommen!
-        </p>
-
         <!-- Dynamic Calculation Banner -->
         <div class="calc-box">
           <div class="calc-row">
@@ -205,10 +197,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <h3 class="goal-title">Flex & Floh aufarbeiten</h3>
           </div>
         </div>
-
-        <p class="goal-desc">
-          Ziel bis zum <strong>2. November</strong>: jeweils <strong>17 Seiten im gelben</strong> und <strong>17 Seiten im blauen</strong> Heft schaffen (34 Seiten gesamt)!
-        </p>
 
         <!-- Dynamic Calculation Banner -->
         <div class="calc-box">
@@ -286,22 +274,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     </div>
 
-    <!-- ====================================================================
-         DAILY MISSION CELEBRATION BOX
-         ==================================================================== -->
-    <section class="daily-celebration-card" id="daily-celebration-card">
-      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🌟</div>
-      <h3 style="font-size: 1.6rem; font-weight: 900; color: #78350f; margin-bottom: 0.4rem;">
-        Tages-Challenge abschließen
-      </h3>
-      <p style="color: #92400e; font-size: 0.95rem; max-width: 500px; margin: 0 auto 1.25rem;">
-        Hast du deine Seiten für heute geschafft? Schnapp dir deine tägliche Belohnung von <strong>+3 Bonus-Sternen</strong> für Jamie!
-      </p>
-
-      <button type="button" class="btn-trainer btn-primary" id="claim-daily-reward-btn" style="font-size: 1.1rem; padding: 0.9rem 2rem;">
-        🎉 Tages-Ziel feiern (+3 Sterne) ✨
+    <!-- Daily Celebration -->
+    <div style="text-align: center; margin: 1.5rem 0 3rem;">
+      <button type="button" class="btn-trainer btn-primary" id="claim-daily-reward-btn" style="font-size: 1.15rem; padding: 0.95rem 2.2rem; box-shadow: var(--shadow-md);">
+        🎉 Tages-Ziel abhaken (+3 Sterne) ✨
       </button>
-    </section>
+    </div>
 
   </main>
 </BaseLayout>

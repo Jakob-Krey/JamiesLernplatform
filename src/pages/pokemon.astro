@@ -14,28 +14,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
 
     <!-- Trainer Header Card -->
-    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg); margin-bottom: 2.5rem; position: relative; overflow: hidden;">
-      <div style="position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-        <div>
-          <span style="background: #fbbf24; color: #78350f; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-            🏆 Offizieller Pokémon-Trainer-Pass
-          </span>
-          <h1 style="font-size: 2.4rem; font-weight: 900; margin: 0.5rem 0 0.25rem;">
-            Trainer Jamie's Sammelalbum ⚡
-          </h1>
-          <p style="color: #c7d2fe; font-size: 1rem;">
-            Bewege die Maus über die Karten, um den echten 3D-Hologramm Glanz zu sehen! Schalte mit Sternen neue Pokémon frei.
-          </p>
-        </div>
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; border-radius: 20px; padding: 1.25rem 1.75rem; box-shadow: var(--shadow-md); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <h1 style="font-size: 1.85rem; font-weight: 900; margin: 0;">
+        Pokémon-Sammelalbum ⚡
+      </h1>
 
-        <div style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; padding: 1.25rem 1.75rem; text-align: center;">
-          <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #fde68a; font-weight: 800;">
-            Freigeschaltete Karten
-          </div>
-          <div style="font-size: 2rem; font-weight: 900; color: white;" id="unlocked-counter">
-            0 / 6
-          </div>
-        </div>
+      <div style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #fde68a; font-weight: 800;">
+          Karten:
+        </span>
+        <span style="font-size: 1.5rem; font-weight: 900; color: white;" id="unlocked-counter">
+          0 / 6
+        </span>
       </div>
     </div>
 

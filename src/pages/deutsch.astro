@@ -13,18 +13,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </a>
     </div>
 
-    <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem;">
-      <span style="background: #fff7ed; color: #c2410c; padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
-        📖 Wörter-Entdeckerin
-      </span>
-      <h1 style="font-size: 2.5rem; font-weight: 900; color: #0f172a; margin: 0.75rem 0 0.5rem;">
-        Deutsch-Lernkarten
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 1.5rem;">
+      <h1 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 1rem;">
+        Deutsch-Lernkarten 📖
       </h1>
-      <p style="color: var(--text-muted); font-size: 1.1rem;">
-        Trainiere Wortarten (Nomen, Verben, Adjektive) und knifflige Rechtschreib-Wörter!
-      </p>
 
-      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;" id="deutsch-cat-bar">
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;" id="deutsch-cat-bar">
         {DEUTSCH_TOPICS.map((topic, idx) => (
           <button 
             type="button" 
@@ -44,16 +38,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <div class="flashcard-category" id="de-card-cat">WORTARTEN</div>
           <div class="flashcard-emoji" id="de-card-emoji">🐕</div>
           <div class="flashcard-word" id="de-card-word">Hund</div>
-          <p class="flashcard-hint">Welche Wortart ist das? Tippen zum Aufdecken!</p>
+          <p class="flashcard-hint">Tippen zum Aufdecken</p>
         </div>
 
         <div class="flashcard-back">
-          <div class="flashcard-category" style="color: #c2410c;">Lösung & Erklärung</div>
+          <div class="flashcard-category" style="color: #c2410c;">Lösung</div>
           <div class="flashcard-word" id="de-card-solution" style="color: #9a3412; font-size: 1.8rem;">
-            Nomen (Namenwort)
+            Nomen
           </div>
           <p class="flashcard-hint" id="de-card-explanation" style="color: #431407; max-width: 320px; text-align: center; margin-top: 0.5rem;">
-            Nomen schreibt man immer groß! Man kann 'der', 'die' oder 'das' davor setzen (der Hund).
+            der Hund
           </p>
         </div>
       </div>
@@ -72,22 +66,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </button>
     </div>
 
-    <!-- Rule Guide Box -->
-    <div style="background: white; border-radius: 16px; border: 2px solid #fed7aa; padding: 1.75rem; max-width: 650px; margin: 3.5rem auto;">
-      <h3 style="font-size: 1.2rem; font-weight: 800; color: #9a3412; margin-bottom: 0.75rem;">
-        🌟 Die 3 wichtigsten Wortarten-Regeln
-      </h3>
-      <div style="display: grid; gap: 0.75rem; font-size: 0.92rem;">
-        <div style="background: #fff7ed; padding: 0.75rem 1rem; border-radius: 10px;">
-          <strong>1. Nomen (Namenwörter):</strong> Menschen, Tiere, Pflanzen, Dinge. Werden IMMER großgeschrieben! (z.B. <em>die Katze, das Heft</em>)
-        </div>
-        <div style="background: #fdf2f8; padding: 0.75rem 1rem; border-radius: 10px;">
-          <strong>2. Verben (Tunwörter):</strong> Was jemand tut oder was geschieht. Werden kleingeschrieben! (z.B. <em>laufen, singen, rechnen</em>)
-        </div>
-        <div style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 10px;">
-          <strong>3. Adjektive (Wie-Wörter):</strong> Beschreiben, wie etwas ist oder aussieht. (z.B. <em>schnell, bunt, fröhlich</em>)
-        </div>
-      </div>
+    <!-- Compact Rule Summary -->
+    <div style="background: white; border-radius: 12px; border: 1.5px solid #fed7aa; padding: 0.75rem 1.25rem; max-width: 580px; margin: 2rem auto; font-size: 0.85rem; color: #78350f; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <span><strong>Nomen:</strong> Groß (der Hund)</span>
+      <span>•</span>
+      <span><strong>Verben:</strong> Klein (laufen)</span>
+      <span>•</span>
+      <span><strong>Adjektive:</strong> Wie-Wort (bunt)</span>
     </div>
   </main>
 </BaseLayout>
