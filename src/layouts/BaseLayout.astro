@@ -9,7 +9,7 @@ import '../styles/animations.css';
 interface Props {
   title?: string;
   description?: string;
-  activePage?: 'stundenplan' | 'deutsch' | 'mathe' | 'englisch' | 'pokemon' | 'lernziele';
+  activePage?: 'stundenplan' | 'deutsch' | 'mathe' | 'englisch' | 'pokemon' | 'lernziele' | 'timer';
 }
 
 const {
@@ -56,7 +56,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <Navigation activePage={activePage} />
 
-      <div class="header-actions">
+      <div class="header-actions" style="display: flex; align-items: center; gap: 0.65rem;">
+        <!-- Live Focus Timer Pill -->
+        <a 
+          href={`${base}/timer`} 
+          id="global-timer-pill" 
+          class="timer-pill" 
+          title="Fokus-Timer öffnen"
+          style="display: inline-flex; align-items: center; gap: 0.35rem; background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 0.35rem 0.75rem; border-radius: 9999px; text-decoration: none; font-size: 0.85rem; font-weight: 800; color: #475569; transition: all 0.2s;"
+        >
+          <span id="global-timer-icon">⏱️</span>
+          <span id="global-timer-text">15:00</span>
+        </a>
+
         <StarCounter />
       </div>
     </div>
@@ -80,6 +92,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <script>
     import { StorageService } from '../lib/storage';
     import { AudioFX, triggerConfetti, showStarToast, speakEnglish } from '../lib/audio';
+    import { FocusTimerService } from '../lib/focusTimer';
+
+    FocusTimerService.init();
 
     // Expose to window for inline onclick handlers if needed
     (window as any).StorageService = StorageService;
@@ -87,6 +102,48 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     (window as any).triggerConfetti = triggerConfetti;
     (window as any).showStarToast = showStarToast;
     (window as any).speakEnglish = speakEnglish;
+    (window as any).FocusTimerService = FocusTimerService;
+
+    // Update global timer pill in header
+    const pillEl = document.getElementById('global-timer-pill');
+    const textEl = document.getElementById('global-timer-text');
+    const iconEl = document.getElementById('global-timer-icon');
+
+    function updateHeaderPill(state: any) {
+      if (!textEl || !iconEl || !pillEl) return;
+      textEl.textContent = FocusTimerService.formatTime(state.timeLeft);
+
+      if (state.mode === 'work') {
+        iconEl.textContent = state.isRunning ? '🎯' : '⏱️';
+        if (state.isRunning) {
+          pillEl.style.background = '#eff6ff';
+          pillEl.style.borderColor = '#93c5fd';
+          pillEl.style.color = '#1d4ed8';
+          pillEl.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+        } else {
+          pillEl.style.background = '#f8fafc';
+          pillEl.style.borderColor = '#e2e8f0';
+          pillEl.style.color = '#475569';
+          pillEl.style.boxShadow = 'none';
+        }
+      } else {
+        iconEl.textContent = '🍎';
+        if (state.isRunning) {
+          pillEl.style.background = '#ecfdf5';
+          pillEl.style.borderColor = '#a7f3d0';
+          pillEl.style.color = '#047857';
+          pillEl.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
+        } else {
+          pillEl.style.background = '#f0fdf4';
+          pillEl.style.borderColor = '#bbf7d0';
+          pillEl.style.color = '#15803d';
+          pillEl.style.boxShadow = 'none';
+        }
+      }
+    }
+
+    updateHeaderPill(FocusTimerService.getState());
+    window.addEventListener('jamie-timer-tick', (e: any) => updateHeaderPill(e.detail));
   </script>
 </body>
 </html>

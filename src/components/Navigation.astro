@@ -1,6 +1,6 @@
 ---
 interface Props {
-  activePage?: 'stundenplan' | 'deutsch' | 'mathe' | 'englisch' | 'pokemon' | 'lernziele';
+  activePage?: 'stundenplan' | 'deutsch' | 'mathe' | 'englisch' | 'pokemon' | 'lernziele' | 'timer';
 }
 
 const { activePage = 'stundenplan' } = Astro.props;
@@ -10,6 +10,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <nav class="main-nav" aria-label="Hauptnavigation">
   <a href={`${base}/`} class:list={['nav-link', { active: activePage === 'stundenplan' }]}>
     <span class="nav-emoji">📅</span> Stundenplan
+  </a>
+  <a href={`${base}/timer`} class:list={['nav-link', { active: activePage === 'timer' }]}>
+    <span class="nav-emoji">⏱️</span> Fokus-Timer
   </a>
   <a href={`${base}/lernziele`} class:list={['nav-link', { active: activePage === 'lernziele' }]}>
     <span class="nav-emoji">🏔️</span> Lernziele
