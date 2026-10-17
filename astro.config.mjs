@@ -8,7 +8,7 @@ const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
 
 export default defineConfig({
   site: 'https://jakob-krey.github.io',
-  base: isGitHubPages ? '/open/' : '/',
+  base: isGitHubPages ? '/JamiesLernplatform/' : '/',
   build: {
     assets: '_assets'
   }

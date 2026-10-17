@@ -1,44 +1,69 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
-<BaseLayout title="Jamies Mathe-Dschungel 🔢 • Blitzrechnen & 1x1" activePage="mathe">
+<BaseLayout
+  title="Jamies Mathe-Dschungel 🔢 • Blitzrechnen & 1x1"
+  activePage="mathe"
+>
   <main class="container" style="padding-top: 2rem;">
     <div style="margin-bottom: 1.5rem;">
-      <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+      <a
+        href={`${base}/`}
+        style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;"
+      >
         <span>⬅️</span> Zurück zum Stundenplan
       </a>
     </div>
 
     <div style="text-align: center; max-width: 650px; margin: 0 auto 1.5rem;">
-      <h1 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 1rem;">
+      <h1
+        style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 1rem;"
+      >
         Kopfrechnen 🔢
       </h1>
 
-      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;" id="math-mode-selector">
-        <button type="button" class="switch-btn active" data-mode="plus_20">➕ Plus bis 20</button>
-        <button type="button" class="switch-btn" data-mode="minus_20">➖ Minus bis 20</button>
-        <button type="button" class="switch-btn" data-mode="einmaleins">✖️ 1x1 Einmaleins</button>
-        <button type="button" class="switch-btn" data-mode="mix_100">🎯 Bis 100</button>
+      <div
+        style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;"
+        id="math-mode-selector"
+      >
+        <button type="button" class="switch-btn active" data-mode="plus_20"
+          >➕ Plus bis 20</button
+        >
+        <button type="button" class="switch-btn" data-mode="minus_20"
+          >➖ Minus bis 20</button
+        >
+        <button type="button" class="switch-btn" data-mode="einmaleins"
+          >✖️ 1x1 Einmaleins</button
+        >
+        <button type="button" class="switch-btn" data-mode="mix_100"
+          >🎯 Bis 100</button
+        >
       </div>
     </div>
 
     <!-- Math Game Box -->
     <div class="math-game-box">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;" id="task-mode-tag">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center;"
+      >
+        <span
+          style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;"
+          id="task-mode-tag"
+        >
           Plus bis 20
         </span>
-        <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="streak-counter">
+        <span
+          style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;"
+          id="streak-counter"
+        >
           🔥 Serie: 0
         </span>
       </div>
 
-      <div class="math-equation" id="math-problem">
-        7 + 5 = ?
-      </div>
+      <div class="math-equation" id="math-problem">7 + 5 = ?</div>
 
       <div class="math-options-grid" id="math-options">
         <!-- Rendered dynamically -->
@@ -48,10 +73,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { StorageService } from '../lib/storage';
-  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+  import { StorageService } from "../lib/storage";
+  import { AudioFX, triggerConfetti, showStarToast } from "../lib/audio";
 
-  let currentMode = 'plus_20';
+  let currentMode = "plus_20";
   let currentAnswer = 0;
   let streak = 0;
 
@@ -59,44 +84,46 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     currentMode = mode;
     streak = 0;
     updateStreak();
-    const buttons = document.querySelectorAll('#math-mode-selector .switch-btn');
-    buttons.forEach(btn => {
-      if (btn.getAttribute('data-mode') === mode) btn.classList.add('active');
-      else btn.classList.remove('active');
+    const buttons = document.querySelectorAll(
+      "#math-mode-selector .switch-btn",
+    );
+    buttons.forEach((btn) => {
+      if (btn.getAttribute("data-mode") === mode) btn.classList.add("active");
+      else btn.classList.remove("active");
     });
     generateProblem();
   }
 
-  const modeBtns = document.querySelectorAll('#math-mode-selector .switch-btn');
-  modeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const mode = btn.getAttribute('data-mode');
+  const modeBtns = document.querySelectorAll("#math-mode-selector .switch-btn");
+  modeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.getAttribute("data-mode");
       if (mode) setMathMode(mode);
     });
   });
 
   function generateProblem() {
     let a: number, b: number, equationText: string;
-    const modeTag = document.getElementById('task-mode-tag');
+    const modeTag = document.getElementById("task-mode-tag");
 
-    if (currentMode === 'plus_20') {
+    if (currentMode === "plus_20") {
       a = Math.floor(Math.random() * 11) + 2; // 2..12
       b = Math.floor(Math.random() * 9) + 1; // 1..9
       currentAnswer = a + b;
       equationText = `${a} + ${b} = ?`;
-      if (modeTag) modeTag.textContent = 'Plus bis 20';
-    } else if (currentMode === 'minus_20') {
+      if (modeTag) modeTag.textContent = "Plus bis 20";
+    } else if (currentMode === "minus_20") {
       a = Math.floor(Math.random() * 12) + 7; // 7..18
       b = Math.floor(Math.random() * (a - 1)) + 1;
       currentAnswer = a - b;
       equationText = `${a} - ${b} = ?`;
-      if (modeTag) modeTag.textContent = 'Minus bis 20';
-    } else if (currentMode === 'einmaleins') {
+      if (modeTag) modeTag.textContent = "Minus bis 20";
+    } else if (currentMode === "einmaleins") {
       a = Math.floor(Math.random() * 9) + 2; // 2..10
       b = Math.floor(Math.random() * 9) + 2; // 2..10
       currentAnswer = a * b;
       equationText = `${a} · ${b} = ?`;
-      if (modeTag) modeTag.textContent = '1x1 Einmaleins';
+      if (modeTag) modeTag.textContent = "1x1 Einmaleins";
     } else {
       a = Math.floor(Math.random() * 50) + 10;
       b = Math.floor(Math.random() * 40) + 5;
@@ -108,15 +135,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         currentAnswer = a > b ? a - b : b - a;
         equationText = a > b ? `${a} - ${b} = ?` : `${b} - ${a} = ?`;
       }
-      if (modeTag) modeTag.textContent = 'Zahlenraum bis 100';
+      if (modeTag) modeTag.textContent = "Zahlenraum bis 100";
     }
 
-    const problemEl = document.getElementById('math-problem');
+    const problemEl = document.getElementById("math-problem");
     if (problemEl) problemEl.textContent = equationText;
 
     const options = new Set<number>([currentAnswer]);
     while (options.size < 4) {
-      const delta = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+      const delta =
+        (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
       const wrong = currentAnswer + delta;
       if (wrong > 0 && wrong !== currentAnswer) {
         options.add(wrong);
@@ -124,13 +152,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
 
     const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
-    const container = document.getElementById('math-options');
+    const container = document.getElementById("math-options");
     if (container) {
-      container.innerHTML = '';
-      shuffled.forEach(val => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'math-opt-btn';
+      container.innerHTML = "";
+      shuffled.forEach((val) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "math-opt-btn";
         btn.textContent = val.toString();
         btn.onclick = () => checkMathAnswer(val, btn);
         container.appendChild(btn);
@@ -140,7 +168,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   function checkMathAnswer(selectedVal: number, btnElement: HTMLButtonElement) {
     if (selectedVal === currentAnswer) {
-      btnElement.classList.add('correct');
+      btnElement.classList.add("correct");
       streak++;
       updateStreak();
       AudioFX.playChime();
@@ -151,24 +179,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         triggerConfetti();
       } else {
         StorageService.addStars(1);
-        showStarToast(1, 'Richtig gerechnet! 🎯');
+        showStarToast(1, "Richtig gerechnet! 🎯");
       }
 
       setTimeout(() => {
         generateProblem();
       }, 600);
     } else {
-      btnElement.classList.add('wrong');
+      btnElement.classList.add("wrong");
       streak = 0;
       updateStreak();
       setTimeout(() => {
-        btnElement.classList.remove('wrong');
+        btnElement.classList.remove("wrong");
       }, 500);
     }
   }
 
   function updateStreak() {
-    const el = document.getElementById('streak-counter');
+    const el = document.getElementById("streak-counter");
     if (el) el.textContent = `🔥 Serie: ${streak}`;
   }
 
