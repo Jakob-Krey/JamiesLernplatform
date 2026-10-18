@@ -20,18 +20,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         Englisch-Quiz 🇬🇧
       </h1>
 
-      <!-- Category Filter Buttons -->
-      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;" id="category-filter-bar">
-        {VOCAB_CATEGORIES.map((cat, idx) => (
-          <button 
-            type="button" 
-            class:list={['switch-btn', { active: idx === 0 }]} 
-            data-cat={cat.id}
-          >
-            {cat.label}
-          </button>
-        ))}
-        <button type="button" class="switch-btn" data-cat="alle">🎲 Alles gemischt</button>
+      <!-- Thema wählen -->
+      <div id="category-filter-bar" style="display: flex; justify-content: center;">
+        <select id="category-select" class="cat-select" aria-label="Thema wählen">
+          {VOCAB_CATEGORIES.map((cat) => (
+            <option value={cat.id}>{cat.label}</option>
+          ))}
+          <option value="alle">🎲 Alles gemischt</option>
+        </select>
       </div>
 
       <!-- Richtung (nur Quiz) -->
@@ -57,6 +53,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   </main>
 </BaseLayout>
+
+<style is:global>
+  .cat-select {
+    font: inherit; font-weight: 800; font-size: 1.05rem; color: #1e3a8a; background: white;
+    border: 3px solid #bfdbfe; border-radius: 16px; padding: 0.7rem 1rem; min-height: 48px;
+    width: min(100%, 460px); box-shadow: var(--shadow-sm);
+  }
+</style>
 
 <script>
   import { VOCAB_DATA, type VocabCategoryId, type VocabItem } from '../data/vocab';
@@ -151,15 +155,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (current) speakEnglish(current.en);
   });
 
-  document.querySelectorAll('#category-filter-bar .switch-btn').forEach((btn) =>
-    btn.addEventListener('click', () => {
-      activeCat = btn.getAttribute('data-cat') as CatId;
-      streak = 0;
-      updateStreak();
-      document.querySelectorAll('#category-filter-bar .switch-btn').forEach((b) => b.classList.toggle('active', b === btn));
-      nextQuestion();
-    })
-  );
+  document.getElementById('category-select')!.addEventListener('change', (e) => {
+    activeCat = (e.target as HTMLSelectElement).value as CatId;
+    streak = 0;
+    updateStreak();
+    nextQuestion();
+  });
 
   document.querySelectorAll('#dir-bar .switch-btn').forEach((b) =>
     b.addEventListener('click', () => {
