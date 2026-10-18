@@ -44,7 +44,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
         </select>
       </div>
 
-      <label class="help-toggle">
+      <label class="help-toggle" data-profiles="jamie">
         <input type="checkbox" id="help-toggle" checked />
         Hilfe bei „2 Schritten“ (Zwischenschritte vorgegeben)
       </label>
@@ -134,6 +134,8 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   .ws-page .ws-mauer input.ans.stone.bad { background: #fee2e2; }
   .ws-page .ws-mauer input.ans.stone.solved { background: #fef9c3; }
 
+  .ws-mauer.big .stone, .ws-page .ws-mauer.big input.ans.stone { width: 4.6rem; }
+  .ws-eq.wide { font-size: 1.05rem; }
   .ws-sach { border: 2px solid #cbd5e1; border-radius: 10px; padding: 0.8rem 1rem; }
   .ws-sach p { margin: 0 0 0.6rem; font-weight: 600; line-height: 1.5; }
   .ws-sach table { border-collapse: collapse; margin: 0 0 0.8rem; }
@@ -176,7 +178,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   const profile = currentProfile();
 
   const sheetEl = document.getElementById('sheet')!;
-  const allowedTopics = TOPICS.filter((t) => !profile.hideTopics.includes(t.id)).map((t) => t.id as string);
+  const allowedTopics = TOPICS.filter((t) => profile.showTopic(t.id)).map((t) => t.id as string);
   const selectEl = document.getElementById('topic-select') as HTMLSelectElement;
   const helpEl = document.getElementById('help-toggle') as HTMLInputElement;
   const pagesEl = document.getElementById('pages-select') as HTMLSelectElement;
@@ -287,7 +289,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
         return `<div class="ws-pfeil"><div class="pf-arrow">· ${it.factor} ➜</div>
           ${it.rows.map((row) => `<div class="pf-row"><span>${row.from}</span>${ans(row.to)}</div>`).join('')}</div>`;
       case 'mauer':
-        return `<div class="ws-mauer">${it.levels
+        return `<div class="ws-mauer ${it.big ? 'big' : ''}">${it.levels
           .map(
             (row, l) =>
               `<div class="mauer-row">${row
@@ -354,8 +356,11 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     return Array.from(sheetEl.querySelectorAll<HTMLInputElement>('input.ans'));
   }
 
+  // Erlaubt "4567", "4 567" und "4.567" (Tausenderpunkt) sowie Komma-Dezimalzahlen
   function normalize(v: string): number {
-    return Number(v.trim().replace(',', '.'));
+    let t = v.trim().replace(/[\s\u00a0\u202f]/g, '');
+    if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+    return Number(t.replace(',', '.'));
   }
 
   function check() {

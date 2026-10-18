@@ -90,7 +90,7 @@ Ein automatischer GitHub-Workflow ist bereits eingerichtet unter [`.github/workf
 Die Seite unterstützt mehrere Kinder über die Adresse:
 
 - `…/` oder `…/?kind=jamie` – Jamie (Standard, alle Seiten)
-- `…/?kind=maya` – Maya (Start, Übungen, Mathe, Englisch, Pokémon, Fokus-Timer)
+- `…/?kind=maya` – Maya, 4. Klasse (Start, Übungen mit Klasse-4-Themen, Mathe mit schweren Aufgaben, Englisch, Pokémon, Fokus-Timer)
 
 Das Profil wird im Browser gemerkt. Profile und ihre Rechte stehen in `src/lib/profile.ts`
 (ein neues Kind = ein neuer Eintrag dort plus Icons `public/icons/<id>-*.png` und ein

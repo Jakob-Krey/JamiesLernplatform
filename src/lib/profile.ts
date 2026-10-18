@@ -30,11 +30,10 @@ export interface Profile {
   color: string;
   /** Erlaubte Seiten; "stundenplan" ist die Startseite */
   pages: PageId[];
-  /** Kopfrechen-Modi (mathe) und der Standardmodus */
-  mathModes: string[];
+  /** Standard-Modus beim Kopfrechnen (Mathe-Seite) */
   mathDefault: string;
-  /** Übungsblatt-Themen, die für dieses Kind NICHT gezeigt werden */
-  hideTopics: string[];
+  /** Welche Übungsblatt-Themen dieses Kind sieht */
+  showTopic: (topicId: string) => boolean;
   /** Übungsblatt-Thema, mit dem die Seite startet */
   defaultTopic: string;
   /** Kleiner Hinweis auf der Startseite */
@@ -52,9 +51,8 @@ export const PROFILES: Record<ProfileId, Profile> = {
     suffix: '',
     color: '#4f46e5',
     pages: ALL_PAGES,
-    mathModes: ['einmaleins', 'plus_100', 'minus_100', 'mix_100'],
     mathDefault: 'plus_100',
-    hideTopics: ['zr10', 'zr20'],
+    showTopic: (id) => !id.startsWith('k4_'),
     defaultTopic: 'plusminus',
     greeting: 'Hallo, Jamie!'
   },
@@ -66,10 +64,9 @@ export const PROFILES: Record<ProfileId, Profile> = {
     suffix: '__maya',
     color: '#db2777',
     pages: ['stundenplan', 'mathe', 'englisch', 'pokemon', 'timer', 'uebungen'],
-    mathModes: ['plus_20', 'minus_20', 'einmaleins', 'plus_100', 'minus_100', 'mix_100'],
-    mathDefault: 'plus_20',
-    hideTopics: ['wiederholung', 'probe'],
-    defaultTopic: 'zr20',
+    mathDefault: 'mix_schwer',
+    showTopic: (id) => id.startsWith('k4_'),
+    defaultTopic: 'k4_plusminus',
     greeting: 'Hallo, Maya!'
   }
 };

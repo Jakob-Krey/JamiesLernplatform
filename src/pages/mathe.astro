@@ -29,22 +29,34 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;"
         id="math-mode-selector"
       >
-        <button type="button" class="switch-btn" data-profiles="maya" data-mode="plus_20"
-          >➕ Plus bis 20</button
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="mix_schwer"
+          >🎯 Alles gemischt</button
         >
-        <button type="button" class="switch-btn" data-profiles="maya" data-mode="minus_20"
-          >➖ Minus bis 20</button
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="plus_1000"
+          >➕ Plus bis 1000</button
+        >
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="minus_1000"
+          >➖ Minus bis 1000</button
+        >
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="mal_gross"
+          >✖️ Malnehmen</button
+        >
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="geteilt"
+          >➗ Geteilt</button
+        >
+        <button type="button" class="switch-btn" data-profiles="maya" data-mode="zehner"
+          >🔟 Mal/Geteilt 10, 100, 1000</button
         >
         <button type="button" class="switch-btn" data-mode="einmaleins"
           >✖️ 1x1 Einmaleins</button
         >
-        <button type="button" class="switch-btn" data-mode="plus_100"
+        <button type="button" class="switch-btn" data-profiles="jamie" data-mode="plus_100"
           >➕ Plus bis 100</button
         >
-        <button type="button" class="switch-btn" data-mode="minus_100"
+        <button type="button" class="switch-btn" data-profiles="jamie" data-mode="minus_100"
           >➖ Minus bis 100</button
         >
-        <button type="button" class="switch-btn" data-mode="mix_100"
+        <button type="button" class="switch-btn" data-profiles="jamie" data-mode="mix_100"
           >🎯 Plus/Minus gemischt</button
         >
       </div>
@@ -192,22 +204,58 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     });
   });
 
+  /** Schwere Aufgaben (4. Klasse): setzt currentAnswer und liefert den Aufgabentext. */
+  function hardProblem(mode: string): string {
+    if (mode === "plus_1000") {
+      const a = randInt(120, 899);
+      const b = randInt(110, 999 - a);
+      currentAnswer = a + b;
+      return `${a} + ${b} = ?`;
+    }
+    if (mode === "minus_1000") {
+      const a = randInt(300, 999);
+      const b = randInt(110, a - 100);
+      currentAnswer = a - b;
+      return `${a} - ${b} = ?`;
+    }
+    if (mode === "mal_gross") {
+      const twoByTwo = Math.random() < 0.4;
+      const a = twoByTwo ? randInt(11, 25) : randInt(12, 99);
+      const b = twoByTwo ? randInt(11, 19) : randInt(3, 9);
+      currentAnswer = a * b;
+      return `${a} · ${b} = ?`;
+    }
+    if (mode === "geteilt") {
+      const d = randInt(3, 12);
+      const q = randInt(12, 99);
+      currentAnswer = q;
+      return `${d * q} : ${d} = ?`;
+    }
+    const n = randInt(2, 99);
+    const f = [10, 100, 1000][randInt(0, 2)];
+    if (Math.random() < 0.5) {
+      currentAnswer = n * f;
+      return `${n} · ${f} = ?`;
+    }
+    currentAnswer = n;
+    return `${n * f} : ${f} = ?`;
+  }
+
   function generateProblem() {
     let a: number, b: number, equationText: string;
     const modeTag = document.getElementById("task-mode-tag");
 
-    if (currentMode === "plus_20") {
-      a = randInt(2, 12);
-      b = randInt(1, 9);
-      currentAnswer = a + b;
-      equationText = `${a} + ${b} = ?`;
-      if (modeTag) modeTag.textContent = "Plus bis 20";
-    } else if (currentMode === "minus_20") {
-      a = randInt(7, 18);
-      b = randInt(1, a - 1);
-      currentAnswer = a - b;
-      equationText = `${a} - ${b} = ?`;
-      if (modeTag) modeTag.textContent = "Minus bis 20";
+    if (currentMode === "mix_schwer") {
+      const hard = ["plus_1000", "minus_1000", "mal_gross", "geteilt", "zehner"];
+      const sub = hard[randInt(0, hard.length - 1)];
+      equationText = hardProblem(sub);
+      if (modeTag) modeTag.textContent = "Alles gemischt";
+    } else if (["plus_1000", "minus_1000", "mal_gross", "geteilt", "zehner"].includes(currentMode)) {
+      equationText = hardProblem(currentMode);
+      if (modeTag) {
+        modeTag.textContent =
+          { plus_1000: "Plus bis 1000", minus_1000: "Minus bis 1000", mal_gross: "Malnehmen", geteilt: "Geteilt", zehner: "Mal/Geteilt 10, 100, 1000" }[currentMode] ?? "";
+      }
     } else if (currentMode === "einmaleins") {
       a = activeRow === 0 ? randInt(2, 10) : activeRow;
       b = randInt(1, 10);
