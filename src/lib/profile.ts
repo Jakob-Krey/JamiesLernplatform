@@ -129,7 +129,7 @@ export function buildManifest(id: ProfileId, base: string) {
     display: 'standalone',
     orientation: 'any',
     background_color: '#eef2ff',
-    theme_color: id === DEFAULT_PROFILE ? '#6366f1' : '#db2777',
+    theme_color: id === DEFAULT_PROFILE ? '#ec4899' : '#e11d48',
     icons: [
       { src: `${base}icons/${prefix}icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: `${base}icons/${prefix}icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },

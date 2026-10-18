@@ -36,7 +36,8 @@ const profileClient = {
   manifests: Object.fromEntries(PROFILE_IDS.map((id) => [id, `${base}/${manifestFile(id)}`])),
   icons: Object.fromEntries(PROFILE_IDS.map((id) => [id, `${base}/icons/${id === 'jamie' ? '' : id + '-'}apple-touch-icon.png`])),
   names: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].name])),
-  emojis: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].emoji]))
+  emojis: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].emoji])),
+  themes: Object.fromEntries(PROFILE_IDS.map((id) => [id, id === 'jamie' ? '#ec4899' : '#e11d48']))
 };
 ---
 
@@ -74,6 +75,7 @@ const profileClient = {
       if (pc.pages[k].indexOf(pc.active) < 0) { location.replace(pc.base + '/'); return; }
       var m = document.getElementById('manifest-link'); if (m) m.setAttribute('href', pc.manifests[k]);
       var t = document.getElementById('touch-icon-link'); if (t) t.setAttribute('href', pc.icons[k]);
+      var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute('content', pc.themes[k]);
       var a = document.querySelector('meta[name="apple-mobile-web-app-title"]'); if (a) a.setAttribute('content', pc.names[k] + ' lernt');
       if (k !== 'jamie') document.title = document.title.replace(/Jamies/g, pc.names[k] + 's').replace(/Jamie/g, pc.names[k]).replace(/🎒/g, pc.emojis[k]);
     })();

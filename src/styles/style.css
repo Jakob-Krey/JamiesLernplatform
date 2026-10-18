@@ -124,7 +124,7 @@ body {
 .blob-1 {
   width: 450px;
   height: 450px;
-  background: #c7d2fe;
+  background: var(--blob-1, #c7d2fe);
   top: -100px;
   left: -100px;
 }
@@ -132,7 +132,7 @@ body {
 .blob-2 {
   width: 500px;
   height: 500px;
-  background: #fbcfe8;
+  background: var(--blob-2, #fbcfe8);
   bottom: -150px;
   right: -100px;
   animation-delay: -7s;
@@ -141,7 +141,7 @@ body {
 .blob-3 {
   width: 350px;
   height: 350px;
-  background: #fed7aa;
+  background: var(--blob-3, #fed7aa);
   top: 40%;
   left: 60%;
   animation-delay: -12s;
@@ -1237,3 +1237,34 @@ button, a, input, select, label, .lesson-card, .pokemon-card, .math-opt-btn {
   overflow-wrap: break-word;
   text-overflow: clip;
 }
+
+/* ==========================================================================
+   FARBTHEMA JE KIND (Hintergrund mit kleinem Farbverlauf)
+   Karten und Texte bleiben hell bzw. dunkel genug zum Lesen.
+   ========================================================================== */
+html[data-kind="jamie"] {
+  --bg-gradient-start: #fff1f7;
+  --bg-gradient-mid: #fbcfe8;
+  --bg-gradient-end: #e9d5ff;
+  --blob-1: #f9a8d4;
+  --blob-2: #c4b5fd;
+  --blob-3: #fde68a;
+  --text-muted: #475569;
+  --text-light: #64748b;
+}
+
+html[data-kind="maya"] {
+  --bg-gradient-start: #fff1f2;
+  --bg-gradient-mid: #fecaca;
+  --bg-gradient-end: #fca5a5;
+  --blob-1: #ef4444;
+  --blob-2: #fb7185;
+  --blob-3: #fecaca;
+  --text-muted: #334155;
+  --text-light: #475569;
+}
+
+/* Heller Text auf dem getönten Hintergrund etwas kräftiger */
+html[data-kind="jamie"] .node-date, html[data-kind="maya"] .node-date,
+html[data-kind="jamie"] .node-topic, html[data-kind="maya"] .node-topic { color: #475569; }
+html[data-kind="jamie"] .path-node.is-current .node-topic, html[data-kind="maya"] .path-node.is-current .node-topic { color: #0f172a; }
