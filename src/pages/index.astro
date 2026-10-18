@@ -45,9 +45,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
       </div>
 
-      <!-- Quick Day Filter Tabs (Montag bis Freitag) -->
-      <div class="day-tabs" id="day-tabs-container"></div>
-
       <!-- Weekly Grid View -->
       <div class="timetable-grid" id="timetable-week-view"></div>
 
@@ -222,31 +219,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   let currentView = 'week';
   let selectedTabDay = activeDayKey;
-
-  // Render Day Tabs
-  const tabsContainer = document.getElementById('day-tabs-container');
-  if (tabsContainer) {
-    tabsContainer.innerHTML = '';
-    Object.keys(SCHEDULE_DATA).forEach(dayKey => {
-      const day = (SCHEDULE_DATA as any)[dayKey];
-      const btn = document.createElement('button');
-      btn.className = `day-tab-btn ${dayKey === selectedTabDay ? 'active' : ''} ${dayKey === activeDayKey ? 'today-indicator' : ''}`;
-      btn.innerHTML = `
-        <span class="day-tab-name">${day.name}</span>
-        <span class="day-tab-sub">${day.lessons.length} Stunden</span>
-      `;
-      btn.addEventListener('click', () => {
-        selectedTabDay = dayKey;
-        document.querySelectorAll('.day-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (currentView === 'day') {
-          renderSingleDayView(selectedTabDay);
-        }
-        renderRanzenPackliste(selectedTabDay);
-      });
-      tabsContainer.appendChild(btn);
-    });
-  }
 
   // View Switchers
   const btnViewWeek = document.getElementById('btn-view-week');
