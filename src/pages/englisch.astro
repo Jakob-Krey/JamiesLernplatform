@@ -22,11 +22,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <!-- Thema wählen -->
       <div id="category-filter-bar" style="display: flex; justify-content: center;">
-        <select id="category-select" class="cat-select" aria-label="Thema wählen">
+        <select id="category-select" class="cat-select" aria-label="Thema wählen" autocomplete="off">
+          <option value="alle" selected>🎲 Alles gemischt</option>
           {VOCAB_CATEGORIES.map((cat) => (
-            <option value={cat.id}>{cat.label}</option>
+            <option value={cat.id} data-level={cat.level}>{cat.label}</option>
           ))}
-          <option value="alle">🎲 Alles gemischt</option>
         </select>
       </div>
 
@@ -63,17 +63,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </style>
 
 <script>
-  import { VOCAB_DATA, type VocabCategoryId, type VocabItem } from '../data/vocab';
+  import { VOCAB_DATA, VOCAB_CATEGORIES, type VocabCategoryId, type VocabItem } from '../data/vocab';
+  import { currentProfile } from '../lib/profile';
   import { StorageService } from '../lib/storage';
   import { AudioFX, speakEnglish, triggerConfetti, showStarToast } from '../lib/audio';
 
   type CatId = VocabCategoryId | 'alle';
-  let activeCat: CatId = 'tiere';
+  const profile = currentProfile();
+  // Nur Themen, die zur Stufe des Kindes passen (Maya: schwierigere Vokabeln)
+  const allowedCats = VOCAB_CATEGORIES.filter((c) => profile.vocabLevels.includes(c.level)).map((c) => c.id as VocabCategoryId);
+  let activeCat: CatId = 'alle';
   let dir: 'en-de' | 'de-en' = 'en-de';
   let streak = 0;
   let current: VocabItem | null = null;
 
-  const ALL_ITEMS: VocabItem[] = Object.values(VOCAB_DATA).flat();
+  const ALL_ITEMS: VocabItem[] = allowedCats.flatMap((id) => VOCAB_DATA[id]);
+
+  (document.getElementById('category-select') as HTMLSelectElement).value = 'alle';
+
+  // Nicht passende Themen aus der Auswahl entfernen
+  document.querySelectorAll<HTMLOptionElement>('#category-select option').forEach((o) => {
+    if (o.value !== 'alle' && !allowedCats.includes(o.value as VocabCategoryId)) o.remove();
+  });
 
   function getItems(): VocabItem[] {
     return activeCat === 'alle' ? ALL_ITEMS : VOCAB_DATA[activeCat];

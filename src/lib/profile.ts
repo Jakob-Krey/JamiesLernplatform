@@ -32,6 +32,8 @@ export interface Profile {
   pages: PageId[];
   /** Standard-Modus beim Kopfrechnen (Mathe-Seite) */
   mathDefault: string;
+  /** Welche Vokabel-Stufen dieses Kind sieht (1 = Klasse 2, 2 = Klasse 3, 3 = Klasse 4) */
+  vocabLevels: number[];
   /** Welche Übungsblatt-Themen dieses Kind sieht */
   showTopic: (topicId: string) => boolean;
   /** Übungsblatt-Thema, mit dem die Seite startet */
@@ -52,6 +54,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     color: '#4f46e5',
     pages: ALL_PAGES,
     mathDefault: 'plus_100',
+    vocabLevels: [1, 2],
     showTopic: (id) => !id.startsWith('k4_'),
     defaultTopic: 'plusminus',
     greeting: 'Hallo, Jamie!'
@@ -65,6 +68,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     color: '#db2777',
     pages: ['stundenplan', 'mathe', 'englisch', 'pokemon', 'timer', 'uebungen'],
     mathDefault: 'mix_schwer',
+    vocabLevels: [3],
     showTopic: (id) => id.startsWith('k4_'),
     defaultTopic: 'k4_plusminus',
     greeting: 'Hallo, Maya!'
