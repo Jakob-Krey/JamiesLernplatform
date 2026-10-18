@@ -1140,11 +1140,100 @@ body {
     grid-template-columns: 1fr;
   }
   
-  .main-nav {
-    display: none; /* Can be toggled or compact */
-  }
+}
 
+/* ==========================================================================
+   TABLET (iPad) & TOUCH
+   Header: Marke + Sterne oben, Navigation in einer eigenen Zeile.
+   ========================================================================== */
+@media (max-width: 1180px) {
   .nav-wrapper {
     flex-wrap: wrap;
+    row-gap: 0.6rem;
   }
+  .brand { order: 1; }
+  .header-actions { order: 2; margin-left: auto; }
+  .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .nav-link {
+    padding: 0.55rem 0.7rem;
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+  .site-header { padding: 0.6rem 0; }
+}
+
+@media (max-width: 700px) {
+  /* Telefon: Navigation seitlich wischbar statt umbrechen */
+  .main-nav {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.2rem;
+  }
+  .main-nav::-webkit-scrollbar { display: none; }
+  .nav-link { flex: 0 0 auto; white-space: nowrap; }
+}
+
+.timetable-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1280px) {
+  .timetable-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .timetable-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* Sichere Ränder (Notch, Home-Balken) */
+.container {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+.site-header { padding-top: max(0.6rem, env(safe-area-inset-top)); }
+
+/* Kein Doppeltipp-Zoom, kein graues Aufblitzen beim Tippen */
+button, a, input, select, label, .lesson-card, .pokemon-card, .math-opt-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+  /* Fingerfreundliche Mindestgrößen (Apple: 44 pt) */
+  .switch-btn, .poke-chip, .btn-step, .btn-add, .btn-trainer, .flashcard-audio-btn, .ws-btn,
+  .poke-select, .poke-search, .star-counter, .timer-pill, #open-sync-btn, .modal-close-btn {
+    min-height: 44px;
+  }
+  .btn-step, #open-sync-btn, .modal-close-btn { min-width: 44px; }
+  .timer-tab-btn { min-height: 44px; }
+  main a[style*="color: var(--color-primary)"] { min-height: 44px; display: inline-flex !important; align-items: center; }
+  .poke-chip { padding: 0.55rem 1rem; }
+  .poke-fav { width: 44px; height: 44px; }
+  .ws-page input.ans { min-height: 44px; }
+  .sheet-link, .back-link { display: inline-block; padding: 0.5rem 0; }
+  input[type="checkbox"] { width: 24px; height: 24px; }
+  /* iOS zoomt in Eingabefelder unter 16 px hinein */
+  input, select, textarea { font-size: max(1rem, 16px); }
+  /* Hover bleibt auf dem iPad "kleben" – deshalb keine Hover-Bewegung */
+  .nav-link:hover, .star-counter:hover, .day-column:hover, .math-opt-btn:hover, .brand:hover .brand-icon {
+    transform: none;
+  }
+  .math-opt-btn:hover { background: #f8faff; color: #1e40af; box-shadow: none; }
+}
+
+/* Fachnamen nie abschneiden (z. B. "Sachunterricht", "Förderunterricht") */
+.lesson-name {
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-overflow: clip;
 }
