@@ -99,8 +99,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     );
     const options = shuffle([pick, ...wrongPool.slice(0, 3)]);
 
-    document.getElementById('quiz-emoji')!.textContent = pick.emoji;
-    document.getElementById('quiz-word')!.textContent = dir === 'en-de' ? pick.en : pick.de;
+    const emojiEl = document.getElementById('quiz-emoji')!;
+    emojiEl.textContent = pick.emoji ?? '';
+    emojiEl.style.display = pick.emoji ? 'block' : 'none';
+    const wordEl = document.getElementById('quiz-word')!;
+    const shown = dir === 'en-de' ? pick.en : pick.de;
+    wordEl.textContent = shown;
+    wordEl.style.fontSize = shown.length > 26 ? '1.5rem' : shown.length > 14 ? '1.9rem' : '2.6rem';
     document.getElementById('quiz-tag')!.textContent = dir === 'en-de' ? 'Was heißt das auf Deutsch?' : 'Wie sagt man das auf Englisch?';
     (document.getElementById('quiz-audio-btn') as HTMLElement).style.display = dir === 'en-de' ? 'inline-flex' : 'none';
 
