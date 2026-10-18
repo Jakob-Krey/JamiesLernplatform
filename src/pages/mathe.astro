@@ -38,9 +38,31 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <button type="button" class="switch-btn" data-mode="einmaleins"
           >✖️ 1x1 Einmaleins</button
         >
-        <button type="button" class="switch-btn" data-mode="mix_100"
-          >🎯 Bis 100</button
+        <button type="button" class="switch-btn" data-mode="plus_100"
+          >➕ Plus bis 100</button
         >
+        <button type="button" class="switch-btn" data-mode="minus_100"
+          >➖ Minus bis 100</button
+        >
+        <button type="button" class="switch-btn" data-mode="mix_100"
+          >🎯 Plus/Minus gemischt</button
+        >
+      </div>
+
+      <!-- Optionen: Zehnerübergang (bis 100) -->
+      <div id="carry-options" style="display: none; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;">
+        <button type="button" class="switch-btn active" data-carry="any">Alle Aufgaben</button>
+        <button type="button" class="switch-btn" data-carry="no">Ohne Zehnerübergang</button>
+        <button type="button" class="switch-btn" data-carry="yes">Mit Zehnerübergang</button>
+      </div>
+
+      <!-- Optionen: Reihe fürs Einmaleins -->
+      <div id="row-options" style="display: none; justify-content: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem;">
+        <span style="font-weight: 800; color: #64748b; align-self: center;">Reihe:</span>
+        <button type="button" class="switch-btn active" data-row="0">Alle</button>
+        {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          <button type="button" class="switch-btn" data-row={n}>{n}er</button>
+        ))}
       </div>
     </div>
 
@@ -79,11 +101,69 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   let currentMode = "plus_20";
   let currentAnswer = 0;
   let streak = 0;
+  let carryMode: "any" | "no" | "yes" = "any"; // Zehnerübergang (bis 100)
+  let activeRow = 0; // 0 = alle Reihen
+
+  function randInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Plus: Übergang, wenn die Einer zusammen mehr als 9 ergeben
+  function makePlus100(): [number, number] {
+    for (let i = 0; i < 200; i++) {
+      const a = randInt(11, 89);
+      const b = randInt(3, 99 - a);
+      if (b < 3) continue;
+      const carry = (a % 10) + (b % 10) > 9;
+      if (carryMode === "any" || (carryMode === "yes") === carry) return [a, b];
+    }
+    return carryMode === "yes" ? [38, 27] : [34, 25];
+  }
+
+  // Minus: Übergang, wenn die Einer vom Subtrahenden größer sind
+  function makeMinus100(): [number, number] {
+    for (let i = 0; i < 200; i++) {
+      const a = randInt(21, 99);
+      const b = randInt(3, a - 2);
+      const carry = a % 10 < b % 10;
+      if (carryMode === "any" || (carryMode === "yes") === carry) return [a, b];
+    }
+    return carryMode === "yes" ? [91, 38] : [78, 35];
+  }
+
+  function updateOptionVisibility() {
+    const is100 = ["plus_100", "minus_100", "mix_100"].includes(currentMode);
+    const carryEl = document.getElementById("carry-options");
+    const rowEl = document.getElementById("row-options");
+    if (carryEl) carryEl.style.display = is100 ? "flex" : "none";
+    if (rowEl) rowEl.style.display = currentMode === "einmaleins" ? "flex" : "none";
+  }
+
+  document.querySelectorAll<HTMLElement>("#carry-options [data-carry]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      carryMode = btn.dataset.carry as "any" | "no" | "yes";
+      document.querySelectorAll("#carry-options .switch-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      streak = 0;
+      updateStreak();
+      generateProblem();
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>("#row-options [data-row]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeRow = Number(btn.dataset.row);
+      document.querySelectorAll("#row-options .switch-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      streak = 0;
+      updateStreak();
+      generateProblem();
+    });
+  });
 
   function setMathMode(mode: string) {
     currentMode = mode;
     streak = 0;
     updateStreak();
+    updateOptionVisibility();
     const buttons = document.querySelectorAll(
       "#math-mode-selector .switch-btn",
     );
@@ -119,23 +199,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       equationText = `${a} - ${b} = ?`;
       if (modeTag) modeTag.textContent = "Minus bis 20";
     } else if (currentMode === "einmaleins") {
-      a = Math.floor(Math.random() * 9) + 2; // 2..10
-      b = Math.floor(Math.random() * 9) + 2; // 2..10
+      a = activeRow === 0 ? randInt(2, 10) : activeRow;
+      b = randInt(1, 10);
       currentAnswer = a * b;
-      equationText = `${a} · ${b} = ?`;
-      if (modeTag) modeTag.textContent = "1x1 Einmaleins";
+      // Bei einer gewählten Reihe gelegentlich als Tauschaufgabe zeigen (z. B. 7 · 4 statt 4 · 7)
+      equationText = activeRow !== 0 && Math.random() > 0.5 ? `${b} · ${a} = ?` : `${a} · ${b} = ?`;
+      if (modeTag) modeTag.textContent = activeRow === 0 ? "1x1 Einmaleins" : `${activeRow}er-Reihe`;
     } else {
-      a = Math.floor(Math.random() * 50) + 10;
-      b = Math.floor(Math.random() * 40) + 5;
-      const isPlus = Math.random() > 0.5;
+      const isPlus = currentMode === "plus_100" || (currentMode === "mix_100" && Math.random() > 0.5);
       if (isPlus) {
+        [a, b] = makePlus100();
         currentAnswer = a + b;
         equationText = `${a} + ${b} = ?`;
       } else {
-        currentAnswer = a > b ? a - b : b - a;
-        equationText = a > b ? `${a} - ${b} = ?` : `${b} - ${a} = ?`;
+        [a, b] = makeMinus100();
+        currentAnswer = a - b;
+        equationText = `${a} - ${b} = ?`;
       }
-      if (modeTag) modeTag.textContent = "Zahlenraum bis 100";
+      if (modeTag) {
+        modeTag.textContent =
+          currentMode === "plus_100" ? "Plus bis 100" : currentMode === "minus_100" ? "Minus bis 100" : "Plus/Minus bis 100";
+      }
     }
 
     const problemEl = document.getElementById("math-problem");

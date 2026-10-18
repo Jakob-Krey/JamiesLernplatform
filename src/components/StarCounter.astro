@@ -6,7 +6,7 @@
   <div 
     class="star-counter" 
     id="star-btn" 
-    title="Klicke für einen Bonus-Stern!"
+    title="Sterne gibt es für erledigte Tagesziele"
     style="cursor: pointer;"
   >
     <span class="star-icon">⭐</span>
@@ -51,10 +51,9 @@
   const starBtn = document.getElementById('star-btn');
   if (starBtn) {
     starBtn.addEventListener('click', () => {
-      StorageService.addStars(1);
+      // Sterne gibt es nur über die Tagesziele (siehe Lernziele-Seite)
       AudioFX.playChime();
-      showStarToast(1, 'Du fleißige Lernerin!');
-      triggerConfetti();
+      showStarToast(0, 'Sterne gibt es für erledigte Tagesziele! 🎯');
     });
   }
 

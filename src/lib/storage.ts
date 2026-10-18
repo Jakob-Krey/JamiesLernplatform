@@ -35,6 +35,7 @@ export interface JamieProgressState {
   packedItems: Record<string, string[]>;
   schreibheftGoal?: SchreibheftGoal;
   matheGoal?: MatheGoal;
+  claimedDays?: string[];
   lastUpdated: string;
 }
 
@@ -44,6 +45,7 @@ const STORAGE_KEYS = {
   PACKED_ITEMS: 'jamie_packed_items_date',
   LAST_LOGIN: 'jamie_last_login',
   RESET_VERSION: 'jamie_reset_version',
+  CLAIMED_DAYS: 'jamie_claimed_days',
   CLOUD_CONFIG: 'jamie_cloud_config',
   GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft',
   GOAL_MATHE: 'jamie_goal_mathe',
@@ -116,6 +118,27 @@ export const StorageService = {
     localStorage.setItem(key, JSON.stringify(items));
     this.dispatchUpdate('ranzen', { dayKey, items });
     this.syncToCloud();
+  },
+
+  // Tage, für die die Sterne-Belohnung schon vergeben wurde (YYYY-MM-DD)
+  getClaimedDays(): string[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLAIMED_DAYS) || '[]');
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {}
+    return [];
+  },
+
+  /** Markiert einen Tag als abgeholt. Gibt false zurück, wenn er schon abgeholt war. */
+  claimDay(date: string): boolean {
+    const list = this.getClaimedDays();
+    if (list.includes(date)) return false;
+    list.push(date);
+    localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(list));
+    this.dispatchUpdate('claimed_days', list);
+    this.syncToCloud();
+    return true;
   },
 
   getSchreibheftGoal(): SchreibheftGoal {
@@ -221,6 +244,7 @@ export const StorageService = {
       packedItems: {},
       schreibheftGoal: this.getSchreibheftGoal(),
       matheGoal: this.getMatheGoal(),
+      claimedDays: this.getClaimedDays(),
       lastUpdated: new Date().toISOString()
     };
     return JSON.stringify(state, null, 2);
@@ -241,6 +265,10 @@ export const StorageService = {
       if (data.matheGoal) {
         localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(data.matheGoal));
         this.dispatchUpdate('goal_mathe', data.matheGoal);
+      }
+      if (Array.isArray(data.claimedDays)) {
+        localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(data.claimedDays));
+        this.dispatchUpdate('claimed_days', data.claimedDays);
       }
       return true;
     } catch (e) {
@@ -268,6 +296,7 @@ export const StorageService = {
         unlockedPokemon: this.getUnlockedPokemon(),
         schreibheftGoal: this.getSchreibheftGoal(),
         matheGoal: this.getMatheGoal(),
+        claimedDays: this.getClaimedDays(),
         resetVersion: RESET_VERSION,
         lastUpdated: new Date().toISOString()
       };
@@ -327,6 +356,13 @@ export const StorageService = {
         if (JSON.stringify(remoteData.unlockedPokemon) !== JSON.stringify(localPoke)) {
           localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(remoteData.unlockedPokemon));
           this.dispatchUpdate('pokemon', remoteData.unlockedPokemon);
+        }
+      }
+      if (Array.isArray(remoteData.claimedDays)) {
+        const merged = Array.from(new Set([...this.getClaimedDays(), ...remoteData.claimedDays]));
+        if (merged.length !== this.getClaimedDays().length) {
+          localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(merged));
+          this.dispatchUpdate('claimed_days', merged);
         }
       }
       if (remoteData.schreibheftGoal) {

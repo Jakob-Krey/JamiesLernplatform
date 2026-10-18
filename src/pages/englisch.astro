@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         ⬅️ Vorherige
       </button>
       <button type="button" class="btn-trainer btn-primary" id="en-known-btn">
-        ⭐ Kann ich schon! (+1 Stern) ➔
+        ⭐ Kann ich schon! ➔
       </button>
       <button type="button" class="btn-trainer btn-secondary" id="en-next-btn">
         Nächste ➡️
@@ -159,9 +159,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const knownBtn = document.getElementById('en-known-btn');
   if (knownBtn) {
     knownBtn.addEventListener('click', () => {
-      StorageService.addStars(1);
       AudioFX.playChime();
-      showStarToast(1, 'Super gemerkt!');
+      showStarToast(0, 'Super gemerkt!');
       triggerConfetti();
       const items = VOCAB_DATA[activeCat];
       cardIdx = (cardIdx + 1) % items.length;

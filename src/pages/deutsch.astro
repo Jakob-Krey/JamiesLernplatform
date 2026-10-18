@@ -59,7 +59,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         ⬅️ Vorherige
       </button>
       <button type="button" class="btn-trainer btn-primary" id="de-known-btn">
-        ⭐ Gewusst! (+1 Stern) ➔
+        ⭐ Gewusst! ➔
       </button>
       <button type="button" class="btn-trainer btn-secondary" id="de-next-btn">
         Nächste ➡️
@@ -150,9 +150,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const knownBtn = document.getElementById('de-known-btn');
   if (knownBtn) {
     knownBtn.addEventListener('click', () => {
-      StorageService.addStars(1);
       AudioFX.playChime();
-      showStarToast(1, 'Klasse gewusst!');
+      showStarToast(0, 'Klasse gewusst!');
       triggerConfetti();
       const list = DEUTSCH_DATA[activeTopic];
       cardIdx = (cardIdx + 1) % list.length;

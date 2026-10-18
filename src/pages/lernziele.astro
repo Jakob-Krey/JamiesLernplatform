@@ -1,285 +1,167 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  PLAN_DAYS,
+  WEEK_TITLES,
+  SCHREIB_TOTAL,
+  MATHE_TOTAL,
+  dailyQuota
+} from '../data/lernplan';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const days = PLAN_DAYS.map((d, i) => {
+  const [y, m, day] = d.date.split('-').map(Number);
+  const weekday = WEEKDAYS[new Date(y, m - 1, day).getDay()];
+  return {
+    ...d,
+    index: i,
+    label: `${weekday} ${String(day).padStart(2, '0')}.${String(m).padStart(2, '0')}.`,
+    schreibQuota: dailyQuota(SCHREIB_TOTAL, i),
+    matheQuota: dailyQuota(MATHE_TOTAL, i),
+    newWeek: i === 0 || PLAN_DAYS[i - 1].week !== d.week
+  };
+});
+const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 ---
 
-<BaseLayout title="Jamies Lernziele 🏔️ • Die große Gipfel-Expedition" activePage="lernziele">
+<BaseLayout title="Jamies Lernziele 🏔️ • Der Weg zur Mathearbeit" activePage="lernziele">
   <main class="container" style="padding-top: 2rem;">
 
-    <!-- Navigation Breadcrumb -->
     <div style="margin-bottom: 1.5rem;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
         <span>⬅️</span> Zurück zum Stundenplan
       </a>
     </div>
 
-    <!-- Compact Expedition Header -->
-    <section class="expedition-hero" style="padding: 1.25rem 2rem; margin-bottom: 1.5rem;">
-      <div class="hero-left">
-        <h1 class="expedition-title" style="font-size: 1.85rem; margin: 0 0 0.25rem 0;">
-          Gipfel-Expedition 🎒
-        </h1>
-        <span style="font-size: 0.9rem; color: #93c5fd; font-weight: 700;">
-          Ziel: 02. November 2026
-        </span>
+    <!-- Header mit Countdown -->
+    <section class="expedition-hero">
+      <div>
+        <h1 class="expedition-title">Der Weg zur Mathearbeit 🎒</h1>
+        <span class="expedition-sub">Ziel: Montag, 02. November 2026</span>
       </div>
-
-      <div class="countdown-card" style="padding: 0.6rem 1.5rem; min-width: 140px;">
-        <div class="countdown-days" id="countdown-days-count" style="font-size: 2.2rem; margin: 0;">--</div>
-        <div class="countdown-label">Tage übrig</div>
+      <div class="countdown-card">
+        <div class="countdown-days" id="countdown-days-count">--</div>
+        <div class="countdown-label">noch übrig</div>
       </div>
     </section>
 
-    <!-- ====================================================================
-         DER VISUELLE LERNBERG (MOUNTAIN EXPEDITION)
-         ==================================================================== -->
-    <section class="mountain-section">
-      <div class="mountain-header">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-size: 2rem;">🧗‍♀️</span>
-          <div>
-            <h2 style="font-size: 1.5rem; font-weight: 900; color: #0f172a; margin: 0;">Jamies Weg zum Gipfel</h2>
-            <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Dein Gesamtfortschritt auf der Route</p>
-          </div>
-        </div>
+    <!-- Gesamtfortschritt -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Gesamtfortschritt</h2>
+        <span class="percent-badge" id="total-percent">0%</span>
+      </div>
 
-        <div class="altitude-badge">
-          <span style="color: #f59e0b;">⭐</span>
-          <span id="mountain-progress-percent">0%</span>
-          <span style="font-size: 0.8rem; opacity: 0.8;">erklommen</span>
+      <div class="big-track" aria-label="Gesamtfortschritt">
+        <div class="big-fill" id="total-fill" style="width: 0%;"></div>
+        <div class="plan-marker" id="plan-marker" title="Hier solltest du heute sein" style="left: 0%;"></div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">✍️ Schreiblernheft</span>
+          <strong id="stat-schreib">0 / {SCHREIB_TOTAL}</strong>
+          <span class="stat-rest" id="stat-schreib-rest">noch {SCHREIB_TOTAL} Seiten</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🔢 Mathe (gelb + blau)</span>
+          <strong id="stat-mathe">0 / {MATHE_TOTAL}</strong>
+          <span class="stat-rest" id="stat-mathe-rest">noch {MATHE_TOTAL} Seiten</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">⭐ Belohnung</span>
+          <strong id="stat-stars">0 / {maxStars}</strong>
+          <span class="stat-rest">Sterne aus Tageszielen</span>
         </div>
       </div>
 
-      <!-- Mountain Visual Track -->
-      <div class="mountain-visual-wrap">
-        <div class="mountain-art" aria-hidden="true">
-          <!-- Stylized mountain slope illustration -->
-          <svg viewBox="0 0 800 320" class="mountain-svg" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#e0f2fe"/>
-                <stop offset="100%" stop-color="#f8fafc"/>
-              </linearGradient>
-              <linearGradient id="mountainGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3b82f6"/>
-                <stop offset="60%" stop-color="#1d4ed8"/>
-                <stop offset="100%" stop-color="#1e3a8a"/>
-              </linearGradient>
-              <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#e2e8f0"/>
-              </linearGradient>
-            </defs>
+      <p class="plan-status" id="plan-status"></p>
+    </section>
 
-            <!-- Sky background -->
-            <rect width="800" height="320" fill="url(#skyGrad)"/>
+    <!-- Heute eintragen -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Seite geschafft? Hier eintragen</h2>
+      </div>
+      <p class="hint">Sterne gibt es, wenn alle Seiten eines Tages (Deutsch <em>und</em> Mathe) erledigt sind. Fehlerfrei muss es nicht sein.</p>
 
-            <!-- Distant Mountains -->
-            <polygon points="120,320 280,140 440,320" fill="#93c5fd" opacity="0.6"/>
-            <polygon points="460,320 620,90 780,320" fill="#60a5fa" opacity="0.5"/>
-
-            <!-- Main Peak Mountain -->
-            <polygon points="40,320 400,30 760,320" fill="url(#mountainGrad)"/>
-
-            <!-- Snow on main peak -->
-            <polygon points="340,80 400,30 460,80 430,95 400,85 370,95" fill="url(#snowGrad)"/>
-
-            <!-- Climbing Path Dashed Line -->
-            <path d="M 90,300 Q 220,240 280,190 T 400,45" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="8 8"/>
-          </svg>
-
-          <!-- Interactive Stations along the path -->
-          <div class="station-point st-1" title="Basislager (Start Seite 35)">
-            <span class="station-icon">⛺</span>
-            <span class="station-label">Basislager (S. 35)</span>
-          </div>
-
-          <div class="station-point st-2" title="Waldgrenze (Seite 45)">
-            <span class="station-icon">🌲</span>
-            <span class="station-label">Waldgrenze (S. 45)</span>
-          </div>
-
-          <div class="station-point st-3" title="Aussichtsfels (Seite 55)">
-            <span class="station-icon">🪨</span>
-            <span class="station-label">Aussichtsfels (S. 55)</span>
-          </div>
-
-          <div class="station-point st-4" title="Schneegrenze (Seite 65)">
-            <span class="station-icon">❄️</span>
-            <span class="station-label">Schneegrenze (S. 65)</span>
-          </div>
-
-          <div class="station-point st-5" title="Goldenes Gipfelkreuz (Seite 76)">
-            <span class="station-icon">🚩</span>
-            <span class="station-label">Gipfel & Ziel! (S. 76) 🏆</span>
-          </div>
-
-          <!-- Dynamic Climber Pin -->
-          <div class="climber-avatar" id="climber-avatar">
-            <div class="climber-badge">Jamie 🎒</div>
-            <div class="climber-char">🧗‍♀️</div>
+      <div class="entry-list">
+        <div class="entry-row entry-orange">
+          <div class="entry-name">✍️ Schreiblernheft<small id="schreib-current-text">Seite 35 von 76</small></div>
+          <div class="entry-btns">
+            <button type="button" class="btn-step" id="schreib-minus-btn" aria-label="Eine Seite zurück">−</button>
+            <button type="button" class="btn-add" id="schreib-plus-btn">+ 1 Seite</button>
           </div>
         </div>
 
-        <!-- Progress status bar -->
-        <div class="mountain-progress-track">
-          <div class="mountain-progress-fill" id="mountain-progress-fill" style="width: 0%;"></div>
+        <div class="entry-row entry-yellow">
+          <div class="entry-name">🟡 Gelbes Flex &amp; Floh<small id="mathe-yellow-text">0 von 17 Seiten</small></div>
+          <div class="entry-btns">
+            <button type="button" class="btn-step" id="mathe-yellow-minus-btn" aria-label="Eine Seite zurück">−</button>
+            <button type="button" class="btn-add" id="mathe-yellow-plus-btn">+ 1 Seite</button>
+          </div>
+        </div>
+
+        <div class="entry-row entry-blue">
+          <div class="entry-name">🔵 Blaues Flex &amp; Floh<small id="mathe-blue-text">0 von 17 Seiten</small></div>
+          <div class="entry-btns">
+            <button type="button" class="btn-step" id="mathe-blue-minus-btn" aria-label="Eine Seite zurück">−</button>
+            <button type="button" class="btn-add" id="mathe-blue-plus-btn">+ 1 Seite</button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ====================================================================
-         DIE ZWEI GROSSEN ZIELE (CARDS GRID)
-         ==================================================================== -->
-    <div class="goals-grid">
-
-      <!-- ==================== ZIEL 1: SCHREIBLERNHEFT ==================== -->
-      <div class="goal-card card-schreibheft">
-        <div class="goal-header">
-          <div class="goal-icon-wrap" style="background: #fff7ed; border-color: #ffedd5;">✍️</div>
-          <div>
-            <span class="goal-tag tag-orange">Deutsch-Mission</span>
-            <h3 class="goal-title">Schreiblernheft bis Seite 76</h3>
-          </div>
-        </div>
-
-        <!-- Dynamic Calculation Banner -->
-        <div class="calc-box">
-          <div class="calc-row">
-            <span>Verbleibende Seiten:</span>
-            <strong id="schreib-remaining-pages">41 Seiten</strong>
-          </div>
-          <div class="calc-row">
-            <span>Verbleibende Tage:</span>
-            <strong id="schreib-remaining-days">-- Tage</strong>
-          </div>
-          <div class="calc-divider"></div>
-          <div class="calc-row target-highlight">
-            <span>🎯 Dein Tages-Soll:</span>
-            <strong id="schreib-daily-rate">~2 Seiten / Tag</strong>
-          </div>
-        </div>
-
-        <!-- Interactive Progress Control -->
-        <div class="control-box">
-          <div class="control-title">Aktueller Buchstand:</div>
-          <div class="page-display-wrap">
-            <button type="button" class="btn-step" id="schreib-minus-btn" title="Eine Seite zurück">➖</button>
-            <div class="current-page-badge">
-              <span class="page-label">SEITE</span>
-              <span class="page-number" id="schreib-current-page-text">35</span>
-              <span class="page-target">von 76</span>
+    <!-- Vertikaler Lernpfad -->
+    <section class="path" aria-label="Lernpfad bis zur Mathearbeit">
+      {days.map((d) => (
+        <>
+          {d.newWeek && (
+            <div class="week-banner">
+              <span class="week-line"></span>
+              <span class="week-pill">🏔️ {WEEK_TITLES[d.week]}</span>
+              <span class="week-line"></span>
             </div>
-            <button type="button" class="btn-step" id="schreib-plus-btn" title="Eine Seite vor">+ 1 📖</button>
+          )}
+          <div class="path-node" data-index={d.index} data-date={d.date} data-reward={d.reward}>
+            <div class="node-circle" aria-hidden="true">
+              <span class="node-icon">{d.index + 1}</span>
+            </div>
+            <div class="node-text">
+              <div class="node-date">
+                {d.label}
+                <span class="today-pill" hidden>Heute</span>
+                <span class="catchup-pill" hidden>aufholen</span>
+              </div>
+              <div class="node-topic">{d.topic}</div>
+              <div class="node-quota">
+                <span class="quota-chip q-schreib" data-quota={d.schreibQuota}>✍️ <b class="q-val">0</b>/{d.schreibQuota}</span>
+                <span class="quota-chip q-mathe" data-quota={d.matheQuota}>🔢 <b class="q-val">0</b>/{d.matheQuota}</span>
+                <span class="reward-chip">⭐ +{d.reward}</span>
+              </div>
+            </div>
           </div>
+        </>
+      ))}
 
-          <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
-            <button type="button" class="btn-trainer btn-primary" id="schreib-plus2-btn" style="padding: 0.6rem 1.1rem; font-size: 0.9rem;">
-              ⭐ +2 Seiten geschafft!
-            </button>
+      <div class="week-banner">
+        <span class="week-line"></span>
+        <span class="week-pill goal-pill">🏁 Ziel</span>
+        <span class="week-line"></span>
+      </div>
+      <div class="path-node goal-node" id="goal-node">
+        <div class="node-circle"><span class="node-icon">🏆</span></div>
+        <div class="node-text">
+          <div class="node-date">Mo 02.11.</div>
+          <div class="node-topic">Mathearbeit</div>
+          <div class="node-quota">
+            <span class="goal-hint" id="goal-hint">Alle Seiten schaffen, dann bist du bereit!</span>
           </div>
-        </div>
-
-        <!-- Today log -->
-        <div class="today-done-box">
-          <span style="font-size: 0.88rem; font-weight: 700; color: #9a3412;">Heute geschrieben:</span>
-          <span class="today-counter-pill" id="schreib-today-done">0 Seiten heute</span>
         </div>
       </div>
-
-      <!-- ==================== ZIEL 2: MATHE FLEX & FLOH ==================== -->
-      <div class="goal-card card-mathe">
-        <div class="goal-header">
-          <div class="goal-icon-wrap" style="background: #eff6ff; border-color: #dbeafe;">🔢</div>
-          <div>
-            <span class="goal-tag tag-blue">Mathe-Mission</span>
-            <h3 class="goal-title">Flex & Floh aufarbeiten</h3>
-          </div>
-        </div>
-
-        <!-- Dynamic Calculation Banner -->
-        <div class="calc-box">
-          <div class="calc-row">
-            <span>Verbleibende Seiten:</span>
-            <strong id="mathe-remaining-pages">34 Seiten</strong>
-          </div>
-          <div class="calc-row">
-            <span>Verbleibende Tage:</span>
-            <strong id="mathe-remaining-days">-- Tage</strong>
-          </div>
-          <div class="calc-divider"></div>
-          <div class="calc-row target-highlight" style="color: #1e40af;">
-            <span>🎯 Dein Tages-Soll:</span>
-            <strong id="mathe-daily-rate">~2 Seiten / Tag</strong>
-          </div>
-        </div>
-
-        <!-- Interactive Progress Controls for Gelb & Blau -->
-        <div class="control-box">
-          <div class="control-title" style="margin-bottom: 0.75rem;">Aktueller Stand in den Heften:</div>
-
-          <!-- Gelbes Heft Control -->
-          <div style="background: #fefce8; border: 1.5px solid #fef08a; border-radius: 14px; padding: 0.85rem; margin-bottom: 0.85rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-weight: 800; font-size: 0.95rem; color: #854d0e;">🟡 Gelbes Flex & Floh</span>
-              <span style="font-size: 0.8rem; font-weight: 700; color: #a16207;" id="mathe-yellow-rate-badge">1 S. / Tag</span>
-            </div>
-            <div class="page-display-wrap">
-              <button type="button" class="btn-step" id="mathe-yellow-minus-btn" title="Eine Seite zurück">➖</button>
-              <div class="current-page-badge" style="background: #ffffff; border-color: #fef08a; min-width: 125px;">
-                <span class="page-label" style="color: #a16207;">GESCHAFFT</span>
-                <span class="page-number" style="color: #ca8a04;" id="mathe-yellow-done-text">0</span>
-                <span class="page-target" style="color: #854d0e;">von 17 Seiten</span>
-              </div>
-              <button type="button" class="btn-step" id="mathe-yellow-plus-btn" title="Eine Seite Gelb geschafft" style="background: #fef9c3; border-color: #fde047;">+ 1 🟡</button>
-            </div>
-          </div>
-
-          <!-- Blaues Heft Control -->
-          <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 0.85rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-weight: 800; font-size: 0.95rem; color: #1e40af;">🔵 Blaues Flex & Floh</span>
-              <span style="font-size: 0.8rem; font-weight: 700; color: #2563eb;" id="mathe-blue-rate-badge">1 S. / Tag</span>
-            </div>
-            <div class="page-display-wrap">
-              <button type="button" class="btn-step" id="mathe-blue-minus-btn" title="Eine Seite zurück">➖</button>
-              <div class="current-page-badge" style="background: #ffffff; border-color: #bfdbfe; min-width: 125px;">
-                <span class="page-label" style="color: #1d4ed8;">GESCHAFFT</span>
-                <span class="page-number" style="color: #2563eb;" id="mathe-blue-done-text">0</span>
-                <span class="page-target" style="color: #1e3a8a;">von 17 Seiten</span>
-              </div>
-              <button type="button" class="btn-step" id="mathe-blue-plus-btn" title="Eine Seite Blau geschafft" style="background: #dbeafe; border-color: #93c5fd;">+ 1 🔵</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total solved tracker -->
-        <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid #e2e8f0; margin-bottom: 0.85rem;">
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.4rem;">
-            <span>Gesamtfortschritt:</span>
-            <span id="mathe-completed-stats">0 gelb • 0 blau (Gesamt: 0/34)</span>
-          </div>
-          <div class="mini-progress-track">
-            <div class="mini-progress-fill" id="mathe-progress-fill" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <!-- Today log for Mathe -->
-        <div class="today-done-box" style="background: #eff6ff; margin-top: auto;">
-          <span style="font-size: 0.88rem; font-weight: 700; color: #1e40af;">Heute gerechnet:</span>
-          <span class="today-counter-pill" id="mathe-today-done" style="background: #2563eb;">0 Seiten heute</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Daily Celebration -->
-    <div style="text-align: center; margin: 1.5rem 0 3rem;">
-      <button type="button" class="btn-trainer btn-primary" id="claim-daily-reward-btn" style="font-size: 1.15rem; padding: 0.95rem 2.2rem; box-shadow: var(--shadow-md);">
-        🎉 Tages-Ziel abhaken (+3 Sterne) ✨
-      </button>
-    </div>
+    </section>
 
   </main>
 </BaseLayout>
@@ -288,797 +170,387 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .expedition-hero {
     background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
     border-radius: 24px;
-    padding: 2.2rem 2.5rem;
+    padding: 1.25rem 2rem;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
     box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
   }
-
-  .expedition-badge {
-    background: #f59e0b;
-    color: #78350f;
-    padding: 0.35rem 0.9rem;
-    border-radius: 9999px;
-    font-weight: 900;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-    margin-bottom: 0.6rem;
-  }
-
-  .expedition-title {
-    font-size: 2.3rem;
-    font-weight: 900;
-    margin: 0 0 0.5rem 0;
-  }
-
-  .expedition-subtitle {
-    color: #cbd5e1;
-    font-size: 1rem;
-    max-width: 560px;
-    margin: 0;
-    line-height: 1.5;
-  }
-
+  .expedition-title { font-size: 1.85rem; font-weight: 900; margin: 0 0 0.25rem; }
+  .expedition-sub { font-size: 0.9rem; color: #93c5fd; font-weight: 700; }
   .countdown-card {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
-    padding: 1.25rem 2rem;
-    text-align: center;
-    min-width: 180px;
-  }
-
-  .countdown-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #93c5fd;
-    font-weight: 800;
-  }
-
-  .countdown-days {
-    font-size: 2.8rem;
-    font-weight: 900;
-    color: #fde047;
-    line-height: 1.1;
-    margin: 0.2rem 0;
-  }
-
-  .countdown-target {
-    font-size: 0.82rem;
-    color: #e2e8f0;
-    font-weight: 600;
-  }
-
-  /* Mountain Section */
-  .mountain-section {
-    background: white;
-    border-radius: 24px;
-    border: 2px solid #e2e8f0;
-    padding: 1.75rem;
-    margin-bottom: 2.5rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .mountain-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .altitude-badge {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 9999px;
-    padding: 0.4rem 1.1rem;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .mountain-visual-wrap {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    background: #f1f5f9;
-  }
-
-  .mountain-art {
-    position: relative;
-    width: 100%;
-    height: 280px;
-  }
-
-  .mountain-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .station-point {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform: translate(-50%, -50%);
-    cursor: default;
-    z-index: 2;
-  }
-
-  .station-icon {
-    font-size: 1.6rem;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-    transition: transform 0.2s ease;
-  }
-
-  .station-label {
-    background: rgba(15, 23, 42, 0.85);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-    white-space: nowrap;
-    margin-top: 0.2rem;
-  }
-
-  .st-1 { left: 11%; top: 90%; }
-  .st-2 { left: 24%; top: 72%; }
-  .st-3 { left: 34%; top: 56%; }
-  .st-4 { left: 43%; top: 35%; }
-  .st-5 { left: 51%; top: 15%; }
-
-  .climber-avatar {
-    position: absolute;
-    z-index: 5;
-    transform: translate(-50%, -100%);
-    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
-    left: 11%;
-    top: 90%;
-  }
-
-  .climber-badge {
-    background: #ec4899;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 0.15rem 0.55rem;
-    border-radius: 9999px;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
-    margin-bottom: 0.15rem;
-    text-align: center;
-  }
-
-  .climber-char {
-    font-size: 2.2rem;
-    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
-    animation: gentleBob 1.8s ease-in-out infinite alternate;
-  }
-
-  @keyframes gentleBob {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-6px); }
-  }
-
-  .mountain-progress-track {
-    height: 10px;
-    background: #e2e8f0;
-    width: 100%;
-  }
-
-  .mountain-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #ec4899, #f59e0b);
-    transition: width 0.6s ease;
-  }
-
-  /* Goals Grid */
-  .goals-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-    gap: 1.75rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .goal-card {
-    background: white;
-    border-radius: 20px;
-    padding: 1.75rem;
-    border: 2px solid;
-    box-shadow: var(--shadow-md);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-schreibheft {
-    border-color: #fed7aa;
-  }
-
-  .card-mathe {
-    border-color: #bfdbfe;
-  }
-
-  .goal-header {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    margin-bottom: 1rem;
-  }
-
-  .goal-icon-wrap {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    border: 2px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.7rem;
-  }
-
-  .goal-tag {
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    padding: 0.15rem 0.55rem;
-    border-radius: 9999px;
-    display: inline-block;
-    margin-bottom: 0.2rem;
-  }
-
-  .tag-orange {
-    background: #ffedd5;
-    color: #c2410c;
-  }
-
-  .tag-blue {
-    background: #dbeafe;
-    color: #1d4ed8;
-  }
-
-  .goal-title {
-    font-size: 1.35rem;
-    font-weight: 900;
-    color: #0f172a;
-    margin: 0;
-  }
-
-  .goal-desc {
-    color: #475569;
-    font-size: 0.92rem;
-    line-height: 1.5;
-    margin: 0 0 1.25rem 0;
-  }
-
-  .calc-box {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 1.25rem;
-    font-size: 0.9rem;
-  }
-
-  .calc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.4rem;
-    color: #334155;
-  }
-
-  .calc-divider {
-    height: 1px;
-    background: #e2e8f0;
-    margin: 0.6rem 0;
-  }
-
-  .target-highlight {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: #c2410c;
-  }
-
-  .control-box {
-    background: #ffffff;
-    border: 2px dashed #e2e8f0;
-    border-radius: 16px;
-    padding: 1.25rem;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-
-  .control-title {
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #64748b;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-  }
-
-  .page-display-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .btn-step {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: 2px solid #cbd5e1;
-    background: #f8fafc;
-    font-size: 1.1rem;
-    font-weight: 800;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .btn-step:hover {
-    background: #e2e8f0;
-    transform: scale(1.05);
-  }
-
-  .current-page-badge {
-    background: #fff7ed;
-    border: 2px solid #fed7aa;
-    border-radius: 16px;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.5rem;
     min-width: 140px;
+    text-align: center;
+  }
+  .countdown-days { font-size: 2.2rem; font-weight: 900; color: #fde047; line-height: 1.1; }
+  .countdown-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd; font-weight: 800; }
+
+  .panel {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+  }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .panel-title { font-size: 1.3rem; font-weight: 900; color: #0f172a; margin: 0; }
+  .percent-badge {
+    background: #eef2ff; color: #4338ca; border: 2px solid #c7d2fe;
+    border-radius: 9999px; padding: 0.25rem 0.9rem; font-weight: 900; font-size: 1.05rem;
+  }
+  .hint { margin: 0 0 1rem; color: #64748b; font-size: 0.9rem; line-height: 1.5; }
+
+  .big-track {
+    position: relative;
+    height: 22px;
+    background: #e2e8f0;
+    border-radius: 9999px;
+    overflow: visible;
+    margin-bottom: 1.25rem;
+  }
+  .big-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #10b981);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+  }
+  .plan-marker {
+    position: absolute;
+    top: -5px;
+    width: 4px;
+    height: 32px;
+    background: #6366f1;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left 0.5s ease;
+  }
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.85rem; }
+  .stat {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;
+    padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.15rem;
+  }
+  .stat-label { font-size: 0.8rem; font-weight: 800; color: #64748b; }
+  .stat strong { font-size: 1.4rem; font-weight: 900; color: #0f172a; }
+  .stat-rest { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+  .plan-status { margin: 1rem 0 0; font-weight: 800; font-size: 0.95rem; color: #475569; }
+  .plan-status.ahead { color: #15803d; }
+  .plan-status.behind { color: #c2410c; }
+
+  .entry-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .entry-row {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;
+    border-radius: 16px; padding: 0.8rem 1rem; border: 2px solid;
+  }
+  .entry-orange { background: #fff7ed; border-color: #fed7aa; }
+  .entry-yellow { background: #fefce8; border-color: #fef08a; }
+  .entry-blue { background: #eff6ff; border-color: #bfdbfe; }
+  .entry-name { font-weight: 800; color: #1e293b; display: flex; flex-direction: column; }
+  .entry-name small { font-weight: 600; color: #64748b; font-size: 0.82rem; }
+  .entry-btns { display: flex; gap: 0.5rem; align-items: center; }
+  .btn-step {
+    width: 44px; height: 44px; border-radius: 12px; border: 2px solid #cbd5e1;
+    background: white; font-size: 1.3rem; font-weight: 900; color: #475569; cursor: pointer;
+  }
+  .btn-add {
+    height: 44px; padding: 0 1.1rem; border-radius: 12px; border: none;
+    background: var(--color-primary); color: white; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+    box-shadow: 0 3px 0 var(--color-primary-dark);
+  }
+  .btn-add:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--color-primary-dark); }
+  .btn-add:disabled { opacity: 0.45; cursor: default; }
+
+  /* Vertikaler Pfad */
+  .path {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 2rem auto 4rem;
+    max-width: 520px;
   }
-
-  .page-label {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #9a3412;
-    letter-spacing: 0.05em;
+  .week-banner { display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 1.25rem 0 0.75rem; }
+  .week-line { flex: 1; height: 2px; background: #e2e8f0; }
+  .week-pill {
+    background: #4f46e5; color: white; font-weight: 800; font-size: 0.95rem;
+    padding: 0.55rem 1.2rem; border-radius: 9999px; text-align: center;
   }
+  .goal-pill { background: #f59e0b; color: #78350f; }
 
-  .page-number {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: #c2410c;
-    line-height: 1;
-    margin: 0.15rem 0;
-  }
-
-  .page-target {
-    font-size: 0.8rem;
-    color: #78350f;
-    font-weight: 600;
-  }
-
-  .today-done-box {
-    background: #fff7ed;
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-  }
-
-  .today-counter-pill {
-    background: #ea580c;
-    color: white;
-    font-weight: 800;
-    font-size: 0.82rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-  }
-
-  /* Mathe Checkboxes */
-  .mathe-check-row {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
+  .path-node {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s ease;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.9rem 0;
   }
-
-  .mathe-check-row:hover {
-    border-color: #93c5fd;
+  /* gepunktete Verbindung zum nächsten Knoten */
+  .path-node::after {
+    content: '';
+    position: absolute;
+    left: 31px;
+    top: calc(50% + 32px);
+    bottom: calc(-50% + 32px);
+    border-left: 4px dotted #cbd5e1;
   }
+  .path-node:last-child::after { display: none; }
 
-  .mathe-check-row.checked {
-    background: #eff6ff;
-    border-color: #3b82f6;
-  }
-
-  .check-box {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: 2px solid #94a3b8;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    color: #2563eb;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
-  .mathe-check-row.checked .check-box {
-    background: #3b82f6;
-    border-color: #2563eb;
-    color: white;
-  }
-
-  .check-info {
-    flex: 1;
-  }
-
-  .check-name {
-    font-weight: 800;
-    font-size: 0.95rem;
-    color: #0f172a;
-  }
-
-  .check-sub {
-    font-size: 0.78rem;
+  .node-circle {
+    flex: 0 0 64px;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #e2e8f0;
     color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 900;
+    box-shadow: 0 5px 0 #cbd5e1;
+    z-index: 1;
+  }
+  .node-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .node-date { font-size: 0.82rem; font-weight: 700; color: #94a3b8; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+  .node-topic { font-size: 1.05rem; font-weight: 800; color: #94a3b8; line-height: 1.25; }
+  .node-quota { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .quota-chip, .reward-chip, .goal-hint {
+    font-size: 0.78rem; font-weight: 800; border-radius: 9999px; padding: 0.15rem 0.6rem;
+    background: #f1f5f9; color: #64748b;
+  }
+  .reward-chip { background: #fef3c7; color: #b45309; }
+  .goal-hint { background: transparent; padding-left: 0; font-size: 0.88rem; }
+  .today-pill, .catchup-pill { font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
+  .today-pill { background: #6366f1; color: white; }
+  .catchup-pill { background: #ffedd5; color: #c2410c; }
+
+  /* Zustände */
+  .path-node.is-done .node-circle { background: #22c55e; color: white; box-shadow: 0 5px 0 #15803d; }
+  .path-node.is-done .node-icon { font-size: 0; }
+  .path-node.is-done .node-icon::before { content: '✓'; font-size: 1.9rem; }
+  .path-node.is-done .node-topic { color: #1e293b; }
+  .path-node.is-done .node-date { color: #64748b; }
+  .path-node.is-done .quota-chip { background: #dcfce7; color: #15803d; }
+  .path-node.is-done .reward-chip { background: #fde68a; }
+
+  .path-node.is-current .node-circle {
+    background: #6366f1; color: white; box-shadow: 0 5px 0 #4338ca;
+    animation: node-pulse 1.8s ease-in-out infinite;
+  }
+  .path-node.is-current .node-topic { color: #0f172a; font-size: 1.15rem; }
+  .path-node.is-current .node-date { color: #4f46e5; }
+  .path-node.is-current .quota-chip { background: #e0e7ff; color: #3730a3; }
+
+  .goal-node .node-circle { background: #fde68a; color: #92400e; box-shadow: 0 5px 0 #f59e0b; font-size: 1.8rem; }
+  .goal-node .node-topic { color: #0f172a; }
+  .goal-node .node-date { color: #b45309; }
+  .goal-node.is-reached .node-circle { background: #22c55e; box-shadow: 0 5px 0 #15803d; }
+
+  @keyframes node-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
   }
 
-  .check-status {
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 0.2rem 0.5rem;
-    border-radius: 9999px;
-    background: #e2e8f0;
-    color: #475569;
+  /* leichter Zickzack auf größeren Bildschirmen */
+  @media (min-width: 640px) {
+    .path-node:nth-of-type(odd) { transform: translateX(-24px); }
+    .path-node:nth-of-type(even) { transform: translateX(24px); }
   }
-
-  .mathe-check-row.checked .check-status {
-    background: #dbeafe;
-    color: #1d4ed8;
-  }
-
-  .mini-progress-track {
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 9999px;
-    overflow: hidden;
-  }
-
-  .mini-progress-fill {
-    height: 100%;
-    background: #3b82f6;
-    transition: width 0.4s ease;
-  }
-
-  /* Daily Celebration Card */
-  .daily-celebration-card {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border: 2px dashed #f59e0b;
-    border-radius: 20px;
-    padding: 2.2rem;
-    text-align: center;
-    margin-bottom: 3rem;
+  @media (prefers-reduced-motion: reduce) {
+    .path-node.is-current .node-circle { animation: none; }
   }
 </style>
 
 <script>
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+  import { PLAN_DAYS, EXAM_DATE, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
 
-  // Target date constant
-  const TARGET_DATE_STR = '2026-11-02';
+  const YELLOW_TOTAL = 17;
+  const BLUE_TOTAL = 17;
+  const TOTAL_PAGES = SCHREIB_TOTAL + MATHE_TOTAL;
+  const MAX_STARS = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 
-  // Calculate remaining days from today
-  function calculateRemainingDays(): number {
+  function localDateStr(d = new Date()): string {
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  }
+
+  function daysUntil(dateStr: string): number {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const [tYear, tMonth, tDay] = TARGET_DATE_STR.split('-').map(Number);
-    const target = new Date(tYear, tMonth - 1, tDay);
-    const diffTime = target.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, diffDays);
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return Math.round((new Date(y, m - 1, d).getTime() - today.getTime()) / 86400000);
   }
 
-  const remainingDays = calculateRemainingDays();
+  const $ = (id: string) => document.getElementById(id);
 
-  // Update Countdown Banner
-  const countdownEl = document.getElementById('countdown-days-count');
-  if (countdownEl) {
-    countdownEl.textContent = `${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tage'}`;
+  function progress() {
+    const sg = StorageService.getSchreibheftGoal();
+    const mg = StorageService.getMatheGoal();
+    const schreibDone = Math.min(SCHREIB_TOTAL, Math.max(0, sg.currentPage - sg.startPage));
+    const matheDone = Math.min(MATHE_TOTAL, mg.yellowDoneTotal + mg.blueDoneTotal);
+    return { sg, mg, schreibDone, matheDone };
   }
 
-  // Goal 1: Schreiblernheft
-  function refreshSchreibheft() {
-    const goal = StorageService.getSchreibheftGoal();
-    const remainingPages = Math.max(0, goal.targetPage - goal.currentPage);
-    const rawRate = remainingPages / remainingDays;
-    // Immer in 0,5-Schritten aufrunden (z.B. 1,9 -> 2 | 2,1 -> 2,5)
-    const roundedRate = Math.ceil(rawRate * 2) / 2;
-    const formattedRate = roundedRate.toLocaleString('de-DE', {
-      minimumFractionDigits: roundedRate % 1 === 0 ? 0 : 1,
-      maximumFractionDigits: 1
-    });
-
-    const remPagesEl = document.getElementById('schreib-remaining-pages');
-    const remDaysEl = document.getElementById('schreib-remaining-days');
-    const dailyRateEl = document.getElementById('schreib-daily-rate');
-    const currPageEl = document.getElementById('schreib-current-page-text');
-
-    if (remPagesEl) remPagesEl.textContent = `${remainingPages} Seiten`;
-    if (remDaysEl) remDaysEl.textContent = `${remainingDays} Tage`;
-    if (dailyRateEl) {
-      dailyRateEl.textContent = remainingPages === 0
-        ? 'Geschafft! 🏆'
-        : `${formattedRate} ${roundedRate === 1 ? 'Seite' : 'Seiten'} / Tag`;
-    }
-    if (currPageEl) currPageEl.textContent = goal.currentPage.toString();
-
-    // Today counter
-    const dailyLog = StorageService.getDailyGoalLog();
-    const todayDoneEl = document.getElementById('schreib-today-done');
-    if (todayDoneEl) {
-      todayDoneEl.textContent = `${dailyLog.schreibheftPagesToday} Seiten heute`;
-    }
-
-    updateMountainProgress();
+  /** Ein Tag ist geschafft, wenn alle Seiten bis einschließlich dieses Tages erledigt sind. */
+  function isDayDone(index: number, schreibDone: number, matheDone: number): boolean {
+    return (
+      schreibDone >= cumulativeTarget(SCHREIB_TOTAL, index) &&
+      matheDone >= cumulativeTarget(MATHE_TOTAL, index)
+    );
   }
 
-  // Goal 2: Mathe Flex & Floh (Target: 17 yellow + 17 blue = 34 total)
-  function refreshMathe() {
-    const goal = StorageService.getMatheGoal();
-    const dailyLog = StorageService.getDailyGoalLog();
-
-    const yellowTarget = 17;
-    const blueTarget = 17;
-
-    const remYellow = Math.max(0, yellowTarget - goal.yellowDoneTotal);
-    const remBlue = Math.max(0, blueTarget - goal.blueDoneTotal);
-    const totalRemaining = remYellow + remBlue;
-
-    // Daily rate rounded up in 0.5 steps
-    const rawRateYellow = remYellow / remainingDays;
-    const roundedRateYellow = Math.ceil(rawRateYellow * 2) / 2;
-    const formattedRateYellow = roundedRateYellow.toLocaleString('de-DE', {
-      minimumFractionDigits: roundedRateYellow % 1 === 0 ? 0 : 1,
-      maximumFractionDigits: 1
-    });
-
-    const rawRateBlue = remBlue / remainingDays;
-    const roundedRateBlue = Math.ceil(rawRateBlue * 2) / 2;
-    const formattedRateBlue = roundedRateBlue.toLocaleString('de-DE', {
-      minimumFractionDigits: roundedRateBlue % 1 === 0 ? 0 : 1,
-      maximumFractionDigits: 1
-    });
-
-    const totalDailyRate = roundedRateYellow + roundedRateBlue;
-    const formattedTotalRate = totalDailyRate.toLocaleString('de-DE', {
-      minimumFractionDigits: totalDailyRate % 1 === 0 ? 0 : 1,
-      maximumFractionDigits: 1
-    });
-
-    const remPagesEl = document.getElementById('mathe-remaining-pages');
-    const remDaysEl = document.getElementById('mathe-remaining-days');
-    const dailyRateEl = document.getElementById('mathe-daily-rate');
-    const yellowDoneText = document.getElementById('mathe-yellow-done-text');
-    const blueDoneText = document.getElementById('mathe-blue-done-text');
-    const yellowBadge = document.getElementById('mathe-yellow-rate-badge');
-    const blueBadge = document.getElementById('mathe-blue-rate-badge');
-    const statsEl = document.getElementById('mathe-completed-stats');
-    const progressFillEl = document.getElementById('mathe-progress-fill');
-    const todayDoneEl = document.getElementById('mathe-today-done');
-
-    if (remPagesEl) remPagesEl.textContent = `${totalRemaining} Seiten (🟡 ${remYellow} | 🔵 ${remBlue})`;
-    if (remDaysEl) remDaysEl.textContent = `${remainingDays} Tage`;
-    if (dailyRateEl) {
-      dailyRateEl.textContent = totalRemaining === 0
-        ? 'Geschafft! 🏆'
-        : `${formattedTotalRate} ${totalDailyRate === 1 ? 'Seite' : 'Seiten'} / Tag (${formattedRateYellow} 🟡 + ${formattedRateBlue} 🔵)`;
-    }
-    if (yellowBadge) {
-      yellowBadge.textContent = remYellow === 0 ? '✓ Fertig' : `${formattedRateYellow} S. / Tag`;
-    }
-    if (blueBadge) {
-      blueBadge.textContent = remBlue === 0 ? '✓ Fertig' : `${formattedRateBlue} S. / Tag`;
-    }
-    if (yellowDoneText) yellowDoneText.textContent = goal.yellowDoneTotal.toString();
-    if (blueDoneText) blueDoneText.textContent = goal.blueDoneTotal.toString();
-
-    const totalDone = goal.yellowDoneTotal + goal.blueDoneTotal;
-    if (statsEl) {
-      statsEl.textContent = `${goal.yellowDoneTotal} gelb • ${goal.blueDoneTotal} blau (Gesamt: ${totalDone}/34)`;
-    }
-
-    const pct = Math.min(100, Math.round((totalDone / 34) * 100));
-    if (progressFillEl) progressFillEl.style.width = `${pct}%`;
-
-    const pagesToday = (dailyLog.yellowPagesToday || 0) + (dailyLog.bluePagesToday || 0);
-    if (todayDoneEl) {
-      todayDoneEl.textContent = `${pagesToday} ${pagesToday === 1 ? 'Seite' : 'Seiten'} heute (${dailyLog.yellowPagesToday || 0} 🟡, ${dailyLog.bluePagesToday || 0} 🔵)`;
-    }
-
-    updateMountainProgress();
-  }
-
-  // Overall Mountain Progress calculation
-  function updateMountainProgress() {
-    const schreibGoal = StorageService.getSchreibheftGoal();
-    const schreibPct = (schreibGoal.currentPage - schreibGoal.startPage) / (schreibGoal.targetPage - schreibGoal.startPage);
-
-    const matheGoal = StorageService.getMatheGoal();
-    const mathePct = (matheGoal.yellowDoneTotal + matheGoal.blueDoneTotal) / 34;
-
-    // Combined score (Schreibheft 50%, Mathe 50%)
-    const combinedPct = Math.min(100, Math.max(0, Math.round((schreibPct * 0.5 + mathePct * 0.5) * 100)));
-
-    const pctEl = document.getElementById('mountain-progress-percent');
-    const fillEl = document.getElementById('mountain-progress-fill');
-    const climberEl = document.getElementById('climber-avatar');
-
-    if (pctEl) pctEl.textContent = `${combinedPct}%`;
-    if (fillEl) fillEl.style.width = `${combinedPct}%`;
-
-    // Move climber along path from st-1 (11%, 90%) to st-5 (51%, 15%)
-    if (climberEl) {
-      const left = 11 + (51 - 11) * (combinedPct / 100);
-      const top = 90 - (90 - 15) * (combinedPct / 100);
-      climberEl.style.left = `${left}%`;
-      climberEl.style.top = `${top}%`;
-    }
-  }
-
-  // Schreibheft Event Listeners
-  const minusBtn = document.getElementById('schreib-minus-btn');
-  const plusBtn = document.getElementById('schreib-plus-btn');
-  const plus2Btn = document.getElementById('schreib-plus2-btn');
-
-  if (minusBtn) {
-    minusBtn.addEventListener('click', () => {
-      const goal = StorageService.getSchreibheftGoal();
-      if (goal.currentPage > goal.startPage) {
-        StorageService.setSchreibheftCurrentPage(goal.currentPage - 1);
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ schreibheftPagesToday: Math.max(0, log.schreibheftPagesToday - 1) });
-        refreshSchreibheft();
+  function claimRewards(schreibDone: number, matheDone: number) {
+    let earned = 0;
+    PLAN_DAYS.forEach((day, i) => {
+      if (isDayDone(i, schreibDone, matheDone) && StorageService.claimDay(day.date)) {
+        StorageService.addStars(day.reward);
+        earned += day.reward;
       }
     });
-  }
-
-  if (plusBtn) {
-    plusBtn.addEventListener('click', () => {
-      const goal = StorageService.getSchreibheftGoal();
-      if (goal.currentPage < goal.targetPage) {
-        StorageService.setSchreibheftCurrentPage(goal.currentPage + 1);
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ schreibheftPagesToday: log.schreibheftPagesToday + 1 });
-        StorageService.addStars(1);
-        AudioFX.playChime();
-        showStarToast(1, 'Eine Seite im Schreibheft geschafft!');
-        triggerConfetti();
-        refreshSchreibheft();
-      }
-    });
-  }
-
-  if (plus2Btn) {
-    plus2Btn.addEventListener('click', () => {
-      const goal = StorageService.getSchreibheftGoal();
-      const newPage = Math.min(goal.targetPage, goal.currentPage + 2);
-      const added = newPage - goal.currentPage;
-      if (added > 0) {
-        StorageService.setSchreibheftCurrentPage(newPage);
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ schreibheftPagesToday: log.schreibheftPagesToday + added });
-        StorageService.addStars(2);
-        AudioFX.playSuccessFanfare();
-        showStarToast(2, `${added} Seiten geschrieben! Fantastisch, Jamie! 🌟`);
-        triggerConfetti();
-        refreshSchreibheft();
-      }
-    });
-  }
-
-  // Mathe Gelb & Blau Event Listeners
-  const yMinus = document.getElementById('mathe-yellow-minus-btn');
-  const yPlus = document.getElementById('mathe-yellow-plus-btn');
-  const bMinus = document.getElementById('mathe-blue-minus-btn');
-  const bPlus = document.getElementById('mathe-blue-plus-btn');
-
-  if (yMinus) {
-    yMinus.addEventListener('click', () => {
-      const goal = StorageService.getMatheGoal();
-      if (goal.yellowDoneTotal > 0) {
-        StorageService.updateMatheGoal({ yellow: -1 });
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ yellowPagesToday: Math.max(0, (log.yellowPagesToday || 0) - 1) });
-        refreshMathe();
-      }
-    });
-  }
-
-  if (yPlus) {
-    yPlus.addEventListener('click', () => {
-      const goal = StorageService.getMatheGoal();
-      if (goal.yellowDoneTotal < 17) {
-        StorageService.updateMatheGoal({ yellow: 1 });
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ yellowPagesToday: (log.yellowPagesToday || 0) + 1 });
-        StorageService.addStars(1);
-        AudioFX.playChime();
-        showStarToast(1, '1 Seite Gelbes Flex & Floh geschafft! 🟡');
-        triggerConfetti();
-        refreshMathe();
-      }
-    });
-  }
-
-  if (bMinus) {
-    bMinus.addEventListener('click', () => {
-      const goal = StorageService.getMatheGoal();
-      if (goal.blueDoneTotal > 0) {
-        StorageService.updateMatheGoal({ blue: -1 });
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ bluePagesToday: Math.max(0, (log.bluePagesToday || 0) - 1) });
-        refreshMathe();
-      }
-    });
-  }
-
-  if (bPlus) {
-    bPlus.addEventListener('click', () => {
-      const goal = StorageService.getMatheGoal();
-      if (goal.blueDoneTotal < 17) {
-        StorageService.updateMatheGoal({ blue: 1 });
-        const log = StorageService.getDailyGoalLog();
-        StorageService.updateDailyGoalLog({ bluePagesToday: (log.bluePagesToday || 0) + 1 });
-        StorageService.addStars(1);
-        AudioFX.playChime();
-        showStarToast(1, '1 Seite Blaues Flex & Floh geschafft! 🔵');
-        triggerConfetti();
-        refreshMathe();
-      }
-    });
-  }
-
-  // Daily Claim Button
-  const claimBtn = document.getElementById('claim-daily-reward-btn');
-  if (claimBtn) {
-    claimBtn.addEventListener('click', () => {
-      StorageService.addStars(3);
+    if (earned > 0) {
       AudioFX.playSuccessFanfare();
       triggerConfetti();
-      showStarToast(3, 'Tages-Ziele gerockt! 3 Sterne für Jamie! 🏆');
-    });
+      showStarToast(earned, 'Tagesziel geschafft! Alle Seiten erledigt 🏆');
+    }
   }
 
-  // Initial render
-  refreshSchreibheft();
-  refreshMathe();
+  function render() {
+    const { sg, mg, schreibDone, matheDone } = progress();
+    const today = localDateStr();
+    const claimed = StorageService.getClaimedDays();
+
+    // Countdown
+    const left = Math.max(0, daysUntil(EXAM_DATE));
+    const cd = $('countdown-days-count');
+    if (cd) cd.textContent = left === 0 ? 'Heute!' : `${left} ${left === 1 ? 'Tag' : 'Tage'}`;
+
+    // Gesamtfortschritt
+    const done = schreibDone + matheDone;
+    const pct = Math.round((done / TOTAL_PAGES) * 100);
+    $('total-percent')!.textContent = `${pct}%`;
+    $('total-fill')!.style.width = `${pct}%`;
+    $('stat-schreib')!.textContent = `${schreibDone} / ${SCHREIB_TOTAL}`;
+    $('stat-mathe')!.textContent = `${matheDone} / ${MATHE_TOTAL}`;
+    const sRest = SCHREIB_TOTAL - schreibDone;
+    const mRest = MATHE_TOTAL - matheDone;
+    $('stat-schreib-rest')!.textContent = sRest === 0 ? '✓ geschafft' : `noch ${sRest} ${sRest === 1 ? 'Seite' : 'Seiten'}`;
+    $('stat-mathe-rest')!.textContent = mRest === 0 ? '✓ geschafft' : `noch ${mRest} ${mRest === 1 ? 'Seite' : 'Seiten'}`;
+    const starsEarned = PLAN_DAYS.filter((d) => claimed.includes(d.date)).reduce((s, d) => s + d.reward, 0);
+    $('stat-stars')!.textContent = `${starsEarned} / ${MAX_STARS}`;
+
+    // Wo sollte Jamie laut Plan heute sein?
+    let todayIndex = PLAN_DAYS.findIndex((d) => d.date === today);
+    if (todayIndex === -1) todayIndex = today < PLAN_DAYS[0].date ? -1 : PLAN_DAYS.length - 1;
+    const planned = todayIndex < 0 ? 0 : cumulativeTarget(SCHREIB_TOTAL, todayIndex) + cumulativeTarget(MATHE_TOTAL, todayIndex);
+    $('plan-marker')!.style.left = `${Math.round((planned / TOTAL_PAGES) * 100)}%`;
+    const status = $('plan-status')!;
+    const diff = done - planned;
+    status.className = 'plan-status';
+    if (done >= TOTAL_PAGES) {
+      status.textContent = '🎉 Alle Seiten geschafft!';
+      status.classList.add('ahead');
+    } else if (diff >= 0) {
+      status.textContent = diff === 0 ? '✅ Genau im Plan (Strich = Soll für heute)' : `🚀 ${diff} ${diff === 1 ? 'Seite' : 'Seiten'} vor dem Plan`;
+      status.classList.add('ahead');
+    } else {
+      status.textContent = `⏳ ${-diff} ${-diff === 1 ? 'Seite' : 'Seiten'} aufzuholen (Strich = Soll für heute)`;
+      status.classList.add('behind');
+    }
+
+    // Eingabe-Zeilen
+    $('schreib-current-text')!.textContent = `Seite ${sg.currentPage} von ${sg.targetPage}`;
+    $('mathe-yellow-text')!.textContent = `${mg.yellowDoneTotal} von ${YELLOW_TOTAL} Seiten`;
+    $('mathe-blue-text')!.textContent = `${mg.blueDoneTotal} von ${BLUE_TOTAL} Seiten`;
+    ($('schreib-plus-btn') as HTMLButtonElement).disabled = sg.currentPage >= sg.targetPage;
+    ($('mathe-yellow-plus-btn') as HTMLButtonElement).disabled = mg.yellowDoneTotal >= YELLOW_TOTAL;
+    ($('mathe-blue-plus-btn') as HTMLButtonElement).disabled = mg.blueDoneTotal >= BLUE_TOTAL;
+
+    // Pfad
+    let currentSet = false;
+    document.querySelectorAll<HTMLElement>('.path-node[data-index]').forEach((node) => {
+      const i = Number(node.dataset.index);
+      const date = node.dataset.date!;
+      const dayDone = isDayDone(i, schreibDone, matheDone);
+      node.classList.toggle('is-done', dayDone);
+      const isCurrent = !dayDone && !currentSet;
+      node.classList.toggle('is-current', isCurrent);
+      if (isCurrent) currentSet = true;
+
+      (node.querySelector('.today-pill') as HTMLElement).hidden = date !== today;
+      (node.querySelector('.catchup-pill') as HTMLElement).hidden = !(date < today && !dayDone);
+
+      // Fortschritt dieses Tages in den Chips
+      const prevS = i === 0 ? 0 : cumulativeTarget(SCHREIB_TOTAL, i - 1);
+      const prevM = i === 0 ? 0 : cumulativeTarget(MATHE_TOTAL, i - 1);
+      const sChip = node.querySelector<HTMLElement>('.q-schreib')!;
+      const mChip = node.querySelector<HTMLElement>('.q-mathe')!;
+      const sq = Number(sChip.dataset.quota);
+      const mq = Number(mChip.dataset.quota);
+      sChip.querySelector('.q-val')!.textContent = String(Math.min(sq, Math.max(0, schreibDone - prevS)));
+      mChip.querySelector('.q-val')!.textContent = String(Math.min(mq, Math.max(0, matheDone - prevM)));
+    });
+
+    const goalNode = $('goal-node')!;
+    const allDone = done >= TOTAL_PAGES;
+    goalNode.classList.toggle('is-reached', allDone);
+    $('goal-hint')!.textContent = allDone
+      ? 'Alles geübt – du bist bereit! 💪'
+      : `Noch ${TOTAL_PAGES - done} Seiten bis alles geübt ist`;
+  }
+
+  function change(fn: () => void, praise?: string) {
+    fn();
+    const { schreibDone, matheDone } = progress();
+    if (praise) AudioFX.playChime();
+    claimRewards(schreibDone, matheDone);
+    render();
+  }
+
+  $('schreib-plus-btn')?.addEventListener('click', () =>
+    change(() => {
+      const g = StorageService.getSchreibheftGoal();
+      if (g.currentPage < g.targetPage) StorageService.setSchreibheftCurrentPage(g.currentPage + 1);
+    }, 'ok')
+  );
+  $('schreib-minus-btn')?.addEventListener('click', () =>
+    change(() => {
+      const g = StorageService.getSchreibheftGoal();
+      if (g.currentPage > g.startPage) StorageService.setSchreibheftCurrentPage(g.currentPage - 1);
+    })
+  );
+  $('mathe-yellow-plus-btn')?.addEventListener('click', () =>
+    change(() => {
+      if (StorageService.getMatheGoal().yellowDoneTotal < YELLOW_TOTAL) StorageService.updateMatheGoal({ yellow: 1 });
+    }, 'ok')
+  );
+  $('mathe-yellow-minus-btn')?.addEventListener('click', () =>
+    change(() => {
+      if (StorageService.getMatheGoal().yellowDoneTotal > 0) StorageService.updateMatheGoal({ yellow: -1 });
+    })
+  );
+  $('mathe-blue-plus-btn')?.addEventListener('click', () =>
+    change(() => {
+      if (StorageService.getMatheGoal().blueDoneTotal < BLUE_TOTAL) StorageService.updateMatheGoal({ blue: 1 });
+    }, 'ok')
+  );
+  $('mathe-blue-minus-btn')?.addEventListener('click', () =>
+    change(() => {
+      if (StorageService.getMatheGoal().blueDoneTotal > 0) StorageService.updateMatheGoal({ blue: -1 });
+    })
+  );
+
+  // Änderungen von anderen Geräten (Firebase) sofort anzeigen
+  window.addEventListener('jamie-storage-update', (e: any) => {
+    const t = e.detail?.type;
+    if (t === 'goal_schreibheft' || t === 'goal_mathe' || t === 'claimed_days') render();
+  });
+
+  render();
 </script>
