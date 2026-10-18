@@ -89,14 +89,51 @@ export const AudioFX = {
   }
 };
 
+// Stimmen, die nur Spaß-Effekte machen und nicht zum Lernen taugen
+const NOVELTY_VOICES = /albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|organ|superstar|trinoids|whisper|wobble|zarvox|fred|ralph|kathy|jester|grandma|grandpa|rocko|shelley|flo|eddy|reed|sandy|junior/i;
+
+let warnedNoEnglishVoice = false;
+
+/** Beste englische Stimme des Geräts (iPad/Safari nimmt sonst die deutsche Standardstimme). */
+function pickEnglishVoice(): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices().filter((v) => /^en[-_]/i.test(v.lang) && !NOVELTY_VOICES.test(v.name));
+  if (voices.length === 0) return null;
+  const score = (v: SpeechSynthesisVoice) =>
+    (/^en[-_]gb/i.test(v.lang) ? 3 : /^en[-_]us/i.test(v.lang) ? 2 : 1) * 10 +
+    (/premium|enhanced|erweitert/i.test(v.name) ? 5 : 0) +
+    (/daniel|samantha|karen|serena|oliver|kate/i.test(v.name) ? 3 : 0) +
+    (v.localService ? 1 : 0);
+  return voices.sort((a, b) => score(b) - score(a))[0];
+}
+
+// Stimmen werden im Browser teils erst nach dem Start geladen
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener?.('voiceschanged', () => window.speechSynthesis.getVoices());
+}
+
 export function speakEnglish(text: string) {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85; // slightly slower for kids
-    window.speechSynthesis.speak(utterance);
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  const synth = window.speechSynthesis;
+  // Klammern und "…" nicht mitsprechen, z. B. "Open (adj.)" oder "My name is …"
+  const spoken = text.replace(/\([^)]*\)/g, '').replace(/…/g, '').replace(/\s+/g, ' ').trim();
+  if (!spoken) return;
+
+  if (synth.speaking || synth.pending) synth.cancel();
+  const utterance = new SpeechSynthesisUtterance(spoken);
+  const voice = pickEnglishVoice();
+  if (voice) {
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+  } else {
+    utterance.lang = 'en-GB';
+    if (!warnedNoEnglishVoice && synth.getVoices().length > 0) {
+      warnedNoEnglishVoice = true;
+      showStarToast(0, 'Keine englische Stimme gefunden: iPad-Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Englisch');
+    }
   }
+  utterance.rate = 0.85; // etwas langsamer für Kinder
+  synth.speak(utterance);
 }
 
 export function triggerConfetti() {

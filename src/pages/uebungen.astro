@@ -417,5 +417,28 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     list[list.indexOf(t) + 1]?.focus();
   });
 
-  render();
+  function showLoadError(err: unknown) {
+    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    sheetEl.innerHTML = `<div class="sheet-page" style="text-align:center">
+      <h2 class="sheet-title">Das Übungsblatt konnte nicht geladen werden 😕</h2>
+      <p style="color:#64748b">Bitte einmal auf „App neu laden“ tippen. Hilft das nicht, bitte diese Zeile weitergeben:</p>
+      <p style="font-family:monospace;font-size:0.8rem;color:#b91c1c;word-break:break-word">${msg}</p>
+      <button type="button" class="ws-btn ws-btn-primary" id="btn-reset-app">🔄 App neu laden</button>
+    </div>`;
+    document.getElementById('btn-reset-app')?.addEventListener('click', async () => {
+      try {
+        const regs = await navigator.serviceWorker?.getRegistrations();
+        await Promise.all((regs ?? []).map((r) => r.unregister()));
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      } catch {}
+      location.reload();
+    });
+  }
+
+  try {
+    render();
+  } catch (err) {
+    showLoadError(err);
+  }
 </script>

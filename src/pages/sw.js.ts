@@ -36,12 +36,20 @@ self.addEventListener('fetch', (event) => {
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
+        .then(async (res) => {
+          // Weiterleitungen unverändert durchreichen und nicht speichern
+          if (!res.ok || res.type !== 'basic') return res;
+          // Safari lehnt Antworten mit Weiterleitung für Seitenaufrufe ab: sauber neu verpacken
+          const clean = res.redirected
+            ? new Response(await res.clone().blob(), { status: res.status, statusText: res.statusText, headers: res.headers })
+            : res;
+          const copy = clean.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          return clean;
         })
-        .catch(() => caches.match(req).then((hit) => hit || caches.match(BASE)))
+        .catch(() =>
+          caches.match(req).then((hit) => hit || caches.match(req, { ignoreSearch: true })).then((hit) => hit || caches.match(BASE))
+        )
     );
     return;
   }
@@ -57,7 +65,7 @@ self.addEventListener('fetch', (event) => {
             }
             return res;
           })
-          .catch(() => hit);
+          .catch(() => hit || Response.error());
         return hit || refresh;
       })
     );
