@@ -51,7 +51,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     emoji: '🎒',
     docId: 'progress',
     suffix: '',
-    color: '#4f46e5',
+    color: '#ec4899',
     pages: ALL_PAGES,
     mathDefault: 'mix_alles',
     vocabLevels: [1, 2],
