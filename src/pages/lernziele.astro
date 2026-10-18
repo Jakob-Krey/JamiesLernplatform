@@ -139,18 +139,10 @@ const days = PLAN_DAYS.map((d, i) => {
       </div>
 
       <div class="entry-row entry-yellow">
-        <div class="entry-name">🟡 Gelbes Flex &amp; Floh<small id="mathe-yellow-text">0 von 17 Seiten</small></div>
+        <div class="entry-name">🔢 Mathe Arbeitsblatt<small id="mathe-text">0 von 34 Seiten</small></div>
         <div class="entry-btns">
-          <button type="button" class="btn-step" id="mathe-yellow-minus-btn" aria-label="Eine Seite zurück">−</button>
-          <button type="button" class="btn-add" id="mathe-yellow-plus-btn">+ 1 Seite</button>
-        </div>
-      </div>
-
-      <div class="entry-row entry-blue">
-        <div class="entry-name">🔵 Blaues Flex &amp; Floh<small id="mathe-blue-text">0 von 17 Seiten</small></div>
-        <div class="entry-btns">
-          <button type="button" class="btn-step" id="mathe-blue-minus-btn" aria-label="Eine Seite zurück">−</button>
-          <button type="button" class="btn-add" id="mathe-blue-plus-btn">+ 1 Seite</button>
+          <button type="button" class="btn-step" id="mathe-minus-btn" aria-label="Eine Seite zurück">−</button>
+          <button type="button" class="btn-add" id="mathe-plus-btn">+ 1 Seite</button>
         </div>
       </div>
     </div>
@@ -180,7 +172,6 @@ const days = PLAN_DAYS.map((d, i) => {
   }
   .entry-orange { background: #fff7ed; border-color: #fed7aa; }
   .entry-yellow { background: #fefce8; border-color: #fef08a; }
-  .entry-blue { background: #eff6ff; border-color: #bfdbfe; }
   .entry-name { font-weight: 800; color: #1e293b; display: flex; flex-direction: column; font-size: 0.9rem; }
   .entry-name small { font-weight: 600; color: #64748b; font-size: 0.82rem; }
   .entry-btns { display: flex; gap: 0.5rem; align-items: center; }
@@ -303,8 +294,6 @@ const days = PLAN_DAYS.map((d, i) => {
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
   import { PLAN_DAYS, DONE_DAYS, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
 
-  const YELLOW_TOTAL = 17;
-  const BLUE_TOTAL = 17;
 
   function localDateStr(d = new Date()): string {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -358,11 +347,9 @@ const days = PLAN_DAYS.map((d, i) => {
 
     // Eingabe-Zeilen
     $('schreib-current-text')!.textContent = `Seite ${sg.currentPage} von ${sg.targetPage}`;
-    $('mathe-yellow-text')!.textContent = `${mg.yellowDoneTotal} von ${YELLOW_TOTAL} Seiten`;
-    $('mathe-blue-text')!.textContent = `${mg.blueDoneTotal} von ${BLUE_TOTAL} Seiten`;
+    $('mathe-text')!.textContent = `${matheDone} von ${MATHE_TOTAL} Seiten`;
     ($('schreib-plus-btn') as HTMLButtonElement).disabled = sg.currentPage >= sg.targetPage;
-    ($('mathe-yellow-plus-btn') as HTMLButtonElement).disabled = mg.yellowDoneTotal >= YELLOW_TOTAL;
-    ($('mathe-blue-plus-btn') as HTMLButtonElement).disabled = mg.blueDoneTotal >= BLUE_TOTAL;
+    ($('mathe-plus-btn') as HTMLButtonElement).disabled = matheDone >= MATHE_TOTAL;
 
     // Pfad
     let currentSet = false;
@@ -422,24 +409,18 @@ const days = PLAN_DAYS.map((d, i) => {
       if (g.currentPage > g.startPage) StorageService.setSchreibheftCurrentPage(g.currentPage - 1);
     })
   );
-  $('mathe-yellow-plus-btn')?.addEventListener('click', () =>
+  // Ein gemeinsamer Zähler: alte Daten (gelb + blau) bleiben als Summe erhalten
+  $('mathe-plus-btn')?.addEventListener('click', () =>
     change(() => {
-      if (StorageService.getMatheGoal().yellowDoneTotal < YELLOW_TOTAL) StorageService.updateMatheGoal({ yellow: 1 });
+      const g = StorageService.getMatheGoal();
+      if (g.yellowDoneTotal + g.blueDoneTotal < MATHE_TOTAL) StorageService.updateMatheGoal({ yellow: 1 });
     }, 'ok')
   );
-  $('mathe-yellow-minus-btn')?.addEventListener('click', () =>
+  $('mathe-minus-btn')?.addEventListener('click', () =>
     change(() => {
-      if (StorageService.getMatheGoal().yellowDoneTotal > 0) StorageService.updateMatheGoal({ yellow: -1 });
-    })
-  );
-  $('mathe-blue-plus-btn')?.addEventListener('click', () =>
-    change(() => {
-      if (StorageService.getMatheGoal().blueDoneTotal < BLUE_TOTAL) StorageService.updateMatheGoal({ blue: 1 });
-    }, 'ok')
-  );
-  $('mathe-blue-minus-btn')?.addEventListener('click', () =>
-    change(() => {
-      if (StorageService.getMatheGoal().blueDoneTotal > 0) StorageService.updateMatheGoal({ blue: -1 });
+      const g = StorageService.getMatheGoal();
+      if (g.blueDoneTotal > 0) StorageService.updateMatheGoal({ blue: -1 });
+      else if (g.yellowDoneTotal > 0) StorageService.updateMatheGoal({ yellow: -1 });
     })
   );
 
