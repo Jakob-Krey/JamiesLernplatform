@@ -49,18 +49,6 @@ const days = PLAN_DAYS.map((d, i) => {
       </a>
     </div>
 
-    <!-- Header mit Countdown -->
-    <section class="expedition-hero">
-      <div>
-        <h1 class="expedition-title">Der Weg zur Mathearbeit 🎒</h1>
-        <span class="expedition-sub">Ziel: Montag, 02. November 2026</span>
-      </div>
-      <div class="countdown-card">
-        <div class="countdown-days" id="countdown-days-count">--</div>
-        <div class="countdown-label">noch übrig</div>
-      </div>
-    </section>
-
     <!-- Heute eintragen -->
     <section class="panel">
       <div class="panel-head">
@@ -176,32 +164,6 @@ const days = PLAN_DAYS.map((d, i) => {
 </BaseLayout>
 
 <style>
-  .expedition-hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-    border-radius: 24px;
-    padding: 1.25rem 2rem;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-lg);
-  }
-  .expedition-title { font-size: 1.85rem; font-weight: 900; margin: 0 0 0.25rem; }
-  .expedition-sub { font-size: 0.9rem; color: #93c5fd; font-weight: 700; }
-  .countdown-card {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 0.6rem 1.5rem;
-    min-width: 140px;
-    text-align: center;
-  }
-  .countdown-days { font-size: 2.2rem; font-weight: 900; color: #fde047; line-height: 1.1; }
-  .countdown-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd; font-weight: 800; }
-
   .panel {
     background: white;
     border: 2px solid #e2e8f0;
@@ -342,7 +304,7 @@ const days = PLAN_DAYS.map((d, i) => {
 <script>
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
-  import { PLAN_DAYS, DONE_DAYS, EXAM_DATE, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
+  import { PLAN_DAYS, DONE_DAYS, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
 
   const YELLOW_TOTAL = 17;
   const BLUE_TOTAL = 17;
@@ -351,13 +313,6 @@ const days = PLAN_DAYS.map((d, i) => {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${d.getFullYear()}-${mm}-${dd}`;
-  }
-
-  function daysUntil(dateStr: string): number {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const [y, m, d] = dateStr.split('-').map(Number);
-    return Math.round((new Date(y, m - 1, d).getTime() - today.getTime()) / 86400000);
   }
 
   const $ = (id: string) => document.getElementById(id);
@@ -403,11 +358,6 @@ const days = PLAN_DAYS.map((d, i) => {
   function render() {
     const { sg, mg, schreibDone, matheDone } = progress();
     const today = localDateStr();
-
-    // Countdown
-    const left = Math.max(0, daysUntil(EXAM_DATE));
-    const cd = $('countdown-days-count');
-    if (cd) cd.textContent = left === 0 ? 'Heute!' : `${left} ${left === 1 ? 'Tag' : 'Tage'}`;
 
     // Eingabe-Zeilen
     $('schreib-current-text')!.textContent = `Seite ${sg.currentPage} von ${sg.targetPage}`;
