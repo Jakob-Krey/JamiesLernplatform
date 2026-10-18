@@ -40,7 +40,7 @@ Wird nach jedem Übungstag ergänzt (siehe „Fehlerliste“).
 
 ### Tagesablauf
 - Etwa **1 Stunde pro Tag**, aufgeteilt in **2 Sprints à 15 Minuten** (Timer auf der Seite „Fokus-Timer“), dazwischen 5 Minuten Pause.
-- Pro Tag ungefähr **2 Seiten Mathe** (werden ausgedruckt) und die Seiten im **Schreiblernheft** (aktuell bis Seite 76).
+- Pro Tag ungefähr **2 Seiten Mathe** (werden ausgedruckt) und **höchstens 2 Seiten** im **Schreiblernheft** (Deutsch) (Seite 35 bis 75).
 - **Jamie sucht selbst aus,** was in welchem Sprint gemacht wird (Mathe, Schreiblernheft oder Website-Übungen). Hauptsache, die Tagesseiten sind am Ende erledigt.
 
 ### Fokus-Regeln (15-Minuten-Sprint)
@@ -96,6 +96,17 @@ Prüfung: **Mo, 02.11.2026**. Jeden Tag ca. 2 Seiten Mathe zum Thema. Das Thema 
 | So 01.11. | **Probearbeit** mit Zeitlimit (2 × 15 Min) | Wie die echte Arbeit, danach nur besprechen |
 
 Am **Mo 02.11.** ist die Arbeit. Kein neuer Stoff mehr am Tag davor.
+
+### Woche 3 – nur noch Deutsch (Schreiblernheft)
+
+Deutsch sind **immer nur 2 Seiten pro Tag**. Damit das Schreiblernheft bis **Seite 75** fertig wird, läuft der Pfad nach der Mathearbeit weiter (ab Tag 17 nur noch Deutsch, Mathe ist dann fertig):
+
+| Datum | Deutsch |
+|---|---|
+| Mo 02.11. | 2 Seiten (nach der Arbeit) |
+| Di 03.11. – Do 05.11. | je 2 Seiten |
+| Fr 06.11. | 2 Seiten |
+| Sa 07.11. | letzte Seite 🏁 |
 
 ---
 
