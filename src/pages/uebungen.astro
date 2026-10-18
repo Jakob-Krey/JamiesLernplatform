@@ -48,7 +48,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
       <div class="button-row">
         <button type="button" class="ws-btn ws-btn-primary" id="btn-check">✅ Prüfen</button>
-        <button type="button" class="ws-btn" id="btn-solutions">💡 Lösungen zeigen</button>
         <button type="button" class="ws-btn" id="btn-new">🔀 Neues Blatt</button>
         <button type="button" class="ws-btn" id="btn-print">🖨️ Drucken</button>
       </div>
@@ -170,7 +169,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   const helpEl = document.getElementById('help-toggle') as HTMLInputElement;
   const pagesEl = document.getElementById('pages-select') as HTMLSelectElement;
   const resultEl = document.getElementById('check-result')!;
-  const solutionsBtn = document.getElementById('btn-solutions')!;
 
   function localDateStr(): string {
     const d = new Date();
@@ -180,7 +178,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   const params = new URLSearchParams(location.search);
   let topic: TopicId = (TOPICS.some((t) => t.id === params.get('thema')) ? params.get('thema') : 'plusminus') as TopicId;
   let seed = params.get('seed') || localDateStr();
-  let showingSolutions = false;
   // Die Probearbeit startet ohne Hilfe, damit sie wie die echte Arbeit ist
   helpEl.checked = topic !== 'probe';
 
@@ -262,8 +259,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
       </div>`;
     }).join('');
     selectEl.value = topic;
-    showingSolutions = false;
-    solutionsBtn.textContent = '💡 Lösungen zeigen';
     resultEl.textContent = '';
     resultEl.style.color = '';
     document.title = `${sheet.title} • Jamies Übungsblätter`;
@@ -312,22 +307,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     }
   }
 
-  function toggleSolutions() {
-    showingSolutions = !showingSolutions;
-    inputs().forEach((el) => {
-      if (showingSolutions) {
-        el.dataset.mine = el.value;
-        el.value = el.dataset.a!;
-        el.classList.remove('ok', 'bad');
-        el.classList.add('solved');
-      } else {
-        el.value = el.dataset.mine ?? '';
-        el.classList.remove('solved');
-      }
-    });
-    solutionsBtn.textContent = showingSolutions ? '🙈 Lösungen verstecken' : '💡 Lösungen zeigen';
-  }
-
   function newSheet() {
     seed = Math.random().toString(36).slice(2, 8);
     updateUrl();
@@ -335,7 +314,6 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   }
 
   document.getElementById('btn-check')!.addEventListener('click', check);
-  solutionsBtn.addEventListener('click', toggleSolutions);
   document.getElementById('btn-new')!.addEventListener('click', newSheet);
   document.getElementById('btn-print')!.addEventListener('click', () => window.print());
   selectEl.addEventListener('change', () => {
