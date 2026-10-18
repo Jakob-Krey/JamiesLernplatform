@@ -20,6 +20,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         Englisch-Vokabeln 🇬🇧
       </h1>
 
+      <!-- Modus: Lernkarten oder Quiz -->
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 0.9rem;" id="mode-bar">
+        <button type="button" class="switch-btn active" data-mode="cards">🃏 Lernkarten</button>
+        <button type="button" class="switch-btn" data-mode="quiz">🎯 Quiz</button>
+      </div>
+
       <!-- Category Filter Buttons -->
       <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;" id="category-filter-bar">
         {VOCAB_CATEGORIES.map((cat, idx) => (
@@ -31,6 +37,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             {cat.label}
           </button>
         ))}
+        <button type="button" class="switch-btn" data-cat="alle">🎲 Alles gemischt</button>
+      </div>
+
+      <!-- Richtung (nur Quiz) -->
+      <div style="display: none; justify-content: center; gap: 0.5rem; margin-top: 0.75rem;" id="dir-bar">
+        <button type="button" class="switch-btn active" data-dir="en-de">🇬🇧 ➔ 🇩🇪 Was heißt das?</button>
+        <button type="button" class="switch-btn" data-dir="de-en">🇩🇪 ➔ 🇬🇧 Wie sagt man …?</button>
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quiz-area" style="display: none;">
+      <div class="math-game-box">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;" id="quiz-tag">Quiz</span>
+          <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="quiz-streak">🔥 Serie: 0</span>
+        </div>
+        <div style="font-size: 4rem; margin-top: 1rem;" id="quiz-emoji">🐶</div>
+        <div class="math-equation" id="quiz-word" style="font-size: 2.6rem; margin: 0.5rem 0 0.75rem;">Dog</div>
+        <button type="button" class="flashcard-audio-btn" id="quiz-audio-btn" title="Englisch vorlesen" style="position: static; margin: 0 auto 1.5rem;">🔊 Vorlesen</button>
+        <div class="math-options-grid" id="quiz-options"></div>
       </div>
     </div>
 
@@ -59,7 +86,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
 
     <!-- Actions -->
-    <div class="flashcard-actions">
+    <div class="flashcard-actions" id="card-actions">
       <button type="button" class="btn-trainer btn-secondary" id="en-prev-btn">
         ⬅️ Vorherige
       </button>
@@ -74,19 +101,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { VOCAB_DATA, type VocabCategoryId } from '../data/vocab';
+  import { VOCAB_DATA, type VocabCategoryId, type VocabItem } from '../data/vocab';
   import { StorageService } from '../lib/storage';
   import { AudioFX, speakEnglish, triggerConfetti, showStarToast } from '../lib/audio';
 
-  let activeCat: VocabCategoryId = 'tiere';
+  type CatId = VocabCategoryId | 'alle';
+  let activeCat: CatId = 'tiere';
   let cardIdx = 0;
+  let mode: 'cards' | 'quiz' = 'cards';
+  let dir: 'en-de' | 'de-en' = 'en-de';
+  let streak = 0;
+  let current: VocabItem | null = null;
+
+  const ALL_ITEMS: VocabItem[] = Object.values(VOCAB_DATA).flat();
+
+  function getItems(): VocabItem[] {
+    return activeCat === 'alle' ? ALL_ITEMS : VOCAB_DATA[activeCat];
+  }
 
   function renderCurrentCard() {
     const card = document.getElementById('vocab-card');
     if (card) card.classList.remove('is-flipped');
 
-    const items = VOCAB_DATA[activeCat];
-    const current = items[cardIdx];
+    const items = getItems();
+    const currentCard = items[cardIdx];
 
     const catEl = document.getElementById('card-cat-label');
     const emojiEl = document.getElementById('card-emoji');
@@ -95,26 +133,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const deWordEl = document.getElementById('card-de-word');
 
     if (catEl) catEl.textContent = activeCat.toUpperCase();
-    if (emojiEl) emojiEl.textContent = current.emoji;
-    if (wordEl) wordEl.textContent = current.en;
-    if (backEmojiEl) backEmojiEl.textContent = current.emoji;
-    if (deWordEl) deWordEl.textContent = current.de;
+    if (emojiEl) emojiEl.textContent = currentCard.emoji;
+    if (wordEl) wordEl.textContent = currentCard.en;
+    if (backEmojiEl) backEmojiEl.textContent = currentCard.emoji;
+    if (deWordEl) deWordEl.textContent = currentCard.de;
   }
 
-  function setCategory(cat: VocabCategoryId) {
+  function setCategory(cat: CatId) {
     activeCat = cat;
     cardIdx = 0;
+    streak = 0;
     document.querySelectorAll('#category-filter-bar .switch-btn').forEach(btn => {
       if (btn.getAttribute('data-cat') === cat) btn.classList.add('active');
       else btn.classList.remove('active');
     });
     renderCurrentCard();
+    if (mode === 'quiz') nextQuestion();
   }
 
   const catBtns = document.querySelectorAll('#category-filter-bar .switch-btn');
   catBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const cat = btn.getAttribute('data-cat') as VocabCategoryId;
+      const cat = btn.getAttribute('data-cat') as CatId;
       if (cat) setCategory(cat);
     });
   });
@@ -132,16 +172,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   if (audioBtn) {
     audioBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const items = VOCAB_DATA[activeCat];
-      const current = items[cardIdx];
-      speakEnglish(current.en);
+      speakEnglish(getItems()[cardIdx].en);
     });
   }
 
   const prevBtn = document.getElementById('en-prev-btn');
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      const items = VOCAB_DATA[activeCat];
+      const items = getItems();
       cardIdx = (cardIdx - 1 + items.length) % items.length;
       renderCurrentCard();
     });
@@ -150,7 +188,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const nextBtn = document.getElementById('en-next-btn');
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      const items = VOCAB_DATA[activeCat];
+      const items = getItems();
       cardIdx = (cardIdx + 1) % items.length;
       renderCurrentCard();
     });
@@ -162,11 +200,111 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       AudioFX.playChime();
       showStarToast(0, 'Super gemerkt!');
       triggerConfetti();
-      const items = VOCAB_DATA[activeCat];
+      const items = getItems();
       cardIdx = (cardIdx + 1) % items.length;
       renderCurrentCard();
     });
   }
+
+  /* ---------- Quiz: richtiges Wort aus vier Möglichkeiten wählen ---------- */
+  function shuffle<T>(arr: T[]): T[] {
+    return [...arr].sort(() => Math.random() - 0.5);
+  }
+
+  function updateStreak() {
+    const el = document.getElementById('quiz-streak');
+    if (el) el.textContent = `🔥 Serie: ${streak}`;
+  }
+
+  function nextQuestion() {
+    const pool = getItems();
+    // nicht zweimal dasselbe Wort hintereinander
+    let pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pool.length > 1) while (pick === current) pick = pool[Math.floor(Math.random() * pool.length)];
+    current = pick;
+
+    // Falsche Antworten bevorzugt aus der gleichen Kategorie, sonst aus allen Wörtern
+    const text = (v: VocabItem) => (dir === 'en-de' ? v.de : v.en);
+    const usable = (v: VocabItem) => v !== pick && text(v) !== text(pick);
+    const wrongPool = [...shuffle(pool.filter(usable)), ...shuffle(ALL_ITEMS.filter((v) => usable(v) && !pool.includes(v)))].filter(
+      (v, i, a) => a.findIndex((x) => text(x) === text(v)) === i
+    );
+    const options = shuffle([pick, ...wrongPool.slice(0, 3)]);
+
+    document.getElementById('quiz-emoji')!.textContent = pick.emoji;
+    document.getElementById('quiz-word')!.textContent = dir === 'en-de' ? pick.en : pick.de;
+    document.getElementById('quiz-tag')!.textContent = dir === 'en-de' ? 'Was heißt das auf Deutsch?' : 'Wie sagt man das auf Englisch?';
+    (document.getElementById('quiz-audio-btn') as HTMLElement).style.display = dir === 'en-de' ? 'inline-flex' : 'none';
+
+    const box = document.getElementById('quiz-options')!;
+    box.innerHTML = '';
+    options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'math-opt-btn';
+      btn.style.fontSize = '1.25rem';
+      btn.textContent = text(opt);
+      btn.onclick = () => answer(opt === pick, btn);
+      box.appendChild(btn);
+    });
+  }
+
+  function answer(correct: boolean, btn: HTMLButtonElement) {
+    if (correct) {
+      btn.classList.add('correct');
+      streak++;
+      updateStreak();
+      AudioFX.playChime();
+      if (dir === 'de-en' && current) speakEnglish(current.en);
+      if (streak % 5 === 0) {
+        StorageService.addStars(2);
+        showStarToast(2, `${streak}er Serie! Du bist ein Englisch-Profi! 🌟`);
+        triggerConfetti();
+      } else {
+        StorageService.addStars(1);
+        showStarToast(1, 'Richtig! Well done! 🎯');
+      }
+      document.querySelectorAll<HTMLButtonElement>('#quiz-options .math-opt-btn').forEach((b) => (b.disabled = true));
+      setTimeout(nextQuestion, 900);
+    } else {
+      btn.classList.add('wrong');
+      streak = 0;
+      updateStreak();
+      setTimeout(() => btn.classList.remove('wrong'), 500);
+    }
+  }
+
+  document.getElementById('quiz-audio-btn')?.addEventListener('click', () => {
+    if (current) speakEnglish(current.en);
+  });
+
+  function setMode(m: 'cards' | 'quiz') {
+    mode = m;
+    streak = 0;
+    updateStreak();
+    document.querySelectorAll('#mode-bar .switch-btn').forEach((b) =>
+      b.classList.toggle('active', b.getAttribute('data-mode') === m)
+    );
+    const quiz = m === 'quiz';
+    document.getElementById('quiz-area')!.style.display = quiz ? 'block' : 'none';
+    document.getElementById('vocab-card')!.style.display = quiz ? 'none' : '';
+    document.getElementById('card-actions')!.style.display = quiz ? 'none' : '';
+    document.getElementById('dir-bar')!.style.display = quiz ? 'flex' : 'none';
+    if (quiz) nextQuestion();
+  }
+
+  document.querySelectorAll('#mode-bar .switch-btn').forEach((b) =>
+    b.addEventListener('click', () => setMode(b.getAttribute('data-mode') as 'cards' | 'quiz'))
+  );
+  document.querySelectorAll('#dir-bar .switch-btn').forEach((b) =>
+    b.addEventListener('click', () => {
+      dir = b.getAttribute('data-dir') as 'en-de' | 'de-en';
+      streak = 0;
+      updateStreak();
+      document.querySelectorAll('#dir-bar .switch-btn').forEach((x) => x.classList.toggle('active', x === b));
+      nextQuestion();
+    })
+  );
 
   renderCurrentCard();
 </script>

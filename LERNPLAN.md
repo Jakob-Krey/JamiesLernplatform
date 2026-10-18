@@ -60,7 +60,7 @@ Wird nach jedem Übungstag ergänzt (siehe „Fehlerliste“).
 - **Sterne gibt es erst, wenn alle Seiten des Tages erledigt sind** – sowohl **Deutsch (Schreiblernheft)** als auch **Mathe**.
 - Es zählt das **Erledigen, nicht Fehlerfreiheit.** Fehler werden besprochen, nicht bestraft.
 - Sterne werden eingesetzt, um **Pokémon-Karten freizuschalten** (Stand 17.10.2026: Sterne = 0, alle Karten gesperrt, Pikachu und Evoli kosten aber 0).
-- **Ausnahme Website-Übungen:** Im Kopfrechnen auf der Website (Mathe-Seite) gibt es Sterne für **richtige Antworten** (+1 pro richtiger Aufgabe, +2 bei jeder 5er-Serie). Das sind Aufgaben am Bildschirm, nicht die ausgedruckten Seiten.
+- **Ausnahme Website-Übungen:** Im Kopfrechnen (Mathe-Seite) und im Englisch-Quiz gibt es Sterne für **richtige Antworten** (+1 pro richtiger Aufgabe, +2 bei jeder 5er-Serie). Das sind Aufgaben am Bildschirm, nicht die ausgedruckten Seiten.
 - **Tagesbelohnung** (Seite „Lernziele“): 3 ⭐ pro Tag, 5 ⭐ am Probearbeits-Tag (01.11.), zusammen 47 ⭐. Ein Tag zählt als geschafft, wenn alle Seiten bis zu diesem Tag erledigt sind (so kann man Rückstand aufholen und auch vorarbeiten).
 
 ---
