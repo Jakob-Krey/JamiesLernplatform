@@ -6,12 +6,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 ---
 
-<BaseLayout title="Jamies Übungsblätter ✏️ • Online üben oder drucken" activePage="uebungen">
+<BaseLayout title="Übungsblätter ✏️ • Online üben oder drucken" activePage="uebungen">
   <main class="container ws-page" style="padding-top: 2rem;">
 
     <div class="no-print" style="margin-bottom: 1.25rem;">
-      <a href={`${base}/lernziele/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+      <a data-profiles="jamie" href={`${base}/lernziele/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
         <span>⬅️</span> Zurück zu den Lernzielen
+      </a>
+      <a data-profiles="maya" href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zum Start
       </a>
     </div>
 
@@ -168,20 +171,32 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
 <script>
   import { TOPICS, generateSheet, type Item, type Section, type TopicId } from '../lib/worksheets';
+  import { currentProfile, pkey } from '../lib/profile';
+
+  const profile = currentProfile();
 
   const sheetEl = document.getElementById('sheet')!;
+  const allowedTopics = TOPICS.filter((t) => !profile.hideTopics.includes(t.id)).map((t) => t.id as string);
   const selectEl = document.getElementById('topic-select') as HTMLSelectElement;
   const helpEl = document.getElementById('help-toggle') as HTMLInputElement;
   const pagesEl = document.getElementById('pages-select') as HTMLSelectElement;
   const resultEl = document.getElementById('check-result')!;
+
+  // Nur die Themen zeigen, die zu diesem Kind gehören
+  selectEl.querySelectorAll('option').forEach((o) => {
+    if (!allowedTopics.includes(o.value)) o.remove();
+  });
+  selectEl.querySelectorAll('optgroup').forEach((g) => {
+    if (!g.querySelector('option')) g.remove();
+  });
 
   function localDateStr(): string {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  const LAST_KEY = 'jamie_ws_last';
-  const ANSWERS_KEY = 'jamie_ws_answers';
+  const LAST_KEY = pkey('jamie_ws_last');
+  const ANSWERS_KEY = pkey('jamie_ws_answers');
 
   function readJson<T>(key: string, fallback: T): T {
     try {
@@ -201,7 +216,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   const last = readJson<{ topic?: string; seed?: string; pages?: string; help?: boolean }>(LAST_KEY, {});
   const hasParams = params.has('thema');
   const topicParam = hasParams ? params.get('thema') : last.topic;
-  let topic: TopicId = (TOPICS.some((t) => t.id === topicParam) ? topicParam : 'plusminus') as TopicId;
+  let topic: TopicId = (allowedTopics.includes(topicParam ?? '') ? topicParam : profile.defaultTopic) as TopicId;
   let seed = (hasParams ? params.get('seed') : last.seed) || localDateStr();
   // Die Probearbeit startet ohne Hilfe, damit sie wie die echte Arbeit ist
   helpEl.checked = topic !== 'probe';

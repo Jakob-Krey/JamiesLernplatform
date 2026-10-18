@@ -84,3 +84,28 @@ Ein automatischer GitHub-Workflow ist bereits eingerichtet unter [`.github/workf
 2. Im GitHub-Repository auf **Settings ➔ Pages** gehen.
 3. Unter **Build and deployment ➔ Source** auswählen: **`GitHub Actions`**.
 4. Fertig! Bei jedem `git push` wird die Seite vollautomatisch aktualisiert und ist weltweit unter deiner GitHub-Pages-URL abrufbar.
+
+## Mehrere Kinder (Profile)
+
+Die Seite unterstützt mehrere Kinder über die Adresse:
+
+- `…/` oder `…/?kind=jamie` – Jamie (Standard, alle Seiten)
+- `…/?kind=maya` – Maya (Start, Übungen, Mathe, Englisch, Pokémon, Fokus-Timer)
+
+Das Profil wird im Browser gemerkt. Profile und ihre Rechte stehen in `src/lib/profile.ts`
+(ein neues Kind = ein neuer Eintrag dort plus Icons `public/icons/<id>-*.png` und ein
+`src/pages/manifest-<id>.webmanifest.ts`).
+
+Getrennt je Kind: Sterne, Pokémon, Favoriten, Übungsblatt-Antworten, Fokus-Timer und der
+Cloud-Datensatz (`jamie_data/progress` für Jamie, `jamie_data/progress_<id>` für die anderen).
+Gemeinsam: Vokabeln, Übungs-Generator, Pokémon-Karten und alle Verbesserungen. Auf der
+Pokémon-Seite sieht man, welche Karten das andere Kind besitzt.
+
+Firestore-Regeln: Die Sammlung `jamie_data` muss für alle Dokumente lesbar und schreibbar sein,
+nicht nur für `progress`, zum Beispiel:
+
+```
+match /jamie_data/{doc} { allow read, write: if true; }
+```
+
+Für Maya als eigene Web-App: Seite in Safari mit `?kind=maya` öffnen und „Zum Home-Bildschirm“ wählen.

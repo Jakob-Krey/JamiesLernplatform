@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <main class="container">
 
     <!-- Compact Top Bar: Sofortige Übersicht ohne Ablenkung -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div data-profiles="jamie" style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
       <h1 style="font-size: 1.85rem; font-weight: 900; color: #0f172a; margin: 0;">
         Hallo, <span class="name-highlight">Jamie!</span> 👋
       </h1>
@@ -24,7 +24,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <!-- ====================================================================
          STUNDENPLAN SECTION
          ==================================================================== -->
-    <section class="stundenplan-section" id="stundenplan" style="margin-bottom: 2rem;">
+    <section data-profiles="jamie" class="stundenplan-section" id="stundenplan" style="margin-bottom: 2rem;">
       <div class="section-header" style="margin-bottom: 0.75rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-size: 1.5rem;">📅</span>
@@ -50,7 +50,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <!-- ====================================================================
          SCHULRANZEN-CHECKER / PACKLISTE
          ==================================================================== -->
-    <section class="ranzen-section" id="schulranzen-section" style="margin-bottom: 2.5rem;">
+    <section data-profiles="jamie" class="ranzen-section" id="schulranzen-section" style="margin-bottom: 2.5rem;">
       <div class="ranzen-header" style="margin-bottom: 0.85rem;">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
           <span style="font-size: 1.5rem;">🎒</span>
@@ -67,6 +67,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </div>
     </section>
 
+    <!-- Startseite für Maya: nur die Lernwelten -->
+    <section data-profiles="maya" class="kid-start">
+      <h1 class="kid-hello">Hallo, <span class="name-highlight">Maya!</span> 👋</h1>
+      <p class="kid-sub">Was möchtest du heute machen?</p>
+      <div class="kid-tiles">
+        <a class="kid-tile" style="--tile: #dbeafe;" href={`${base}/uebungen/`}><span class="kid-emoji">✏️</span><b>Übungsblätter</b><small>Online üben oder ausdrucken</small></a>
+        <a class="kid-tile" style="--tile: #dcfce7;" href={`${base}/mathe/`}><span class="kid-emoji">🔢</span><b>Kopfrechnen</b><small>Plus, Minus und 1x1</small></a>
+        <a class="kid-tile" style="--tile: #ede9fe;" href={`${base}/englisch/`}><span class="kid-emoji">🇬🇧</span><b>Englisch</b><small>Vokabeln-Quiz</small></a>
+        <a class="kid-tile" style="--tile: #fef3c7;" href={`${base}/pokemon/`}><span class="kid-emoji">⚡</span><b>Pokémon</b><small>Sammelalbum</small></a>
+        <a class="kid-tile" style="--tile: #fee2e2;" href={`${base}/timer/`}><span class="kid-emoji">⏱️</span><b>Fokus-Timer</b><small>15 Minuten Lernen</small></a>
+      </div>
+    </section>
 
   </main>
 
@@ -315,3 +327,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   // Initial render of packlist
   renderRanzenPackliste(selectedTabDay);
 </script>
+
+<style is:global>
+  .kid-start { padding: 1.5rem 0 3rem; }
+  .kid-hello { font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 0.25rem; }
+  .kid-sub { margin: 0 0 1.5rem; color: #64748b; font-weight: 600; }
+  .kid-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .kid-tile {
+    display: flex; flex-direction: column; gap: 0.2rem; padding: 1.4rem 1.2rem; border-radius: 22px;
+    background: var(--tile); border: 2px solid rgba(15, 23, 42, 0.06); text-decoration: none; color: #0f172a;
+    min-height: 140px; box-shadow: var(--shadow-sm);
+  }
+  .kid-tile b { font-size: 1.2rem; font-weight: 900; }
+  .kid-tile small { color: #475569; font-weight: 600; }
+  .kid-emoji { font-size: 2.2rem; }
+</style>

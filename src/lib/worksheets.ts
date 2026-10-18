@@ -48,7 +48,9 @@ export const TOPICS = [
   { id: 'rest', label: 'Division mit Rest', group: 'Mal & Geteilt' },
   { id: 'punkt', label: 'Punkt-vor-Strich', group: 'Rechenregeln & Sachaufgaben' },
   { id: 'sach', label: 'Sachaufgaben', group: 'Rechenregeln & Sachaufgaben' },
-  { id: 'probe', label: 'Probearbeit (wie die echte Arbeit)', group: 'Probearbeit' }
+  { id: 'probe', label: 'Probearbeit (wie die echte Arbeit)', group: 'Probearbeit' },
+  { id: 'zr10', label: 'Plus & Minus bis 10', group: 'Zahlenraum bis 20' },
+  { id: 'zr20', label: 'Plus & Minus bis 20', group: 'Zahlenraum bis 20' }
 ] as const;
 
 export type TopicId = (typeof TOPICS)[number]['id'];
@@ -159,6 +161,25 @@ function stepsMinus(r: Rng): Item {
       return { kind: 'steps', a, op: '-', b, mid: a - Math.floor(b / 10) * 10, answer: a - b };
     }
   }
+}
+
+/** Plus oder Minus im Zahlenraum bis `max`; `carry` steuert den Zehnerübergang (null = egal). */
+function eqSmall(r: Rng, op: '+' | '-', max: number, carry: boolean | null): Item {
+  for (let tries = 0; tries < 500; tries++) {
+    if (op === '+') {
+      const a = r.int(1, max - 1);
+      const b = r.int(1, max - a);
+      const isCarry = max > 10 && a < 10 && a + b > 10;
+      if (carry !== null && carry !== isCarry) continue;
+      return { kind: 'eq', text: `${a} + ${b} =`, answer: a + b };
+    }
+    const a = r.int(2, max);
+    const b = r.int(1, a - 1);
+    const isCarry = max > 10 && a > 10 && a - b < 10;
+    if (carry !== null && carry !== isCarry) continue;
+    return { kind: 'eq', text: `${a} − ${b} =`, answer: a - b };
+  }
+  return { kind: 'eq', text: `${max - 1} − 1 =`, answer: max - 2 };
 }
 
 function build<T>(n: number, fn: (i: number) => T): T[] {
@@ -522,6 +543,42 @@ export function generateSheet(topic: TopicId, seed: string): Sheet {
             const offset = r.int(0, 5);
             return build(4, (i) => sachItem(r, i + offset));
           })())
+        ]
+      };
+    case 'zr10':
+      return {
+        title: label,
+        sections: [
+          sec(1, 'Rechne.', 'cols4', uniq(12, () => eqSmall(r, '+', 10, null))),
+          sec(2, 'Rechne.', 'cols4', uniq(12, () => eqSmall(r, '-', 10, null))),
+          sec(3, 'Verdopple.', 'cols4', uniq(8, () => {
+            const n = r.int(1, 5);
+            return { kind: 'eq', text: `${n} + ${n} =`, answer: n * 2 } as Item;
+          }))
+        ]
+      };
+    case 'zr20':
+      return {
+        title: label,
+        sections: [
+          sec(1, 'Rechne.', 'cols4', [
+            ...uniq(6, () => eqSmall(r, '+', 20, false)),
+            ...uniq(6, () => eqSmall(r, '-', 20, false))
+          ]),
+          sec(2, 'Rechne mit Zehnerübergang.', 'cols4', [
+            ...uniq(6, () => eqSmall(r, '+', 20, true)),
+            ...uniq(6, () => eqSmall(r, '-', 20, true))
+          ], { hint: 'Erst bis zur 10 rechnen, dann weiter.' }),
+          sec(3, 'Verdopple und halbiere.', 'cols4', [
+            ...uniq(6, () => {
+              const n = r.int(3, 10);
+              return { kind: 'eq', text: `${n} + ${n} =`, answer: n * 2 } as Item;
+            }),
+            ...uniq(6, () => {
+              const n = r.int(3, 10);
+              return { kind: 'eq', text: `${n * 2} : 2 =`, answer: n } as Item;
+            })
+          ])
         ]
       };
     case 'probe':

@@ -320,11 +320,13 @@
 }
 
 /* Locked Card State */
-.pokemon-card.locked {
+.pokemon-card.locked > .pokemon-card-inner,
+.pokemon-card.locked > .locked-badge {
   filter: grayscale(0.95) opacity(0.65);
 }
 
-.pokemon-card.locked:hover {
+.pokemon-card.locked:hover > .pokemon-card-inner,
+.pokemon-card.locked:hover > .locked-badge {
   filter: grayscale(0.85) opacity(0.8);
 }
 
@@ -466,3 +468,10 @@
 .math-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
 .math-input.correct { background: #10b981; border-color: #059669; color: white; }
 .math-input.wrong { background: #fecaca; border-color: #ef4444; color: #991b1b; animation: shake 0.4s ease; }
+
+/* Wer besitzt die Karte? */
+.poke-owners { position: absolute; top: 10px; left: 10px; z-index: 12; display: flex; gap: 4px; pointer-events: none; }
+.owner-chip {
+  width: 26px; height: 26px; border-radius: 50%; color: #fff; font-weight: 900; font-size: 0.8rem;
+  display: inline-flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}

@@ -5,6 +5,7 @@
    ========================================================================== */
 
 import { StorageService } from './storage';
+import { pkey } from './profile';
 import { AudioFX, triggerConfetti, showStarToast } from './audio';
 
 export type TimerMode = 'work' | 'break';
@@ -19,8 +20,8 @@ export interface FocusTimerState {
 }
 
 const TIMER_KEYS = {
-  STATE: 'jamie_focus_timer_state_v1',
-  COMPLETED: 'jamie_focus_completed_today_v1'
+  STATE: pkey('jamie_focus_timer_state_v1'),
+  COMPLETED: pkey('jamie_focus_completed_today_v1')
 };
 
 const WORK_DURATION = 15 * 60; // 15 minutes = 900 seconds

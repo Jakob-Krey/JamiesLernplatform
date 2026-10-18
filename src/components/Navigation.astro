@@ -9,18 +9,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <nav class="main-nav" aria-label="Hauptnavigation">
   <a href={`${base}/`} class:list={['nav-link', { active: activePage === 'stundenplan' }]}>
-    <span class="nav-emoji">📅</span> Stundenplan
+    <span class="nav-emoji" data-profiles="jamie">📅</span><span class="nav-emoji" data-profiles="maya">🏠</span> <span data-profiles="jamie">Stundenplan</span><span data-profiles="maya">Start</span>
   </a>
   <a href={`${base}/timer/`} class:list={['nav-link', { active: activePage === 'timer' }]}>
     <span class="nav-emoji">⏱️</span> Fokus-Timer
   </a>
-  <a href={`${base}/lernziele/`} class:list={['nav-link', { active: activePage === 'lernziele' }]}>
+  <a data-profiles="jamie" href={`${base}/lernziele/`} class:list={['nav-link', { active: activePage === 'lernziele' }]}>
     <span class="nav-emoji">🏔️</span> Lernziele
   </a>
   <a href={`${base}/uebungen/`} class:list={['nav-link', { active: activePage === 'uebungen' }]}>
     <span class="nav-emoji">✏️</span> Übungen
   </a>
-  <a href={`${base}/deutsch/`} class:list={['nav-link', { active: activePage === 'deutsch' }]}>
+  <a data-profiles="jamie" href={`${base}/deutsch/`} class:list={['nav-link', { active: activePage === 'deutsch' }]}>
     <span class="nav-emoji">📖</span> Deutsch
   </a>
   <a href={`${base}/mathe/`} class:list={['nav-link', { active: activePage === 'mathe' }]}>

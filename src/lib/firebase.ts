@@ -5,6 +5,7 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, type Firestore } from 'firebase/firestore';
+import { currentProfile } from './profile';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyA7wPqyt7qM-3eG0TG6GcHWNaCI6uitc9M",
@@ -23,7 +24,8 @@ const app = typeof window !== 'undefined'
 export const db: Firestore | null = app ? getFirestore(app) : null;
 
 const COLLECTION_NAME = 'jamie_data';
-const DOC_ID = 'progress';
+/** Cloud-Datensatz des aktuellen Kindes (Jamie: 'progress', Maya: 'progress_maya'). */
+const ownDocId = () => currentProfile().docId;
 
 export const FirebaseSync = {
   isAvailable(): boolean {
@@ -33,10 +35,10 @@ export const FirebaseSync = {
   /**
    * Save all progress to Firestore
    */
-  async save(data: any): Promise<boolean> {
+  async save(data: any, docId: string = ownDocId()): Promise<boolean> {
     if (!this.isAvailable() || !db) return false;
     try {
-      const ref = doc(db, COLLECTION_NAME, DOC_ID);
+      const ref = doc(db, COLLECTION_NAME, docId);
       await setDoc(ref, {
         ...data,
         updatedAt: new Date().toISOString()
@@ -51,10 +53,10 @@ export const FirebaseSync = {
   /**
    * Load progress once from Firestore
    */
-  async load(): Promise<any | null> {
+  async load(docId: string = ownDocId()): Promise<any | null> {
     if (!this.isAvailable() || !db) return null;
     try {
-      const ref = doc(db, COLLECTION_NAME, DOC_ID);
+      const ref = doc(db, COLLECTION_NAME, docId);
       const snap = await getDoc(ref);
       if (snap.exists()) {
         return snap.data();
@@ -69,10 +71,10 @@ export const FirebaseSync = {
   /**
    * Listen for real-time changes across all open devices (iPad, Mac, Handy)
    */
-  subscribe(onRemoteUpdate: (data: any) => void): (() => void) | null {
+  subscribe(onRemoteUpdate: (data: any) => void, docId: string = ownDocId()): (() => void) | null {
     if (!this.isAvailable() || !db) return null;
     try {
-      const ref = doc(db, COLLECTION_NAME, DOC_ID);
+      const ref = doc(db, COLLECTION_NAME, docId);
       const unsubscribe = onSnapshot(ref, (snap) => {
         if (snap.exists()) {
           const data = snap.data();

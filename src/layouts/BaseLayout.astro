@@ -2,6 +2,7 @@
 import Navigation from '../components/Navigation.astro';
 import StarCounter from '../components/StarCounter.astro';
 import CloudSyncModal from '../components/CloudSyncModal.astro';
+import { PROFILES, PROFILE_IDS, manifestFile } from '../lib/profile';
 import '../styles/style.css';
 import '../styles/cards.css';
 import '../styles/animations.css';
@@ -19,6 +20,24 @@ const {
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Sichtbarkeit je Kind: Elemente mit data-profiles="jamie maya" erscheinen nur bei diesen Kindern.
+const profileCss =
+  PROFILE_IDS.map(
+    (id) => `html[data-kind="${id}"] [data-profiles]:not([data-profiles~="${id}"]) { display: none !important; }
+html[data-kind="${id}"] [data-switch="${id}"] { background: #4f46e5; color: #fff; border-color: #4f46e5; }`
+  ).join('\n');
+
+const profileClient = {
+  ids: PROFILE_IDS,
+  base,
+  active: activePage,
+  pages: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].pages])),
+  manifests: Object.fromEntries(PROFILE_IDS.map((id) => [id, `${base}/${manifestFile(id)}`])),
+  icons: Object.fromEntries(PROFILE_IDS.map((id) => [id, `${base}/icons/${id === 'jamie' ? '' : id + '-'}apple-touch-icon.png`])),
+  names: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].name])),
+  emojis: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].emoji]))
+};
 ---
 
 <!DOCTYPE html>
@@ -30,14 +49,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <meta name="description" content={description} />
 
   <!-- Web-App (PWA) -->
-  <link rel="manifest" href={`${base}/manifest.webmanifest`} />
+  <link rel="manifest" id="manifest-link" href={`${base}/manifest.webmanifest`} />
   <meta name="theme-color" content="#6366f1" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Jamie lernt" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="icon" type="image/png" href={`${base}/icons/icon-192.png`} />
-  <link rel="apple-touch-icon" href={`${base}/icons/apple-touch-icon.png`} />
+  <link rel="apple-touch-icon" id="touch-icon-link" href={`${base}/icons/apple-touch-icon.png`} />
+  <style is:inline set:html={profileCss}></style>
+  <!-- Kind bestimmen (?kind=maya), bevor die Seite gezeigt wird -->
+  <script is:inline define:vars={{ pc: profileClient }}>
+    (function () {
+      var k = null;
+      try {
+        var q = new URLSearchParams(location.search).get('kind');
+        q = q ? q.toLowerCase() : null;
+        if (q && pc.ids.indexOf(q) > -1) { k = q; localStorage.setItem('jamie_profile', q); }
+        else { k = localStorage.getItem('jamie_profile'); }
+      } catch (e) {}
+      if (!k || pc.ids.indexOf(k) < 0) k = 'jamie';
+      document.documentElement.setAttribute('data-kind', k);
+      // Seiten, die zu diesem Kind nicht gehören (z. B. Lernziele bei Maya), führen zum Start
+      if (pc.pages[k].indexOf(pc.active) < 0) { location.replace(pc.base + '/'); return; }
+      var m = document.getElementById('manifest-link'); if (m) m.setAttribute('href', pc.manifests[k]);
+      var t = document.getElementById('touch-icon-link'); if (t) t.setAttribute('href', pc.icons[k]);
+      var a = document.querySelector('meta[name="apple-mobile-web-app-title"]'); if (a) a.setAttribute('content', pc.names[k] + ' lernt');
+      if (k !== 'jamie') document.title = document.title.replace(/Jamies/g, pc.names[k] + 's').replace(/Jamie/g, pc.names[k]).replace(/🎒/g, pc.emojis[k]);
+    })();
+  </script>
 
   <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -57,9 +97,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <header class="site-header">
     <div class="container nav-wrapper">
       <a href={`${base}/`} class="brand" aria-label="Zur Startseite">
-        <div class="brand-icon">🎒</div>
+        <div class="brand-icon"><span data-profiles="jamie">🎒</span><span data-profiles="maya">🦄</span></div>
         <div class="brand-title">
-          <span>Jamie's</span>
+          <span data-profiles="jamie">Jamie's</span><span data-profiles="maya">Maya's</span>
           <span class="brand-subtitle">Lernplattform 🌟</span>
         </div>
       </a>
@@ -94,7 +134,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <footer class="site-footer" style="padding: 1.25rem 0; margin-top: 3rem;">
     <div class="container footer-content" style="text-align: center;">
       <p style="font-weight: 800; font-size: 0.95rem; color: #64748b; margin: 0;">
-        Für <span style="color: #ec4899;">Jamie</span> ❤️
+        Für <span data-profiles="jamie" style="color: #ec4899;">Jamie</span><span data-profiles="maya" style="color: #ec4899;">Maya</span> ❤️
       </p>
       <p style="font-size: 0.72rem; color: #94a3b8; margin: 0.4rem 0 0;">
         Fan-Projekt ohne Gewinnabsicht. Pokémon © Nintendo / Creatures / Game Freak. Bilder von PokéAPI.

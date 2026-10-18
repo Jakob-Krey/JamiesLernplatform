@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <main class="container" style="padding-top: 2rem;">
     <div style="margin-bottom: 1.5rem;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
-        <span>⬅️</span> Zurück zum Stundenplan
+        <span>⬅️</span> Zurück <span data-profiles="jamie">zum Stundenplan</span><span data-profiles="maya">zum Start</span>
       </a>
     </div>
 
@@ -26,6 +26,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <span style="font-size: 1.5rem; font-weight: 900; color: white;" id="unlocked-counter">
           0 / 6
         </span>
+        <span style="font-size: 0.85rem; font-weight: 800; color: #c7d2fe; border-left: 1px solid rgba(255,255,255,0.25); padding-left: 0.75rem;" id="other-counter"></span>
       </div>
     </div>
 
@@ -36,6 +37,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <button type="button" class="poke-chip" data-view="mine">✅ Meine</button>
         <button type="button" class="poke-chip" data-view="locked">🔒 Noch nicht frei</button>
         <button type="button" class="poke-chip" data-view="fav">❤️ Favoriten</button>
+        <button type="button" class="poke-chip" data-view="other" id="chip-other" hidden>👥 Hat …</button>
       </div>
       <div class="poke-filter-row" id="poke-type-chips"></div>
       <div class="poke-filter-row">
@@ -64,11 +66,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <script>
   import { POKEMON_DATA, TYPE_LABELS, pokemonArtUrl, pokemonGifUrl, pokemonCryUrl, type PokemonCardData } from '../data/pokemon';
   import { StorageService } from '../lib/storage';
+  import { FirebaseSync } from '../lib/firebase';
+  import { pkey, currentProfile, otherProfiles } from '../lib/profile';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
 
   let targetPokeToUnlock: PokemonCardData | null = null;
 
-  const FAV_KEY = 'jamie_favorite_pokemon';
+  const FAV_KEY = pkey('jamie_favorite_pokemon');
+  const me = currentProfile();
+  const others = otherProfiles();
+  const OTHER_KEY = (id: string) => `jamie_other_unlocked_${id}`;
+  // Welche Karten das/die andere(n) Kind(er) besitzen (zuerst aus dem Zwischenspeicher, dann live aus der Cloud)
+  const otherOwned: Record<string, string[]> = {};
+  others.forEach((o) => {
+    try {
+      const cached = JSON.parse(localStorage.getItem(OTHER_KEY(o.id)) || '[]');
+      otherOwned[o.id] = Array.isArray(cached) ? cached : [];
+    } catch {
+      otherOwned[o.id] = [];
+    }
+  });
+
   let view = 'all';
   let typeFilter = 'all';
   let sortBy = 'dex';
@@ -103,11 +121,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     container.innerHTML = '';
     const favs = getFavorites();
 
+    const first = others[0];
+    const firstOwned = first ? otherOwned[first.id] : [];
+    const otherCounter = document.getElementById('other-counter');
+    if (otherCounter && first) otherCounter.textContent = `${first.emoji} ${first.name}: ${firstOwned.length}`;
+    const chipOther = document.getElementById('chip-other');
+    if (chipOther && first) {
+      chipOther.textContent = `${first.emoji} Hat ${first.name}`;
+      chipOther.hidden = false;
+    }
+
     const shown = POKEMON_DATA.filter((p) => {
       const unlocked = unlockedIds.includes(p.id);
       if (view === 'mine' && !unlocked) return false;
       if (view === 'locked' && unlocked) return false;
       if (view === 'fav' && !favs.includes(p.id)) return false;
+      if (view === 'other' && !firstOwned.includes(p.id)) return false;
       if (typeFilter !== 'all' && p.type !== typeFilter) return false;
       if (query && !p.name.toLowerCase().includes(query)) return false;
       return true;
@@ -128,6 +157,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       card.dataset.id = poke.id;
       
       card.innerHTML = `
+        <div class="poke-owners" aria-hidden="true">
+          ${isUnlocked ? `<span class="owner-chip" style="background:${me.color}" title="${me.name} hat die Karte">${me.name[0]}</span>` : ''}
+          ${others.filter((o) => otherOwned[o.id].includes(poke.id)).map((o) => `<span class="owner-chip" style="background:${o.color}" title="${o.name} hat die Karte">${o.name[0]}</span>`).join('')}
+        </div>
         ${isUnlocked ? `<button type="button" class="poke-fav" aria-label="Favorit" aria-pressed="${isFav}">${isFav ? '❤️' : '🤍'}</button>` : ''}
         <div class="pokemon-card-inner ${poke.typeClass}">
           <div class="poke-card-header">
@@ -331,4 +364,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   });
 
   renderPokemonCollection();
+
+  // Karten des anderen Kindes aus der Cloud holen und live aktuell halten
+  others.forEach((o) => {
+    const apply = (data: any) => {
+      const list = data && Array.isArray(data.unlockedPokemon) ? (data.unlockedPokemon as string[]) : [];
+      otherOwned[o.id] = list;
+      try {
+        localStorage.setItem(OTHER_KEY(o.id), JSON.stringify(list));
+      } catch {}
+      renderPokemonCollection();
+    };
+    FirebaseSync.load(o.docId).then((d) => d && apply(d));
+    FirebaseSync.subscribe(apply, o.docId);
+  });
 </script>

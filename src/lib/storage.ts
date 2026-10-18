@@ -4,6 +4,7 @@
    ========================================================================== */
 
 import { FirebaseSync } from './firebase';
+import { currentProfile } from './profile';
 
 export interface SchreibheftGoal {
   startPage: number;
@@ -39,17 +40,21 @@ export interface JamieProgressState {
   lastUpdated: string;
 }
 
+// Jeder lokale Schlüssel bekommt die Endung des Kindes (Jamie: keine, Maya: "__maya"),
+// damit Sterne, Pokémon usw. getrennt bleiben.
+const SFX = typeof window !== 'undefined' ? currentProfile().suffix : '';
+
 const STORAGE_KEYS = {
-  STARS: 'jamie_stars_count',
-  UNLOCKED_POKEMON: 'jamie_unlocked_pokemon',
-  PACKED_ITEMS: 'jamie_packed_items_date',
-  LAST_LOGIN: 'jamie_last_login',
-  RESET_VERSION: 'jamie_reset_version',
-  CLAIMED_DAYS: 'jamie_claimed_days',
+  STARS: 'jamie_stars_count' + SFX,
+  UNLOCKED_POKEMON: 'jamie_unlocked_pokemon' + SFX,
+  PACKED_ITEMS: 'jamie_packed_items_date' + SFX,
+  LAST_LOGIN: 'jamie_last_login' + SFX,
+  RESET_VERSION: 'jamie_reset_version' + SFX,
+  CLAIMED_DAYS: 'jamie_claimed_days' + SFX,
   CLOUD_CONFIG: 'jamie_cloud_config',
-  GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft',
-  GOAL_MATHE: 'jamie_goal_mathe',
-  GOAL_DAILY_LOG: 'jamie_goal_daily_log'
+  GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft' + SFX,
+  GOAL_MATHE: 'jamie_goal_mathe' + SFX,
+  GOAL_DAILY_LOG: 'jamie_goal_daily_log' + SFX
 };
 
 // Einmaliger Reset (lokal + Firestore): Sterne 0, alle Pokémon-Karten gesperrt.
