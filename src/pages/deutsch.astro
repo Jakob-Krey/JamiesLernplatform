@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { DEUTSCH_DATA, DEUTSCH_TOPICS } from '../data/deutsch';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<BaseLayout title="Jamies Deutsch-Wortschatz 📖 • Lernkarten & Rechtschreibung" activePage="deutsch">
+<BaseLayout title="Jamies Deutsch 📖 • Aktuell nichts zu lernen" activePage="deutsch">
   <main class="container" style="padding-top: 2rem;">
     <div style="margin-bottom: 1.5rem;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
@@ -13,151 +12,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </a>
     </div>
 
-    <div style="text-align: center; max-width: 650px; margin: 0 auto 1.5rem;">
-      <h1 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 1rem;">
-        Deutsch-Lernkarten 📖
+    <div style="text-align: center; max-width: 520px; margin: 3rem auto; background: white; border: 2px solid #e2e8f0; border-radius: 24px; padding: 2.5rem 1.5rem; box-shadow: var(--shadow-md);">
+      <div style="font-size: 3.5rem; margin-bottom: 0.75rem;" aria-hidden="true">📖</div>
+      <h1 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin: 0 0 0.75rem;">
+        Deutsch
       </h1>
-
-      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;" id="deutsch-cat-bar">
-        {DEUTSCH_TOPICS.map((topic, idx) => (
-          <button 
-            type="button" 
-            class:list={['switch-btn', { active: idx === 0 }]} 
-            data-topic={topic.id}
-          >
-            {topic.label}
-          </button>
-        ))}
-      </div>
-    </div>
-
-    <!-- Flashcard for Deutsch -->
-    <div class="flashcard-container" id="deutsch-card">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <div class="flashcard-category" id="de-card-cat">WORTARTEN</div>
-          <div class="flashcard-emoji" id="de-card-emoji">🐕</div>
-          <div class="flashcard-word" id="de-card-word">Hund</div>
-          <p class="flashcard-hint">Tippen zum Aufdecken</p>
-        </div>
-
-        <div class="flashcard-back">
-          <div class="flashcard-category" style="color: #c2410c;">Lösung</div>
-          <div class="flashcard-word" id="de-card-solution" style="color: #9a3412; font-size: 1.8rem;">
-            Nomen
-          </div>
-          <p class="flashcard-hint" id="de-card-explanation" style="color: #431407; max-width: 320px; text-align: center; margin-top: 0.5rem;">
-            der Hund
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="flashcard-actions">
-      <button type="button" class="btn-trainer btn-secondary" id="de-prev-btn">
-        ⬅️ Vorherige
-      </button>
-      <button type="button" class="btn-trainer btn-primary" id="de-known-btn">
-        ⭐ Gewusst! ➔
-      </button>
-      <button type="button" class="btn-trainer btn-secondary" id="de-next-btn">
-        Nächste ➡️
-      </button>
-    </div>
-
-    <!-- Compact Rule Summary -->
-    <div style="background: white; border-radius: 12px; border: 1.5px solid #fed7aa; padding: 0.75rem 1.25rem; max-width: 580px; margin: 2rem auto; font-size: 0.85rem; color: #78350f; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-      <span><strong>Nomen:</strong> Groß (der Hund)</span>
-      <span>•</span>
-      <span><strong>Verben:</strong> Klein (laufen)</span>
-      <span>•</span>
-      <span><strong>Adjektive:</strong> Wie-Wort (bunt)</span>
+      <p style="font-size: 1.15rem; font-weight: 700; color: #475569; margin: 0 0 0.5rem;">
+        Hier musst du aktuell nichts lernen.
+      </p>
+      <p style="font-size: 0.95rem; color: #64748b; margin: 0;">
+        Dein Schreiblernheft findest du bei den Lernzielen.
+      </p>
+      <a href={`${base}/lernziele/`} class="btn-trainer btn-primary" style="display: inline-flex; margin-top: 1.5rem; text-decoration: none;">
+        🏔️ Zu den Lernzielen
+      </a>
     </div>
   </main>
 </BaseLayout>
-
-<script>
-  import { DEUTSCH_DATA, type DeutschTopicId } from '../data/deutsch';
-  import { StorageService } from '../lib/storage';
-  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
-
-  let activeTopic: DeutschTopicId = 'wortarten';
-  let cardIdx = 0;
-
-  function renderDeCard() {
-    const card = document.getElementById('deutsch-card');
-    if (card) card.classList.remove('is-flipped');
-    const list = DEUTSCH_DATA[activeTopic];
-    const item = list[cardIdx];
-
-    const catEl = document.getElementById('de-card-cat');
-    const emojiEl = document.getElementById('de-card-emoji');
-    const wordEl = document.getElementById('de-card-word');
-    const solEl = document.getElementById('de-card-solution');
-    const expEl = document.getElementById('de-card-explanation');
-
-    if (catEl) catEl.textContent = activeTopic.toUpperCase();
-    if (emojiEl) emojiEl.textContent = item.emoji;
-    if (wordEl) wordEl.textContent = item.word;
-    if (solEl) solEl.textContent = item.sol;
-    if (expEl) expEl.textContent = item.exp;
-  }
-
-  function setTopic(topic: DeutschTopicId) {
-    activeTopic = topic;
-    cardIdx = 0;
-    document.querySelectorAll('#deutsch-cat-bar .switch-btn').forEach(btn => {
-      if (btn.getAttribute('data-topic') === topic) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-    renderDeCard();
-  }
-
-  const topicBtns = document.querySelectorAll('#deutsch-cat-bar .switch-btn');
-  topicBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const topic = btn.getAttribute('data-topic') as DeutschTopicId;
-      if (topic) setTopic(topic);
-    });
-  });
-
-  const card = document.getElementById('deutsch-card');
-  if (card) {
-    card.addEventListener('click', () => {
-      card.classList.toggle('is-flipped');
-    });
-  }
-
-  const prevBtn = document.getElementById('de-prev-btn');
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      const list = DEUTSCH_DATA[activeTopic];
-      cardIdx = (cardIdx - 1 + list.length) % list.length;
-      renderDeCard();
-    });
-  }
-
-  const nextBtn = document.getElementById('de-next-btn');
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      const list = DEUTSCH_DATA[activeTopic];
-      cardIdx = (cardIdx + 1) % list.length;
-      renderDeCard();
-    });
-  }
-
-  const knownBtn = document.getElementById('de-known-btn');
-  if (knownBtn) {
-    knownBtn.addEventListener('click', () => {
-      AudioFX.playChime();
-      showStarToast(0, 'Klasse gewusst!');
-      triggerConfetti();
-      const list = DEUTSCH_DATA[activeTopic];
-      cardIdx = (cardIdx + 1) % list.length;
-      renderDeCard();
-    });
-  }
-
-  renderDeCard();
-</script>
