@@ -292,11 +292,6 @@ export function pokemonGifUrl(dex: number, shiny = false): string {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${shiny ? 'shiny/' : ''}${dex}.gif`;
 }
 
-/** Original-Ruf des Pokémon (PokéAPI cries). */
-export function pokemonCryUrl(dex: number): string {
-  return `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${dex}.ogg`;
-}
-
 /* ==========================================================================
    Weitere Karten: kompakt als [Pokédex-Nr., Name, Typ, Stufe] hinterlegt.
    Stufe 1 = normal, 2 = selten, 3 = ultra selten, 4 = geheim.

@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { POKEMON_DATA, TYPE_LABELS, pokemonArtUrl, pokemonGifUrl, pokemonCryUrl, type PokemonCardData } from '../data/pokemon';
+  import { POKEMON_DATA, TYPE_LABELS, pokemonArtUrl, pokemonGifUrl, type PokemonCardData } from '../data/pokemon';
   import { StorageService } from '../lib/storage';
   import { FirebaseSync } from '../lib/firebase';
   import { pkey, currentProfile, otherProfiles } from '../lib/profile';
@@ -228,7 +228,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     });
   }
 
-  /** Ersetzt das Artwork kurz durch das animierte GIF und spielt den Ruf ab. */
+  /** Ersetzt das Artwork kurz durch das animierte GIF. */
   function animateCard(card: HTMLElement, poke: PokemonCardData, shiny: boolean) {
     const img = card.querySelector<HTMLImageElement>('.poke-art');
     if (img) {
@@ -244,11 +244,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       };
       gif.src = pokemonGifUrl(poke.dex, shiny);
     }
-    try {
-      const cry = new Audio(pokemonCryUrl(poke.dex));
-      cry.volume = 0.6;
-      cry.play().catch(() => {});
-    } catch {}
   }
 
   function promptUnlock(poke: PokemonCardData) {
