@@ -56,6 +56,11 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
     <!-- Das Blatt -->
     <article class="sheet" id="sheet" aria-live="polite"></article>
+
+    <div class="button-row no-print" style="margin-top: 1.25rem;">
+      <button type="button" class="ws-btn ws-btn-primary" id="btn-check-bottom">✅ Prüfen</button>
+      <button type="button" class="ws-btn" id="btn-print-bottom">🖨️ Drucken</button>
+    </div>
   </main>
 </BaseLayout>
 
@@ -175,11 +180,69 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  const LAST_KEY = 'jamie_ws_last';
+  const ANSWERS_KEY = 'jamie_ws_answers';
+
+  function readJson<T>(key: string, fallback: T): T {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  function writeJson(key: string, value: unknown) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+
   const params = new URLSearchParams(location.search);
-  let topic: TopicId = (TOPICS.some((t) => t.id === params.get('thema')) ? params.get('thema') : 'plusminus') as TopicId;
-  let seed = params.get('seed') || localDateStr();
+  const last = readJson<{ topic?: string; seed?: string; pages?: string; help?: boolean }>(LAST_KEY, {});
+  const hasParams = params.has('thema');
+  const topicParam = hasParams ? params.get('thema') : last.topic;
+  let topic: TopicId = (TOPICS.some((t) => t.id === topicParam) ? topicParam : 'plusminus') as TopicId;
+  let seed = (hasParams ? params.get('seed') : last.seed) || localDateStr();
   // Die Probearbeit startet ohne Hilfe, damit sie wie die echte Arbeit ist
   helpEl.checked = topic !== 'probe';
+  if (!hasParams && topic === last.topic) {
+    if (last.pages) pagesEl.value = last.pages;
+    if (typeof last.help === 'boolean') helpEl.checked = last.help;
+  }
+
+  /* ---------- Zwischenspeichern der Antworten ---------- */
+  function sheetKey(): string {
+    return `${topic}|${seed}|${topic === 'probe' ? 1 : pagesEl.value}|${helpEl.checked ? 'h' : 'n'}`;
+  }
+
+  function fields(): HTMLInputElement[] {
+    return Array.from(sheetEl.querySelectorAll<HTMLInputElement>('input.ans, input.free'));
+  }
+
+  function saveAnswers(checked = false) {
+    const all = readJson<Record<string, { v: string[]; checked: boolean; t: number }>>(ANSWERS_KEY, {});
+    const values = fields().map((el) => el.value);
+    if (values.every((v) => v.trim() === '') && !checked) {
+      delete all[sheetKey()];
+    } else {
+      all[sheetKey()] = { v: values, checked, t: Date.now() };
+    }
+    // Nur die 40 neuesten Blätter behalten
+    const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t);
+    keys.slice(40).forEach((k) => delete all[k]);
+    writeJson(ANSWERS_KEY, all);
+    writeJson(LAST_KEY, { topic, seed, pages: pagesEl.value, help: helpEl.checked });
+  }
+
+  function restoreAnswers() {
+    const saved = readJson<Record<string, { v: string[]; checked: boolean }>>(ANSWERS_KEY, {})[sheetKey()];
+    writeJson(LAST_KEY, { topic, seed, pages: pagesEl.value, help: helpEl.checked });
+    if (!saved) return;
+    fields().forEach((el, i) => {
+      el.value = saved.v[i] ?? '';
+    });
+    if (saved.checked) check();
+  }
 
   function ans(value: number, cls = ''): string {
     return `<input class="ans ${cls}" data-a="${value}" inputmode="numeric" autocomplete="off" />`;
@@ -261,7 +324,8 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     selectEl.value = topic;
     resultEl.textContent = '';
     resultEl.style.color = '';
-    document.title = `${sheet.title} • Jamies Übungsblätter`;
+    document.title = `${first.title} • Jamies Übungsblätter`;
+    restoreAnswers();
   }
 
   function updateUrl() {
@@ -281,30 +345,34 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
   function check() {
     let ok = 0;
-    let bad = 0;
-    let open = 0;
+    let wrong = 0;
+    let missing = 0;
     inputs().forEach((el) => {
       el.classList.remove('ok', 'bad');
       if (el.value.trim() === '') {
-        open++;
-        return;
-      }
-      if (normalize(el.value) === Number(el.dataset.a)) {
+        // Fehlende Antworten zählen wie falsche: rot
+        el.classList.add('bad');
+        missing++;
+      } else if (normalize(el.value) === Number(el.dataset.a)) {
         el.classList.add('ok');
         ok++;
       } else {
         el.classList.add('bad');
-        bad++;
+        wrong++;
       }
     });
-    const total = ok + bad + open;
-    if (bad === 0 && open === 0) {
+    const total = ok + wrong + missing;
+    if (wrong === 0 && missing === 0) {
       resultEl.textContent = `🎉 Alles richtig! ${ok} von ${total}`;
       resultEl.style.color = '#15803d';
     } else {
-      resultEl.textContent = `${ok} von ${total} richtig${bad ? `, ${bad} nochmal ansehen (rot)` : ''}${open ? `, ${open} noch offen` : ''}`;
-      resultEl.style.color = bad ? '#b91c1c' : '#475569';
+      const parts = [`${ok} von ${total} richtig`];
+      if (wrong) parts.push(`${wrong} falsch`);
+      if (missing) parts.push(`${missing} fehlen`);
+      resultEl.textContent = `${parts.join(', ')} (rot = nochmal ansehen)`;
+      resultEl.style.color = '#b91c1c';
     }
+    saveAnswers(true);
   }
 
   function newSheet() {
@@ -313,9 +381,23 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     render();
   }
 
+  function checkAndShow() {
+    check();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   document.getElementById('btn-check')!.addEventListener('click', check);
+  document.getElementById('btn-check-bottom')!.addEventListener('click', checkAndShow);
   document.getElementById('btn-new')!.addEventListener('click', newSheet);
   document.getElementById('btn-print')!.addEventListener('click', () => window.print());
+  document.getElementById('btn-print-bottom')!.addEventListener('click', () => window.print());
+
+  // Jede Eingabe sofort zwischenspeichern; die Farbe der geänderten Aufgabe zurücksetzen
+  sheetEl.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    t.classList.remove('ok', 'bad');
+    saveAnswers(false);
+  });
   selectEl.addEventListener('change', () => {
     topic = selectEl.value as TopicId;
     helpEl.checked = topic !== 'probe';
