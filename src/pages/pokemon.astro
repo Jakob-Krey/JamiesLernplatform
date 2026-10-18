@@ -43,7 +43,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { POKEMON_DATA, pokemonArtUrl, type PokemonCardData } from '../data/pokemon';
+  import { POKEMON_DATA, pokemonArtUrl, pokemonGifUrl, pokemonCryUrl, type PokemonCardData } from '../data/pokemon';
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
 
@@ -101,6 +101,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           AudioFX.playChime();
           triggerConfetti();
           showStarToast(0, `Glitzernde ${poke.name} Karte! ✨`);
+          animateCard(card, poke, false);
         }
       });
 
@@ -123,6 +124,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       container.appendChild(card);
     });
+  }
+
+  /** Ersetzt das Artwork kurz durch das animierte GIF und spielt den Ruf ab. */
+  function animateCard(card: HTMLElement, poke: PokemonCardData, shiny: boolean) {
+    const img = card.querySelector<HTMLImageElement>('.poke-art');
+    if (img) {
+      const artUrl = pokemonArtUrl(poke.dex);
+      const gif = new Image();
+      gif.onload = () => {
+        img.src = gif.src + '?' + Date.now(); // GIF von vorn starten
+        img.classList.add('is-animated');
+        setTimeout(() => {
+          img.src = artUrl;
+          img.classList.remove('is-animated');
+        }, 4000);
+      };
+      gif.src = pokemonGifUrl(poke.dex, shiny);
+    }
+    try {
+      const cry = new Audio(pokemonCryUrl(poke.dex));
+      cry.volume = 0.6;
+      cry.play().catch(() => {});
+    } catch {}
   }
 
   function promptUnlock(poke: PokemonCardData) {
@@ -180,7 +204,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       triggerConfetti();
       AudioFX.playSuccessFanfare();
       showStarToast(0, `Juhu! ${targetPokeToUnlock.name} gehört jetzt dir! ⚡`);
+      const unlocked = targetPokeToUnlock;
       renderPokemonCollection();
+      // Shiny-Überraschung auf der frisch freigeschalteten Karte
+      const idx = POKEMON_DATA.findIndex((p) => p.id === unlocked.id);
+      const newCard = document.getElementById('pokemon-collection')?.children[idx] as HTMLElement | undefined;
+      if (newCard) animateCard(newCard, unlocked, true);
     }
   }
 
