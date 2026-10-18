@@ -43,7 +43,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { POKEMON_DATA, type PokemonCardData } from '../data/pokemon';
+  import { POKEMON_DATA, pokemonArtUrl, type PokemonCardData } from '../data/pokemon';
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
 
@@ -74,7 +74,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
           <div class="poke-image-frame">
             <span class="poke-rarity">${poke.rarity}</span>
-            <div class="poke-icon-large">${poke.icon}</div>
+            <div class="poke-icon-large"><img class="poke-art" src="${pokemonArtUrl(poke.dex)}" alt="${poke.name}" loading="lazy" onerror="this.outerHTML='${poke.icon}'" /></div>
           </div>
 
           <div class="poke-attack">
@@ -133,7 +133,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (!modal || !body) return;
 
     body.innerHTML = `
-      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">${poke.icon}</div>
+      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;"><img src="${pokemonArtUrl(poke.dex)}" alt="${poke.name}" style="height: 110px; width: auto;" onerror="this.outerHTML='${poke.icon}'" /></div>
       <h2 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem;">
         ${poke.name} freischalten?
       </h2>

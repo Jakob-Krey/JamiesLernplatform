@@ -4,6 +4,7 @@ export interface PokemonCardData {
   type: string;
   typeClass: string;
   icon: string;
+  dex: number; // Pokédex-Nummer für das Bild
   hp: string;
   rarity: string;
   cost: number;
@@ -19,6 +20,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'electric',
     typeClass: 'type-electric',
     icon: '⚡',
+    dex: 25,
     hp: '70 KP',
     rarity: '★ HOLO RARE',
     cost: 0,
@@ -32,6 +34,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'normal',
     typeClass: 'type-normal',
     icon: '🦊',
+    dex: 133,
     hp: '60 KP',
     rarity: '★ PROMO',
     cost: 0,
@@ -45,6 +48,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'fire',
     typeClass: 'type-fire',
     icon: '🔥',
+    dex: 4,
     hp: '70 KP',
     rarity: '★★ ULTRA RARE',
     cost: 20,
@@ -58,6 +62,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'water',
     typeClass: 'type-water',
     icon: '🐢',
+    dex: 7,
     hp: '60 KP',
     rarity: '★★ ULTRA RARE',
     cost: 25,
@@ -71,6 +76,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'grass',
     typeClass: 'type-grass',
     icon: '🍃',
+    dex: 1,
     hp: '70 KP',
     rarity: '★★ ULTRA RARE',
     cost: 30,
@@ -84,6 +90,7 @@ export const POKEMON_DATA: PokemonCardData[] = [
     type: 'psychic',
     typeClass: 'type-psychic',
     icon: '🔮',
+    dex: 150,
     hp: '130 KP',
     rarity: '★★★ SECRET RARE',
     cost: 45,
@@ -92,3 +99,8 @@ export const POKEMON_DATA: PokemonCardData[] = [
     attackDesc: 'Das legendäre Psycho-Pokémon. Extrem schlau und mächtig!'
   }
 ];
+
+/** Offizielles Artwork von PokéAPI (wird direkt von GitHub geladen). */
+export function pokemonArtUrl(dex: number): string {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${dex}.png`;
+}

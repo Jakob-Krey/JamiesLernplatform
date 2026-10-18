@@ -410,3 +410,9 @@
   25% { transform: translateX(-8px); }
   75% { transform: translateX(8px); }
 }
+
+.poke-art {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+}
