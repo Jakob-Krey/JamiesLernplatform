@@ -1,0 +1,361 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { TOPICS } from '../lib/worksheets';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
+---
+
+<BaseLayout title="Jamies Übungsblätter ✏️ • Online üben oder drucken" activePage="uebungen">
+  <main class="container ws-page" style="padding-top: 2rem;">
+
+    <div class="no-print" style="margin-bottom: 1.25rem;">
+      <a href={`${base}/lernziele/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>⬅️</span> Zurück zu den Lernzielen
+      </a>
+    </div>
+
+    <!-- Steuerung (wird beim Drucken ausgeblendet) -->
+    <section class="controls no-print">
+      <h1 class="ws-h1">Übungsblätter ✏️</h1>
+      <p class="ws-sub">Aufgaben wie in der Mathearbeit. Online ausfüllen und prüfen, oder ausdrucken.</p>
+
+      <div class="control-row">
+        <label class="control-label" for="topic-select">Thema</label>
+        <select id="topic-select" class="topic-select">
+          {groups.map((g) => (
+            <optgroup label={g}>
+              {TOPICS.filter((t) => t.group === g).map((t) => (
+                <option value={t.id}>{t.label}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+
+      <div class="control-row">
+        <label class="control-label" for="pages-select">Seiten</label>
+        <select id="pages-select" class="topic-select" style="flex: 0 0 auto; min-width: 0;">
+          <option value="1">1 Seite</option>
+          <option value="2" selected>2 Seiten</option>
+        </select>
+      </div>
+
+      <label class="help-toggle">
+        <input type="checkbox" id="help-toggle" checked />
+        Hilfe bei „2 Schritten“ (Zwischenschritte vorgegeben)
+      </label>
+
+      <div class="button-row">
+        <button type="button" class="ws-btn ws-btn-primary" id="btn-check">✅ Prüfen</button>
+        <button type="button" class="ws-btn" id="btn-solutions">💡 Lösungen zeigen</button>
+        <button type="button" class="ws-btn" id="btn-new">🔀 Neues Blatt</button>
+        <button type="button" class="ws-btn" id="btn-print">🖨️ Drucken</button>
+      </div>
+      <p class="check-result" id="check-result" aria-live="polite"></p>
+    </section>
+
+    <!-- Das Blatt -->
+    <article class="sheet" id="sheet" aria-live="polite"></article>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .ws-page { max-width: 900px; }
+  .ws-h1 { font-size: 1.9rem; font-weight: 900; color: #0f172a; margin: 0 0 0.25rem; }
+  .ws-sub { margin: 0 0 1rem; color: #64748b; }
+
+  .controls { background: white; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-md); }
+  .control-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .control-label { font-weight: 800; color: #475569; }
+  .topic-select { flex: 1; min-width: 220px; font: inherit; font-weight: 700; padding: 0.6rem 0.8rem; border-radius: 12px; border: 2px solid #cbd5e1; background: white; }
+  .help-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #475569; font-weight: 600; margin-bottom: 0.9rem; }
+  .button-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .ws-btn { font: inherit; font-weight: 800; padding: 0.65rem 1.1rem; border-radius: 12px; border: 2px solid #cbd5e1; background: white; color: #334155; cursor: pointer; }
+  .ws-btn:hover { border-color: var(--color-primary); }
+  .ws-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+  .check-result { margin: 0.9rem 0 0; font-weight: 800; min-height: 1.4em; }
+
+  .sheet { background: white; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.75rem; margin-bottom: 3rem; box-shadow: var(--shadow-md); }
+  .sheet-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: flex-end; border-bottom: 3px solid #0f172a; padding-bottom: 0.75rem; margin-bottom: 1.25rem; }
+  .sheet-title { font-size: 1.5rem; font-weight: 900; margin: 0; color: #0f172a; }
+  .sheet-meta { display: flex; gap: 1.25rem; font-weight: 700; color: #334155; flex-wrap: wrap; }
+  .sheet-meta span { display: inline-flex; gap: 0.4rem; align-items: flex-end; }
+  .sheet-meta i { display: inline-block; min-width: 130px; border-bottom: 1.5px solid #334155; height: 1.2em; }
+
+  .sheet-page + .sheet-page { margin-top: 2.5rem; padding-top: 1.75rem; border-top: 3px dashed #cbd5e1; }
+  .sheet-pageno { font-weight: 700; color: #64748b; font-size: 0.9rem; }
+  .ws-section { margin-bottom: 1.75rem; break-inside: avoid; page-break-inside: avoid; }
+  .ws-section h3 { display: flex; align-items: center; gap: 0.6rem; font-size: 1.1rem; font-weight: 800; margin: 0 0 0.35rem; color: #0f172a; }
+  .ws-section .nr { display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: #0f172a; color: white; font-size: 1rem; flex: 0 0 auto; }
+  .ws-section .pts { margin-left: auto; font-size: 0.85rem; font-weight: 700; border: 1.5px solid #475569; border-radius: 6px; padding: 0.1rem 0.5rem; color: #334155; }
+  .ws-section .ws-hint { margin: 0 0 0.6rem; font-size: 0.88rem; color: #64748b; }
+
+  .ws-grid { display: grid; gap: 0.8rem 1.5rem; align-items: start; }
+  .ws-grid.cols4 { grid-template-columns: repeat(4, 1fr); }
+  .ws-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+  .ws-grid.cols2 { grid-template-columns: repeat(2, 1fr); }
+  .ws-grid.cols1 { grid-template-columns: 1fr; }
+
+  .ws-eq { display: flex; align-items: baseline; gap: 0.4rem; font-size: 1.1rem; font-weight: 600; white-space: nowrap; }
+  .ws-eq.small { font-size: 0.98rem; }
+  .ws-page input.ans, .ws-page input.free {
+    font: inherit; font-weight: 800; color: #1d4ed8; text-align: center;
+    width: 4.2rem; padding: 0.15rem 0.2rem; border: none; border-bottom: 2px solid #475569; background: #f8fafc; border-radius: 4px 4px 0 0;
+  }
+  .ws-page input.ans:focus, .ws-page input.free:focus { outline: none; background: #eef2ff; border-bottom-color: var(--color-primary); }
+  .ws-page input.ans.ok { background: #dcfce7; border-bottom-color: #16a34a; color: #15803d; }
+  .ws-page input.ans.bad { background: #fee2e2; border-bottom-color: #dc2626; color: #b91c1c; }
+  .ws-page input.ans.solved { background: #fef9c3; color: #854d0e; }
+  .ws-page input.small { width: 2.8rem; }
+  .ws-page input.free { width: 100%; text-align: left; color: #334155; font-weight: 600; }
+
+  .ws-steps { border: 2px solid #0f172a; border-radius: 6px; padding: 0.55rem 0.7rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .ws-steps .steps-rows { border-top: 1.5px dashed #94a3b8; padding-top: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .ws-pfeil { border: 2px solid #0f172a; border-radius: 6px; padding: 0.5rem 0.7rem; }
+  .ws-pfeil .pf-arrow { font-weight: 900; font-size: 1.05rem; margin-bottom: 0.4rem; border-bottom: 2px solid #0f172a; padding-bottom: 0.2rem; }
+  .ws-pfeil .pf-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.4rem; font-weight: 700; font-size: 1.1rem; }
+  .ws-page .ws-pfeil input.ans { width: 3.6rem; border: 2px solid #0f172a; border-radius: 4px; padding: 0.3rem 0.2rem; }
+
+  .ws-mauer { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .ws-mauer .mauer-row { display: flex; gap: 4px; }
+  .ws-mauer .stone { width: 3.1rem; height: 2.4rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #0f172a; font-weight: 800; font-size: 1.05rem; background: white; }
+  .ws-mauer .stone.given { background: #f1f5f9; }
+  .ws-page .ws-mauer input.ans.stone { width: 3.1rem; height: 2.4rem; box-sizing: border-box; border: 2px solid #0f172a; border-radius: 0; padding: 0; background: white; }
+  .ws-page .ws-mauer input.ans.stone.ok { background: #dcfce7; }
+  .ws-page .ws-mauer input.ans.stone.bad { background: #fee2e2; }
+  .ws-page .ws-mauer input.ans.stone.solved { background: #fef9c3; }
+
+  .ws-sach { border: 2px solid #cbd5e1; border-radius: 10px; padding: 0.8rem 1rem; }
+  .ws-sach p { margin: 0 0 0.6rem; font-weight: 600; line-height: 1.5; }
+  .ws-sach table { border-collapse: collapse; margin: 0 0 0.8rem; }
+  .ws-sach th, .ws-sach td { border: 1.5px solid #475569; padding: 0.25rem 0.7rem; font-weight: 700; }
+  .ws-sach .sach-part { margin-top: 0.7rem; }
+  .ws-sach .sach-q { font-weight: 800; margin-bottom: 0.25rem; }
+  .ws-sach .sach-line { display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.3rem; font-weight: 700; }
+  .ws-sach .sach-line > span:first-child { min-width: 5.6rem; }
+  .ws-sach input.ans { width: 5rem; }
+
+  @media (max-width: 720px) {
+    .ws-grid.cols4 { grid-template-columns: repeat(2, 1fr); }
+    .ws-grid.cols3 { grid-template-columns: repeat(2, 1fr); }
+    .ws-grid.cols2 { grid-template-columns: 1fr; }
+    .sheet { padding: 1.1rem; }
+  }
+
+  /* ===== Drucken ===== */
+  @page { size: A4; margin: 12mm; }
+  @media print {
+    html, body { background: white !important; }
+    .no-print, .site-header, .bg-decoration, .star-toast, footer, #cloud-sync-modal { display: none !important; }
+    .ws-page { max-width: none; padding: 0 !important; margin: 0 !important; }
+    .sheet { border: none; box-shadow: none; padding: 0; margin: 0; border-radius: 0; }
+    .ws-grid.cols4 { grid-template-columns: repeat(4, 1fr); }
+    .ws-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+    .ws-grid.cols2 { grid-template-columns: repeat(2, 1fr); }
+    .ws-page input.ans, .ws-page input.free { background: transparent !important; color: #000; }
+    .ws-page input.ans.ok, .ws-page input.ans.bad { background: transparent !important; color: #000; border-bottom-color: #475569; }
+    .ws-page input.ans.solved { color: #1d4ed8; }
+    .ws-section { margin-bottom: 1.2rem; }
+    .sheet-page + .sheet-page { margin-top: 0; padding-top: 0; border-top: none; break-before: page; page-break-before: always; }
+  }
+</style>
+
+<script>
+  import { TOPICS, generateSheet, type Item, type Section, type TopicId } from '../lib/worksheets';
+
+  const sheetEl = document.getElementById('sheet')!;
+  const selectEl = document.getElementById('topic-select') as HTMLSelectElement;
+  const helpEl = document.getElementById('help-toggle') as HTMLInputElement;
+  const pagesEl = document.getElementById('pages-select') as HTMLSelectElement;
+  const resultEl = document.getElementById('check-result')!;
+  const solutionsBtn = document.getElementById('btn-solutions')!;
+
+  function localDateStr(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  const params = new URLSearchParams(location.search);
+  let topic: TopicId = (TOPICS.some((t) => t.id === params.get('thema')) ? params.get('thema') : 'plusminus') as TopicId;
+  let seed = params.get('seed') || localDateStr();
+  let showingSolutions = false;
+  // Die Probearbeit startet ohne Hilfe, damit sie wie die echte Arbeit ist
+  helpEl.checked = topic !== 'probe';
+
+  function ans(value: number, cls = ''): string {
+    return `<input class="ans ${cls}" data-a="${value}" inputmode="numeric" autocomplete="off" />`;
+  }
+
+  function renderItem(it: Item, help: boolean): string {
+    switch (it.kind) {
+      case 'eq':
+        return `<div class="ws-eq"><span>${it.text}</span>${ans(it.answer)}</div>`;
+      case 'produkt':
+        return `<div class="ws-eq"><span>${it.a} und ${it.b} =</span>${ans(it.a * it.b)}</div>`;
+      case 'rest':
+        return `<div class="ws-eq"><span>${it.dividend} : ${it.divisor} =</span>${ans(it.q, 'small')}<span>R</span>${ans(it.r, 'small')}</div>`;
+      case 'steps': {
+        const sign = it.op === '+' ? '+' : '−';
+        const tens = Math.floor(it.b / 10) * 10;
+        const ones = it.b % 10;
+        const rows = help
+          ? `<div class="ws-eq small"><span>${it.a} ${sign} ${tens} =</span>${ans(it.mid)}</div>
+             <div class="ws-eq small"><span>${it.mid} ${sign} ${ones} =</span>${ans(it.answer)}</div>`
+          : `<input class="free" aria-label="Rechenschritt 1" /><input class="free" aria-label="Rechenschritt 2" />`;
+        return `<div class="ws-steps">
+          <div class="ws-eq"><span>${it.a} ${sign} ${it.b} =</span>${ans(it.answer)}</div>
+          <div class="steps-rows">${rows}</div></div>`;
+      }
+      case 'pfeil':
+        return `<div class="ws-pfeil"><div class="pf-arrow">· ${it.factor} ➜</div>
+          ${it.rows.map((row) => `<div class="pf-row"><span>${row.from}</span>${ans(row.to)}</div>`).join('')}</div>`;
+      case 'mauer':
+        return `<div class="ws-mauer">${it.levels
+          .map(
+            (row, l) =>
+              `<div class="mauer-row">${row
+                .map((v, i) => (it.hidden[l][i] ? ans(v, 'stone') : `<span class="stone given">${v}</span>`))
+                .join('')}</div>`
+          )
+          .join('')}</div>`;
+      case 'sach': {
+        const table = it.table
+          ? `<table><thead><tr>${it.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${it.table.rows
+              .map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`)
+              .join('')}</tbody></table>`
+          : '';
+        const parts = it.parts
+          .map(
+            (p) => `<div class="sach-part"><div class="sach-q">${p.question}</div>
+              <div class="sach-line"><span>Rechnung:</span><input class="free" /></div>
+              <div class="sach-line"><span>Antwort:</span>${ans(p.answer)}<span>${p.unit}</span></div></div>`
+          )
+          .join('');
+        return `<div class="ws-sach"><p>${it.story}</p>${table}${parts}</div>`;
+      }
+    }
+  }
+
+  function renderSection(s: Section, help: boolean): string {
+    return `<section class="ws-section">
+      <h3><span class="nr">${s.nr}</span><span>${s.title}</span>${s.points ? `<span class="pts">Punkte: ${s.points}</span>` : ''}</h3>
+      ${s.hint ? `<p class="ws-hint">${s.hint}</p>` : ''}
+      <div class="ws-grid ${s.layout}">${s.items.map((it) => renderItem(it, help)).join('')}</div>
+    </section>`;
+  }
+
+  function render() {
+    // Die Probearbeit ist schon 2 Seiten lang
+    const pages = topic === 'probe' ? 1 : Number(pagesEl.value);
+    pagesEl.disabled = topic === 'probe';
+    const first = generateSheet(topic, seed);
+    sheetEl.innerHTML = Array.from({ length: pages }, (_, p) => {
+      const sheet = p === 0 ? first : generateSheet(topic, `${seed}|seite${p + 1}`);
+      return `<div class="sheet-page">
+        <header class="sheet-head">
+          <h2 class="sheet-title">${sheet.title}${pages > 1 ? ` <span class="sheet-pageno">· Seite ${p + 1} von ${pages}</span>` : ''}</h2>
+          <div class="sheet-meta"><span>Name: <i></i></span><span>Datum: <i></i></span></div>
+        </header>
+        ${sheet.sections.map((s) => renderSection(s, helpEl.checked)).join('')}
+      </div>`;
+    }).join('');
+    selectEl.value = topic;
+    showingSolutions = false;
+    solutionsBtn.textContent = '💡 Lösungen zeigen';
+    resultEl.textContent = '';
+    resultEl.style.color = '';
+    document.title = `${sheet.title} • Jamies Übungsblätter`;
+  }
+
+  function updateUrl() {
+    const url = new URL(location.href);
+    url.searchParams.set('thema', topic);
+    url.searchParams.set('seed', seed);
+    history.replaceState(null, '', url);
+  }
+
+  function inputs(): HTMLInputElement[] {
+    return Array.from(sheetEl.querySelectorAll<HTMLInputElement>('input.ans'));
+  }
+
+  function normalize(v: string): number {
+    return Number(v.trim().replace(',', '.'));
+  }
+
+  function check() {
+    let ok = 0;
+    let bad = 0;
+    let open = 0;
+    inputs().forEach((el) => {
+      el.classList.remove('ok', 'bad');
+      if (el.value.trim() === '') {
+        open++;
+        return;
+      }
+      if (normalize(el.value) === Number(el.dataset.a)) {
+        el.classList.add('ok');
+        ok++;
+      } else {
+        el.classList.add('bad');
+        bad++;
+      }
+    });
+    const total = ok + bad + open;
+    if (bad === 0 && open === 0) {
+      resultEl.textContent = `🎉 Alles richtig! ${ok} von ${total}`;
+      resultEl.style.color = '#15803d';
+    } else {
+      resultEl.textContent = `${ok} von ${total} richtig${bad ? `, ${bad} nochmal ansehen (rot)` : ''}${open ? `, ${open} noch offen` : ''}`;
+      resultEl.style.color = bad ? '#b91c1c' : '#475569';
+    }
+  }
+
+  function toggleSolutions() {
+    showingSolutions = !showingSolutions;
+    inputs().forEach((el) => {
+      if (showingSolutions) {
+        el.dataset.mine = el.value;
+        el.value = el.dataset.a!;
+        el.classList.remove('ok', 'bad');
+        el.classList.add('solved');
+      } else {
+        el.value = el.dataset.mine ?? '';
+        el.classList.remove('solved');
+      }
+    });
+    solutionsBtn.textContent = showingSolutions ? '🙈 Lösungen verstecken' : '💡 Lösungen zeigen';
+  }
+
+  function newSheet() {
+    seed = Math.random().toString(36).slice(2, 8);
+    updateUrl();
+    render();
+  }
+
+  document.getElementById('btn-check')!.addEventListener('click', check);
+  solutionsBtn.addEventListener('click', toggleSolutions);
+  document.getElementById('btn-new')!.addEventListener('click', newSheet);
+  document.getElementById('btn-print')!.addEventListener('click', () => window.print());
+  selectEl.addEventListener('change', () => {
+    topic = selectEl.value as TopicId;
+    helpEl.checked = topic !== 'probe';
+    updateUrl();
+    render();
+  });
+  helpEl.addEventListener('change', render);
+  pagesEl.addEventListener('change', render);
+
+  // Enter springt zum nächsten Feld
+  sheetEl.addEventListener('keydown', (e) => {
+    const ke = e as KeyboardEvent;
+    const t = ke.target as HTMLInputElement;
+    if (ke.key !== 'Enter' || !t.classList.contains('ans')) return;
+    ke.preventDefault();
+    const list = inputs();
+    list[list.indexOf(t) + 1]?.focus();
+  });
+
+  render();
+</script>

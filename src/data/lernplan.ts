@@ -9,6 +9,7 @@ export interface PlanDay {
   topic: string;
   week: 1 | 2;
   reward: number; // Sterne für diesen Tag
+  sheet?: string; // Übungsblatt-Thema (siehe lib/worksheets.ts)
 }
 
 export const EXAM_DATE = '2026-11-02';
@@ -27,21 +28,21 @@ export const DONE_DAYS: PlanDay[] = [
 ];
 
 export const PLAN_DAYS: PlanDay[] = [
-  { date: '2026-10-18', week: 1, topic: 'Plus & Minus bis 100 (Start)', reward: 3 },
-  { date: '2026-10-19', week: 1, topic: 'Plus mit Zehnerübergang in 2 Schritten', reward: 3 },
-  { date: '2026-10-20', week: 1, topic: 'Minus mit Zehnerübergang in 2 Schritten', reward: 3 },
-  { date: '2026-10-21', week: 1, topic: 'Plus/Minus gemischt & Probe', reward: 3 },
-  { date: '2026-10-22', week: 1, topic: 'Zahlenmauern (Plus)', reward: 3 },
-  { date: '2026-10-23', week: 1, topic: 'Zahlenmauern mit fehlenden Steinen', reward: 3 },
-  { date: '2026-10-24', week: 1, topic: 'Puffer & Wiederholung', reward: 3 },
-  { date: '2026-10-25', week: 2, topic: 'Einmaleins: 2er, 5er, 10er, 4er', reward: 3 },
-  { date: '2026-10-26', week: 2, topic: 'Einmaleins: 3er, 6er, 7er, 8er, 9er', reward: 3 },
-  { date: '2026-10-27', week: 2, topic: 'Einmaleins gemischt & Division', reward: 3 },
-  { date: '2026-10-28', week: 2, topic: 'Division mit Rest', reward: 3 },
-  { date: '2026-10-29', week: 2, topic: 'Division mit Rest vertiefen', reward: 3 },
-  { date: '2026-10-30', week: 2, topic: 'Punkt-vor-Strich', reward: 3 },
-  { date: '2026-10-31', week: 2, topic: 'Sachaufgaben', reward: 3 },
-  { date: '2026-11-01', week: 2, topic: 'Probearbeit mit Zeitlimit', reward: 5 }
+  { date: '2026-10-18', week: 1, topic: 'Plus & Minus bis 100 (Start)', reward: 3, sheet: 'plusminus' },
+  { date: '2026-10-19', week: 1, topic: 'Plus mit Zehnerübergang in 2 Schritten', reward: 3, sheet: 'plus2' },
+  { date: '2026-10-20', week: 1, topic: 'Minus mit Zehnerübergang in 2 Schritten', reward: 3, sheet: 'minus2' },
+  { date: '2026-10-21', week: 1, topic: 'Plus/Minus gemischt & Probe', reward: 3, sheet: 'mix2' },
+  { date: '2026-10-22', week: 1, topic: 'Zahlenmauern (Plus)', reward: 3, sheet: 'mauer' },
+  { date: '2026-10-23', week: 1, topic: 'Zahlenmauern mit fehlenden Steinen', reward: 3, sheet: 'mauer_fehlt' },
+  { date: '2026-10-24', week: 1, topic: 'Puffer & Wiederholung', reward: 3, sheet: 'wiederholung' },
+  { date: '2026-10-25', week: 2, topic: 'Einmaleins: 2er, 5er, 10er, 4er', reward: 3, sheet: 'mal_a' },
+  { date: '2026-10-26', week: 2, topic: 'Einmaleins: 3er, 6er, 7er, 8er, 9er', reward: 3, sheet: 'mal_b' },
+  { date: '2026-10-27', week: 2, topic: 'Einmaleins gemischt & Division', reward: 3, sheet: 'mal_geteilt' },
+  { date: '2026-10-28', week: 2, topic: 'Division mit Rest', reward: 3, sheet: 'rest' },
+  { date: '2026-10-29', week: 2, topic: 'Division mit Rest vertiefen', reward: 3, sheet: 'rest' },
+  { date: '2026-10-30', week: 2, topic: 'Punkt-vor-Strich', reward: 3, sheet: 'punkt' },
+  { date: '2026-10-31', week: 2, topic: 'Sachaufgaben', reward: 3, sheet: 'sach' },
+  { date: '2026-11-01', week: 2, topic: 'Probearbeit mit Zeitlimit', reward: 5, sheet: 'probe' }
 ];
 
 /** Kumulatives Seiten-Ziel bis einschließlich Tag `index` (0-basiert). */

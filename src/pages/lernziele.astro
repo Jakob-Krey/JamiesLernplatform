@@ -142,6 +142,9 @@ const days = PLAN_DAYS.map((d, i) => {
                 <span class="catchup-pill" hidden>aufholen</span>
               </div>
               <div class="node-topic">{d.topic}</div>
+              {d.sheet && (
+                <a class="sheet-link" href={`${base}/uebungen/?thema=${d.sheet}&seed=${d.date}`}>📝 Übungsblatt öffnen</a>
+              )}
               <div class="node-quota">
                 <span class="quota-chip q-schreib" data-quota={d.schreibQuota}>✍️ <b class="q-val">0</b>/{d.schreibQuota}</span>
                 <span class="quota-chip q-mathe" data-quota={d.matheQuota}>🔢 <b class="q-val">0</b>/{d.matheQuota}</span>
@@ -291,6 +294,11 @@ const days = PLAN_DAYS.map((d, i) => {
   .reward-chip { background: #fef3c7; color: #b45309; }
   .goal-chip { font-size: 0.85rem; padding: 0.25rem 0.75rem; }
   .goal-chip b { font-weight: 900; }
+  .sheet-link {
+    align-self: flex-start; margin-top: 0.2rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5;
+    text-decoration: none; border-bottom: 2px solid #c7d2fe;
+  }
+  .sheet-link:hover { border-bottom-color: #4f46e5; }
   .today-pill, .catchup-pill { font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
   .today-pill { background: #6366f1; color: white; }
   .catchup-pill { background: #ffedd5; color: #c2410c; }
