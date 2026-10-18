@@ -8,14 +8,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <main class="container" style="padding-top: 1.5rem; max-width: 600px; text-align: center;">
 
     <!-- Top Back Link -->
-    <div style="margin-bottom: 1.25rem; text-align: left;">
+    <div class="focus-hide" style="margin-bottom: 1.25rem; text-align: left;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
         <span>⬅️</span> Zurück zum Stundenplan
       </a>
     </div>
 
     <!-- Mode Switcher -->
-    <div style="display: inline-flex; background: #e2e8f0; padding: 0.35rem; border-radius: 9999px; gap: 0.35rem; margin-bottom: 2rem;">
+    <div class="focus-hide" style="display: inline-flex; background: #e2e8f0; padding: 0.35rem; border-radius: 9999px; gap: 0.35rem; margin-bottom: 2rem;">
       <button 
         type="button" 
         id="btn-mode-work"
@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <div id="timer-display" style="font-size: 3.8rem; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; line-height: 1;">
           15:00
         </div>
-        <span id="timer-reward-badge" style="font-size: 0.85rem; font-weight: 800; color: #b45309; background: #fef3c7; padding: 0.2rem 0.65rem; border-radius: 9999px; margin-top: 0.6rem;">
+        <span id="timer-reward-badge" class="focus-hide" style="font-size: 0.85rem; font-weight: 800; color: #b45309; background: #fef3c7; padding: 0.2rem 0.65rem; border-radius: 9999px; margin-top: 0.6rem;">
           +2 Sterne Belohnung ⭐
         </span>
       </div>
@@ -81,6 +81,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <button 
         type="button" 
         id="btn-timer-reset"
+        class="focus-hide"
         title="Zurücksetzen"
         style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #e2e8f0; background: white; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.15s;"
       >
@@ -99,6 +100,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <button 
         type="button" 
         id="btn-timer-skip"
+        class="focus-hide"
         title="Zur Pause / Zum Lernen wechseln"
         style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #e2e8f0; background: white; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.15s;"
       >
@@ -107,7 +109,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
 
     <!-- Today's Focus Stats -->
-    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.5rem; display: inline-flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm);">
+    <div class="focus-hide" style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.5rem; display: inline-flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm);">
       <span style="font-size: 1.8rem;">🏆</span>
       <div style="text-align: left;">
         <div style="font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Heute abgeschlossen</div>
@@ -120,7 +122,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   </main>
 </BaseLayout>
 
-<style>
+<style is:global>
+  /* Fokus läuft: alles ausblenden außer Timer und Pause-Knopf */
+  body.focus-active .focus-hide,
+  body.focus-active .site-header,
+  body.focus-active .site-footer,
+  body.focus-active .bg-decoration {
+    display: none !important;
+  }
+  body.focus-active main {
+    padding-top: 15vh !important;
+  }
   .timer-tab-btn.active {
     background: white !important;
     color: #0f172a !important;
@@ -157,6 +169,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (displayEl) {
       displayEl.textContent = FocusTimerService.formatTime(state.timeLeft);
     }
+
+    document.body.classList.toggle('focus-active', state.isRunning && state.mode === 'work');
 
     if (toggleBtn) {
       toggleBtn.innerHTML = state.isRunning ? '⏸️ Pause' : '▶️ Start';
