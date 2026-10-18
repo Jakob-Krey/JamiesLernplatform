@@ -73,6 +73,7 @@ Prüfung: **Mo, 02.11.2026**. Jeden Tag ca. 2 Seiten Mathe zum Thema. Das Thema 
 
 | Datum | Thema | Seiten/Inhalt |
 |---|---|---|
+| Sa 17.10. | Erster Übungstag (schon geschafft ✓, +3 ⭐) | Vorab erledigt |
 | So 18.10. | Start: Plus und Minus bis 100 ohne Zehnerübergang | Aufwärmen, Einschätzen wo es hakt |
 | Mo 19.10. | Plus mit Zehnerübergang, **in 2 Schritten** | 58 + 26 = 58 + 20 + 6 |
 | Di 20.10. | Minus mit Zehnerübergang, **in 2 Schritten** | 91 − 38 = 91 − 30 − 8 |

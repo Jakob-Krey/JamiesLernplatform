@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import {
   PLAN_DAYS,
+  DONE_DAYS,
   WEEK_TITLES,
   SCHREIB_TOTAL,
   MATHE_TOTAL,
@@ -11,16 +12,30 @@ import {
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-const days = PLAN_DAYS.map((d, i) => {
-  const [y, m, day] = d.date.split('-').map(Number);
+const dateLabel = (date: string) => {
+  const [y, m, day] = date.split('-').map(Number);
   const weekday = WEEKDAYS[new Date(y, m - 1, day).getDay()];
+  return `${weekday} ${String(day).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
+};
+
+// Schon erledigte Tage vor dem Start des Pfads (feste Häkchen)
+const earlier = DONE_DAYS.map((d, i) => ({
+  ...d,
+  number: i + 1,
+  label: dateLabel(d.date),
+  newWeek: i === 0 || DONE_DAYS[i - 1].week !== d.week
+}));
+
+const days = PLAN_DAYS.map((d, i) => {
+  const prevWeek = i === 0 ? earlier[earlier.length - 1]?.week : PLAN_DAYS[i - 1].week;
   return {
     ...d,
     index: i,
-    label: `${weekday} ${String(day).padStart(2, '0')}.${String(m).padStart(2, '0')}.`,
+    number: earlier.length + i + 1,
+    label: dateLabel(d.date),
     schreibQuota: dailyQuota(SCHREIB_TOTAL, i),
     matheQuota: dailyQuota(MATHE_TOTAL, i),
-    newWeek: i === 0 || PLAN_DAYS[i - 1].week !== d.week
+    newWeek: prevWeek !== d.week
   };
 });
 ---
@@ -82,6 +97,31 @@ const days = PLAN_DAYS.map((d, i) => {
 
     <!-- Vertikaler Lernpfad -->
     <section class="path" aria-label="Lernpfad bis zur Mathearbeit">
+      {earlier.map((d) => (
+        <>
+          {d.newWeek && (
+            <div class="week-banner">
+              <span class="week-line"></span>
+              <span class="week-pill">🏔️ {WEEK_TITLES[d.week]}</span>
+              <span class="week-line"></span>
+            </div>
+          )}
+          <div class="path-node is-done" data-date={d.date}>
+            <div class="node-circle" aria-hidden="true">
+              <span class="node-icon">{d.number}</span>
+            </div>
+            <div class="node-text">
+              <div class="node-date">{d.label}</div>
+              <div class="node-topic">{d.topic}</div>
+              <div class="node-quota">
+                <span class="quota-chip">✓ erledigt</span>
+                <span class="reward-chip">⭐ +{d.reward}</span>
+              </div>
+            </div>
+          </div>
+        </>
+      ))}
+
       {days.map((d) => (
         <>
           {d.newWeek && (
@@ -93,7 +133,7 @@ const days = PLAN_DAYS.map((d, i) => {
           )}
           <div class="path-node" data-index={d.index} data-date={d.date} data-reward={d.reward}>
             <div class="node-circle" aria-hidden="true">
-              <span class="node-icon">{d.index + 1}</span>
+              <span class="node-icon">{d.number}</span>
             </div>
             <div class="node-text">
               <div class="node-date">
@@ -294,7 +334,7 @@ const days = PLAN_DAYS.map((d, i) => {
 <script>
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
-  import { PLAN_DAYS, EXAM_DATE, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
+  import { PLAN_DAYS, DONE_DAYS, EXAM_DATE, SCHREIB_TOTAL, MATHE_TOTAL, cumulativeTarget } from '../data/lernplan';
 
   const YELLOW_TOTAL = 17;
   const BLUE_TOTAL = 17;
@@ -332,6 +372,13 @@ const days = PLAN_DAYS.map((d, i) => {
 
   function claimRewards(schreibDone: number, matheDone: number) {
     let earned = 0;
+    // Bereits erledigte Tage vor dem Pfad
+    DONE_DAYS.forEach((day) => {
+      if (StorageService.claimDay(day.date)) {
+        StorageService.addStars(day.reward);
+        earned += day.reward;
+      }
+    });
     PLAN_DAYS.forEach((day, i) => {
       if (isDayDone(i, schreibDone, matheDone) && StorageService.claimDay(day.date)) {
         StorageService.addStars(day.reward);
@@ -440,5 +487,9 @@ const days = PLAN_DAYS.map((d, i) => {
     if (t === 'goal_schreibheft' || t === 'goal_mathe' || t === 'claimed_days') render();
   });
 
+  {
+    const { schreibDone, matheDone } = progress();
+    claimRewards(schreibDone, matheDone);
+  }
   render();
 </script>

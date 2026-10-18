@@ -21,6 +21,11 @@ export const WEEK_TITLES: Record<number, string> = {
   2: 'Woche 2: Einmaleins, Division & Co.'
 };
 
+/** Bereits vor dem Start des Pfads erledigte Tage (zählen nicht zu den Seiten-Zielen unten). */
+export const DONE_DAYS: PlanDay[] = [
+  { date: '2026-10-17', week: 1, topic: 'Erster Übungstag geschafft', reward: 3 }
+];
+
 export const PLAN_DAYS: PlanDay[] = [
   { date: '2026-10-18', week: 1, topic: 'Plus & Minus bis 100 (Start)', reward: 3 },
   { date: '2026-10-19', week: 1, topic: 'Plus mit Zehnerübergang in 2 Schritten', reward: 3 },
