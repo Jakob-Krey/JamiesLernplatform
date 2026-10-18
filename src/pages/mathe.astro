@@ -50,6 +50,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <button type="button" class="switch-btn" data-mode="einmaleins"
           >✖️ 1x1 Einmaleins</button
         >
+        <button type="button" class="switch-btn" data-profiles="jamie" data-mode="mix_alles"
+          >🎯 Alles gemischt</button
+        >
         <button type="button" class="switch-btn" data-profiles="jamie" data-mode="plus_100"
           >➕ Plus bis 100</button
         >
@@ -245,26 +248,31 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     let a: number, b: number, equationText: string;
     const modeTag = document.getElementById("task-mode-tag");
 
-    if (currentMode === "mix_schwer") {
+    // "Alles gemischt" (Jamie): Plus, Minus und Einmaleins durcheinander
+    const mixed = currentMode === "mix_alles";
+    const mode = mixed ? ["plus_100", "minus_100", "einmaleins"][randInt(0, 2)] : currentMode;
+
+    if (mode === "mix_schwer") {
       const hard = ["plus_1000", "minus_1000", "mal_gross", "geteilt", "zehner"];
       const sub = hard[randInt(0, hard.length - 1)];
       equationText = hardProblem(sub);
       if (modeTag) modeTag.textContent = "Alles gemischt";
-    } else if (["plus_1000", "minus_1000", "mal_gross", "geteilt", "zehner"].includes(currentMode)) {
-      equationText = hardProblem(currentMode);
+    } else if (["plus_1000", "minus_1000", "mal_gross", "geteilt", "zehner"].includes(mode)) {
+      equationText = hardProblem(mode);
       if (modeTag) {
         modeTag.textContent =
-          { plus_1000: "Plus bis 1000", minus_1000: "Minus bis 1000", mal_gross: "Malnehmen", geteilt: "Geteilt", zehner: "Mal/Geteilt 10, 100, 1000" }[currentMode] ?? "";
+          { plus_1000: "Plus bis 1000", minus_1000: "Minus bis 1000", mal_gross: "Malnehmen", geteilt: "Geteilt", zehner: "Mal/Geteilt 10, 100, 1000" }[mode] ?? "";
       }
-    } else if (currentMode === "einmaleins") {
-      a = activeRow === 0 ? randInt(2, 10) : activeRow;
+    } else if (mode === "einmaleins") {
+      const row = mixed ? 0 : activeRow;
+      a = row === 0 ? randInt(2, 10) : row;
       b = randInt(1, 10);
       currentAnswer = a * b;
       // Bei einer gewählten Reihe gelegentlich als Tauschaufgabe zeigen (z. B. 7 · 4 statt 4 · 7)
-      equationText = activeRow !== 0 && Math.random() > 0.5 ? `${b} · ${a} = ?` : `${a} · ${b} = ?`;
-      if (modeTag) modeTag.textContent = activeRow === 0 ? "1x1 Einmaleins" : `${activeRow}er-Reihe`;
+      equationText = row !== 0 && Math.random() > 0.5 ? `${b} · ${a} = ?` : `${a} · ${b} = ?`;
+      if (modeTag) modeTag.textContent = row === 0 ? "1x1 Einmaleins" : `${row}er-Reihe`;
     } else {
-      const isPlus = currentMode === "plus_100" || (currentMode === "mix_100" && Math.random() > 0.5);
+      const isPlus = mode === "plus_100" || (mode === "mix_100" && Math.random() > 0.5);
       if (isPlus) {
         [a, b] = makePlus100();
         currentAnswer = a + b;
@@ -276,9 +284,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       }
       if (modeTag) {
         modeTag.textContent =
-          currentMode === "plus_100" ? "Plus bis 100" : currentMode === "minus_100" ? "Minus bis 100" : "Plus/Minus bis 100";
+          mode === "plus_100" ? "Plus bis 100" : mode === "minus_100" ? "Minus bis 100" : "Plus/Minus bis 100";
       }
     }
+
+    if (mixed && modeTag) modeTag.textContent = "Alles gemischt";
 
     const problemEl = document.getElementById("math-problem");
     if (problemEl) problemEl.textContent = equationText;

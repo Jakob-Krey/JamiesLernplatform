@@ -53,7 +53,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     suffix: '',
     color: '#4f46e5',
     pages: ALL_PAGES,
-    mathDefault: 'plus_100',
+    mathDefault: 'mix_alles',
     vocabLevels: [1, 2],
     showTopic: (id) => !id.startsWith('k4_'),
     defaultTopic: 'plusminus',
