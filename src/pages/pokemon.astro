@@ -29,6 +29,25 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </div>
     </div>
 
+    <!-- Filter -->
+    <div class="poke-filters">
+      <div class="poke-filter-row" id="poke-view-chips">
+        <button type="button" class="poke-chip active" data-view="all">Alle</button>
+        <button type="button" class="poke-chip" data-view="mine">✅ Meine</button>
+        <button type="button" class="poke-chip" data-view="locked">🔒 Noch nicht frei</button>
+        <button type="button" class="poke-chip" data-view="fav">❤️ Favoriten</button>
+      </div>
+      <div class="poke-filter-row" id="poke-type-chips"></div>
+      <div class="poke-filter-row">
+        <input type="search" class="poke-search" id="poke-search" placeholder="🔍 Name suchen …" />
+        <select class="poke-select" id="poke-sort" aria-label="Sortieren">
+          <option value="dex">Sortiert nach Pokédex-Nr.</option>
+          <option value="name">Sortiert nach Name</option>
+          <option value="cost">Sortiert nach Preis</option>
+        </select>
+      </div>
+    </div>
+
     <!-- Pokemon Cards Grid -->
     <div class="pokemon-grid" id="pokemon-collection"></div>
   </main>
@@ -43,11 +62,34 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { POKEMON_DATA, pokemonArtUrl, pokemonGifUrl, pokemonCryUrl, type PokemonCardData } from '../data/pokemon';
+  import { POKEMON_DATA, TYPE_LABELS, pokemonArtUrl, pokemonGifUrl, pokemonCryUrl, type PokemonCardData } from '../data/pokemon';
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
 
   let targetPokeToUnlock: PokemonCardData | null = null;
+
+  const FAV_KEY = 'jamie_favorite_pokemon';
+  let view = 'all';
+  let typeFilter = 'all';
+  let sortBy = 'dex';
+  let query = '';
+
+  function getFavorites(): string[] {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function toggleFavorite(id: string) {
+    const favs = getFavorites();
+    const next = favs.includes(id) ? favs.filter((f) => f !== id) : [...favs, id];
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify(next));
+    } catch {}
+  }
 
   function renderPokemonCollection() {
     const container = document.getElementById('pokemon-collection');
@@ -59,13 +101,34 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       counterEl.textContent = `${unlockedIds.length} / ${POKEMON_DATA.length}`;
     }
     container.innerHTML = '';
+    const favs = getFavorites();
 
-    POKEMON_DATA.forEach(poke => {
+    const shown = POKEMON_DATA.filter((p) => {
+      const unlocked = unlockedIds.includes(p.id);
+      if (view === 'mine' && !unlocked) return false;
+      if (view === 'locked' && unlocked) return false;
+      if (view === 'fav' && !favs.includes(p.id)) return false;
+      if (typeFilter !== 'all' && p.type !== typeFilter) return false;
+      if (query && !p.name.toLowerCase().includes(query)) return false;
+      return true;
+    });
+    shown.sort((a, b) =>
+      sortBy === 'name' ? a.name.localeCompare(b.name, 'de') : sortBy === 'cost' ? a.cost - b.cost || a.dex - b.dex : a.dex - b.dex
+    );
+
+    if (shown.length === 0) {
+      container.innerHTML = '<div class="poke-empty">Keine Karten gefunden 🔍</div>';
+    }
+
+    shown.forEach(poke => {
       const isUnlocked = unlockedIds.includes(poke.id);
+      const isFav = favs.includes(poke.id);
       const card = document.createElement('div');
       card.className = `pokemon-card ${isUnlocked ? '' : 'locked'}`;
+      card.dataset.id = poke.id;
       
       card.innerHTML = `
+        ${isUnlocked ? `<button type="button" class="poke-fav" aria-label="Favorit" aria-pressed="${isFav}">${isFav ? '❤️' : '🤍'}</button>` : ''}
         <div class="pokemon-card-inner ${poke.typeClass}">
           <div class="poke-card-header">
             <span class="poke-name">${poke.name}</span>
@@ -93,6 +156,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           </div>
         ` : ''}
       `;
+
+      card.querySelector('.poke-fav')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavorite(poke.id);
+        renderPokemonCollection();
+      });
 
       card.addEventListener('click', () => {
         if (!isUnlocked) {
@@ -207,8 +276,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       const unlocked = targetPokeToUnlock;
       renderPokemonCollection();
       // Shiny-Überraschung auf der frisch freigeschalteten Karte
-      const idx = POKEMON_DATA.findIndex((p) => p.id === unlocked.id);
-      const newCard = document.getElementById('pokemon-collection')?.children[idx] as HTMLElement | undefined;
+      const newCard = document.querySelector<HTMLElement>(`.pokemon-card[data-id="${unlocked.id}"]`);
       if (newCard) animateCard(newCard, unlocked, true);
     }
   }
@@ -227,6 +295,40 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       if (e.target === modal) closeUnlockModal();
     });
   }
+
+  // Filter-Leiste
+  const typeChips = document.getElementById('poke-type-chips')!;
+  typeChips.innerHTML =
+    `<button type="button" class="poke-chip active" data-type="all">Alle Typen</button>` +
+    Object.entries(TYPE_LABELS)
+      .map(([t, label]) => `<button type="button" class="poke-chip" data-type="${t}">${label}</button>`)
+      .join('');
+
+  function setActive(group: HTMLElement, el: HTMLElement) {
+    group.querySelectorAll('.poke-chip').forEach((c) => c.classList.toggle('active', c === el));
+  }
+  document.getElementById('poke-view-chips')!.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('.poke-chip');
+    if (!el) return;
+    view = el.dataset.view!;
+    setActive(el.parentElement!, el);
+    renderPokemonCollection();
+  });
+  typeChips.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('.poke-chip');
+    if (!el) return;
+    typeFilter = el.dataset.type!;
+    setActive(typeChips, el);
+    renderPokemonCollection();
+  });
+  document.getElementById('poke-search')!.addEventListener('input', (e) => {
+    query = (e.target as HTMLInputElement).value.trim().toLowerCase();
+    renderPokemonCollection();
+  });
+  document.getElementById('poke-sort')!.addEventListener('change', (e) => {
+    sortBy = (e.target as HTMLSelectElement).value;
+    renderPokemonCollection();
+  });
 
   renderPokemonCollection();
 </script>
