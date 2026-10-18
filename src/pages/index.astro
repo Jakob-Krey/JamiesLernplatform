@@ -5,7 +5,7 @@ import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS } from 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<BaseLayout title="Jamies Lernplattform 🎒 • Stundenplan & Lernwelten" activePage="stundenplan">
+<BaseLayout title="Jamies Lernplattform 🎒 • Stundenplan" activePage="stundenplan">
   <main class="container">
 
     <!-- Compact Top Bar: Sofortige Übersicht ohne Ablenkung -->
@@ -67,115 +67,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </div>
     </section>
 
-    <!-- ====================================================================
-         LERNWELTEN & INTERAKTIVE MODULE
-         ==================================================================== -->
-    <section class="modules-section" id="lernwelten">
-      <div class="section-header" style="margin-bottom: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.5rem;">🚀</span>
-          <h2 class="section-title" style="margin: 0; font-size: 1.5rem;">Lernwelten</h2>
-        </div>
-      </div>
-
-      <div class="modules-grid">
-        <!-- Modul 0: Lernziele & Gipfel-Expedition -->
-        <a href={`${base}/lernziele`} class="module-card" style="border: 2px solid #fed7aa; background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);">
-          <div class="module-top">
-            <div class="module-icon-wrap" style="background: #fef3c7; border: 2px solid #fde68a;">🏔️</div>
-            <span class="module-status-badge badge-fun" style="background: #fef3c7; color: #b45309;">Ziel: 02. Nov</span>
-          </div>
-          <h3 class="module-title">Gipfel-Expedition</h3>
-          <div class="module-features-list">
-            <span class="module-tag">✍️ Schreibheft (bis S. 76)</span>
-            <span class="module-tag">🔢 Flex & Floh (je 17 S.)</span>
-          </div>
-          <div class="module-cta-btn" style="background: #ea580c; margin-top: auto;">
-            <span>Öffnen ➔</span>
-          </div>
-        </a>
-
-        <!-- Modul 0.5: Fokus-Timer -->
-        <a href={`${base}/timer`} class="module-card" style="border: 2px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);">
-          <div class="module-top">
-            <div class="module-icon-wrap" style="background: #dbeafe; border: 2px solid #bfdbfe;">⏱️</div>
-            <span class="module-status-badge badge-fun" style="background: #dbeafe; color: #1e40af;">15 / 5 Min</span>
-          </div>
-          <h3 class="module-title">Fokus-Timer</h3>
-          <div class="module-features-list">
-            <span class="module-tag">🎯 15 Min Fokus</span>
-            <span class="module-tag">🍎 5 Min Pause</span>
-          </div>
-          <div class="module-cta-btn" style="background: #2563eb; margin-top: auto;">
-            <span>Timer ➔</span>
-          </div>
-        </a>
-
-        <!-- Modul 1: Englisch -->
-        <a href={`${base}/englisch`} class="module-card mod-englisch">
-          <div class="module-top">
-            <div class="module-icon-wrap">🇬🇧</div>
-            <span class="module-status-badge badge-ready">Mit Ton</span>
-          </div>
-          <h3 class="module-title">Englisch-Abenteuer</h3>
-          <div class="module-features-list">
-            <span class="module-tag">🔊 Sprachausgabe</span>
-            <span class="module-tag">🗂️ Bildkarten</span>
-          </div>
-          <div class="module-cta-btn" style="margin-top: auto;">
-            <span>Vokabeln ➔</span>
-          </div>
-        </a>
-
-        <!-- Modul 2: Mathe -->
-        <a href={`${base}/mathe`} class="module-card mod-mathe">
-          <div class="module-top">
-            <div class="module-icon-wrap">🔢</div>
-            <span class="module-status-badge badge-ready">Blitzrechnen</span>
-          </div>
-          <h3 class="module-title">Mathe-Dschungel</h3>
-          <div class="module-features-list">
-            <span class="module-tag">➕ Plus & Minus</span>
-            <span class="module-tag">✖️ 1x1 Einmaleins</span>
-          </div>
-          <div class="module-cta-btn" style="margin-top: auto;">
-            <span>Kopfrechnen ➔</span>
-          </div>
-        </a>
-
-        <!-- Modul 3: Deutsch -->
-        <a href={`${base}/deutsch`} class="module-card mod-deutsch">
-          <div class="module-top">
-            <div class="module-icon-wrap">📖</div>
-            <span class="module-status-badge badge-ready">Lernkarten</span>
-          </div>
-          <h3 class="module-title">Deutsch-Wortschatz</h3>
-          <div class="module-features-list">
-            <span class="module-tag">🏷️ Wortarten</span>
-            <span class="module-tag">⚡ Doppelte Mitlaute</span>
-          </div>
-          <div class="module-cta-btn" style="margin-top: auto;">
-            <span>Karten ➔</span>
-          </div>
-        </a>
-
-        <!-- Modul 4: Pokémon Album -->
-        <a href={`${base}/pokemon`} class="module-card mod-pokemon">
-          <div class="module-top">
-            <div class="module-icon-wrap">⚡</div>
-            <span class="module-status-badge badge-fun">Belohnung</span>
-          </div>
-          <h3 class="module-title">Pokémon-Arena</h3>
-          <div class="module-features-list">
-            <span class="module-tag">✨ 3D-Karten</span>
-            <span class="module-tag">🏆 Sammelalbum</span>
-          </div>
-          <div class="module-cta-btn" style="margin-top: auto;">
-            <span>Sammelalbum ➔</span>
-          </div>
-        </a>
-      </div>
-    </section>
 
   </main>
 
