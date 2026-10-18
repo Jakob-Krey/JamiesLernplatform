@@ -48,7 +48,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
   jamie: {
     id: 'jamie',
     name: 'Jamie',
-    emoji: '🎒',
+    emoji: '🐱',
     docId: 'progress',
     suffix: '',
     color: '#ec4899',
@@ -62,7 +62,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
   maya: {
     id: 'maya',
     name: 'Maya',
-    emoji: '🦄',
+    emoji: '🐰',
     docId: 'progress_maya',
     suffix: '__maya',
     color: '#db2777',

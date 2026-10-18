@@ -77,7 +77,8 @@ const profileClient = {
       var t = document.getElementById('touch-icon-link'); if (t) t.setAttribute('href', pc.icons[k]);
       var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute('content', pc.themes[k]);
       var a = document.querySelector('meta[name="apple-mobile-web-app-title"]'); if (a) a.setAttribute('content', pc.names[k] + ' lernt');
-      if (k !== 'jamie') document.title = document.title.replace(/Jamies/g, pc.names[k] + 's').replace(/Jamie/g, pc.names[k]).replace(/🎒/g, pc.emojis[k]);
+      if (k !== 'jamie') document.title = document.title.replace(/Jamies/g, pc.names[k] + 's').replace(/Jamie/g, pc.names[k]);
+      document.title = document.title.replace(/🎒/g, pc.emojis[k]);
     })();
   </script>
 
@@ -99,7 +100,7 @@ const profileClient = {
   <header class="site-header">
     <div class="container nav-wrapper">
       <a href={`${base}/`} class="brand" aria-label="Zur Startseite">
-        <div class="brand-icon"><span data-profiles="jamie">🎒</span><span data-profiles="maya">🦄</span></div>
+        <div class="brand-icon"><span data-profiles="jamie">🐱</span><span data-profiles="maya">🐰</span></div>
         <div class="brand-title">
           <span data-profiles="jamie">Jamie's</span><span data-profiles="maya">Maya's</span>
           <span class="brand-subtitle">Lernplattform 🌟</span>
