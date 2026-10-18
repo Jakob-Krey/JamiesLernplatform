@@ -49,40 +49,6 @@ const days = PLAN_DAYS.map((d, i) => {
       </a>
     </div>
 
-    <!-- Heute eintragen -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2 class="panel-title">Seite geschafft? Hier eintragen</h2>
-      </div>
-      <p class="hint">Sterne gibt es, wenn alle Seiten eines Tages (Deutsch <em>und</em> Mathe) erledigt sind. Fehlerfrei muss es nicht sein.</p>
-
-      <div class="entry-list">
-        <div class="entry-row entry-orange">
-          <div class="entry-name">✍️ Schreiblernheft<small id="schreib-current-text">Seite 35 von 76</small></div>
-          <div class="entry-btns">
-            <button type="button" class="btn-step" id="schreib-minus-btn" aria-label="Eine Seite zurück">−</button>
-            <button type="button" class="btn-add" id="schreib-plus-btn">+ 1 Seite</button>
-          </div>
-        </div>
-
-        <div class="entry-row entry-yellow">
-          <div class="entry-name">🟡 Gelbes Flex &amp; Floh<small id="mathe-yellow-text">0 von 17 Seiten</small></div>
-          <div class="entry-btns">
-            <button type="button" class="btn-step" id="mathe-yellow-minus-btn" aria-label="Eine Seite zurück">−</button>
-            <button type="button" class="btn-add" id="mathe-yellow-plus-btn">+ 1 Seite</button>
-          </div>
-        </div>
-
-        <div class="entry-row entry-blue">
-          <div class="entry-name">🔵 Blaues Flex &amp; Floh<small id="mathe-blue-text">0 von 17 Seiten</small></div>
-          <div class="entry-btns">
-            <button type="button" class="btn-step" id="mathe-blue-minus-btn" aria-label="Eine Seite zurück">−</button>
-            <button type="button" class="btn-add" id="mathe-blue-plus-btn">+ 1 Seite</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Vertikaler Lernpfad -->
     <section class="path" aria-label="Lernpfad bis zur Mathearbeit">
       {earlier.map((d) => (
@@ -160,6 +126,36 @@ const days = PLAN_DAYS.map((d, i) => {
       </div>
     </section>
 
+
+    <!-- Eingabezeilen: werden per Skript in den aktuellen Tag verschoben -->
+    <div id="entry-holder" hidden>
+    <div class="entry-list" id="entry-controls">
+      <div class="entry-row entry-orange">
+        <div class="entry-name">✍️ Schreiblernheft<small id="schreib-current-text">Seite 35 von 76</small></div>
+        <div class="entry-btns">
+          <button type="button" class="btn-step" id="schreib-minus-btn" aria-label="Eine Seite zurück">−</button>
+          <button type="button" class="btn-add" id="schreib-plus-btn">+ 1 Seite</button>
+        </div>
+      </div>
+
+      <div class="entry-row entry-yellow">
+        <div class="entry-name">🟡 Gelbes Flex &amp; Floh<small id="mathe-yellow-text">0 von 17 Seiten</small></div>
+        <div class="entry-btns">
+          <button type="button" class="btn-step" id="mathe-yellow-minus-btn" aria-label="Eine Seite zurück">−</button>
+          <button type="button" class="btn-add" id="mathe-yellow-plus-btn">+ 1 Seite</button>
+        </div>
+      </div>
+
+      <div class="entry-row entry-blue">
+        <div class="entry-name">🔵 Blaues Flex &amp; Floh<small id="mathe-blue-text">0 von 17 Seiten</small></div>
+        <div class="entry-btns">
+          <button type="button" class="btn-step" id="mathe-blue-minus-btn" aria-label="Eine Seite zurück">−</button>
+          <button type="button" class="btn-add" id="mathe-blue-plus-btn">+ 1 Seite</button>
+        </div>
+      </div>
+    </div>
+      <p class="entry-hint">Sterne gibt es, wenn alle Seiten des Tages erledigt sind (Deutsch <em>und</em> Mathe).</p>
+    </div>
   </main>
 </BaseLayout>
 
@@ -176,24 +172,25 @@ const days = PLAN_DAYS.map((d, i) => {
   .panel-title { font-size: 1.3rem; font-weight: 900; color: #0f172a; margin: 0; }
   .hint { margin: 0 0 1rem; color: #64748b; font-size: 0.9rem; line-height: 1.5; }
 
-  .entry-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .entry-list { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
+  .entry-hint { margin: 0.4rem 0 0; color: #64748b; font-size: 0.75rem; line-height: 1.4; }
   .entry-row {
     display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;
-    border-radius: 16px; padding: 0.8rem 1rem; border: 2px solid;
+    border-radius: 14px; padding: 0.4rem 0.6rem 0.4rem 0.8rem; border: 2px solid;
   }
   .entry-orange { background: #fff7ed; border-color: #fed7aa; }
   .entry-yellow { background: #fefce8; border-color: #fef08a; }
   .entry-blue { background: #eff6ff; border-color: #bfdbfe; }
-  .entry-name { font-weight: 800; color: #1e293b; display: flex; flex-direction: column; }
+  .entry-name { font-weight: 800; color: #1e293b; display: flex; flex-direction: column; font-size: 0.9rem; }
   .entry-name small { font-weight: 600; color: #64748b; font-size: 0.82rem; }
   .entry-btns { display: flex; gap: 0.5rem; align-items: center; }
   .btn-step {
-    width: 44px; height: 44px; border-radius: 12px; border: 2px solid #cbd5e1;
-    background: white; font-size: 1.3rem; font-weight: 900; color: #475569; cursor: pointer;
+    width: 36px; height: 36px; border-radius: 10px; border: 2px solid #cbd5e1;
+    background: white; font-size: 1.15rem; font-weight: 900; color: #475569; cursor: pointer;
   }
   .btn-add {
-    height: 44px; padding: 0 1.1rem; border-radius: 12px; border: none;
-    background: var(--color-primary); color: white; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+    height: 36px; padding: 0 0.9rem; border-radius: 10px; border: none;
+    background: var(--color-primary); color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
     box-shadow: 0 3px 0 var(--color-primary-dark);
   }
   .btn-add:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--color-primary-dark); }
@@ -392,6 +389,13 @@ const days = PLAN_DAYS.map((d, i) => {
       mChip.querySelector('.q-val')!.textContent = String(Math.min(mq, Math.max(0, matheDone - prevM)));
     });
 
+    // Eingabezeilen direkt in den aktuellen Tag setzen (oder ins Ziel, wenn alles geschafft ist)
+    const controls = $('entry-controls');
+    const host = document.querySelector<HTMLElement>('.path-node.is-current .node-text') ?? $('goal-node')?.querySelector<HTMLElement>('.node-text');
+    if (controls && host && controls.parentElement !== host) host.appendChild(controls);
+    const hint = document.querySelector('.entry-hint');
+    if (hint && host && hint.parentElement !== host) host.appendChild(hint);
+
     // Ziel ganz unten: nötige Seitenzahl je Fach
     $('goal-schreib')!.textContent = String(schreibDone);
     $('goal-mathe')!.textContent = String(matheDone);
@@ -450,4 +454,6 @@ const days = PLAN_DAYS.map((d, i) => {
     claimRewards(schreibDone, matheDone);
   }
   render();
+  // Beim Öffnen direkt zum aktuellen Tag springen
+  (document.querySelector('.path-node.is-current') ?? $('goal-node'))?.scrollIntoView({ block: 'center' });
 </script>
