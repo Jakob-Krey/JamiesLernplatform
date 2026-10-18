@@ -29,16 +29,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;"
         id="math-mode-selector"
       >
-        <button type="button" class="switch-btn active" data-mode="plus_20"
-          >➕ Plus bis 20</button
-        >
-        <button type="button" class="switch-btn" data-mode="minus_20"
-          >➖ Minus bis 20</button
-        >
         <button type="button" class="switch-btn" data-mode="einmaleins"
           >✖️ 1x1 Einmaleins</button
         >
-        <button type="button" class="switch-btn" data-mode="plus_100"
+        <button type="button" class="switch-btn active" data-mode="plus_100"
           >➕ Plus bis 100</button
         >
         <button type="button" class="switch-btn" data-mode="minus_100"
@@ -75,7 +69,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;"
           id="task-mode-tag"
         >
-          Plus bis 20
+          Plus bis 100
         </span>
         <span
           style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;"
@@ -107,7 +101,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   import { StorageService } from "../lib/storage";
   import { AudioFX, triggerConfetti, showStarToast } from "../lib/audio";
 
-  let currentMode = "plus_20";
+  let currentMode = "plus_100";
   let currentAnswer = 0;
   let streak = 0;
   let carryMode: "any" | "no" | "yes" = "any"; // Zehnerübergang (bis 100)
@@ -195,19 +189,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     let a: number, b: number, equationText: string;
     const modeTag = document.getElementById("task-mode-tag");
 
-    if (currentMode === "plus_20") {
-      a = Math.floor(Math.random() * 11) + 2; // 2..12
-      b = Math.floor(Math.random() * 9) + 1; // 1..9
-      currentAnswer = a + b;
-      equationText = `${a} + ${b} = ?`;
-      if (modeTag) modeTag.textContent = "Plus bis 20";
-    } else if (currentMode === "minus_20") {
-      a = Math.floor(Math.random() * 12) + 7; // 7..18
-      b = Math.floor(Math.random() * (a - 1)) + 1;
-      currentAnswer = a - b;
-      equationText = `${a} - ${b} = ?`;
-      if (modeTag) modeTag.textContent = "Minus bis 20";
-    } else if (currentMode === "einmaleins") {
+    if (currentMode === "einmaleins") {
       a = activeRow === 0 ? randInt(2, 10) : activeRow;
       b = randInt(1, 10);
       currentAnswer = a * b;
@@ -289,5 +271,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     if (el) el.textContent = `🔥 Serie: ${streak}`;
   }
 
+  updateOptionVisibility();
   generateProblem();
 </script>
