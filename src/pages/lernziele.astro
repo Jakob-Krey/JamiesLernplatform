@@ -23,7 +23,6 @@ const days = PLAN_DAYS.map((d, i) => {
     newWeek: i === 0 || PLAN_DAYS[i - 1].week !== d.week
   };
 });
-const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 ---
 
 <BaseLayout title="Jamies Lernziele 🏔️ • Der Weg zur Mathearbeit" activePage="lernziele">
@@ -45,39 +44,6 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
         <div class="countdown-days" id="countdown-days-count">--</div>
         <div class="countdown-label">noch übrig</div>
       </div>
-    </section>
-
-    <!-- Gesamtfortschritt -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2 class="panel-title">Gesamtfortschritt</h2>
-        <span class="percent-badge" id="total-percent">0%</span>
-      </div>
-
-      <div class="big-track" aria-label="Gesamtfortschritt">
-        <div class="big-fill" id="total-fill" style="width: 0%;"></div>
-        <div class="plan-marker" id="plan-marker" title="Hier solltest du heute sein" style="left: 0%;"></div>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat">
-          <span class="stat-label">✍️ Schreiblernheft</span>
-          <strong id="stat-schreib">0 / {SCHREIB_TOTAL}</strong>
-          <span class="stat-rest" id="stat-schreib-rest">noch {SCHREIB_TOTAL} Seiten</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">🔢 Mathe (gelb + blau)</span>
-          <strong id="stat-mathe">0 / {MATHE_TOTAL}</strong>
-          <span class="stat-rest" id="stat-mathe-rest">noch {MATHE_TOTAL} Seiten</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">⭐ Belohnung</span>
-          <strong id="stat-stars">0 / {maxStars}</strong>
-          <span class="stat-rest">Sterne aus Tageszielen</span>
-        </div>
-      </div>
-
-      <p class="plan-status" id="plan-status"></p>
     </section>
 
     <!-- Heute eintragen -->
@@ -154,10 +120,10 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
       <div class="path-node goal-node" id="goal-node">
         <div class="node-circle"><span class="node-icon">🏆</span></div>
         <div class="node-text">
-          <div class="node-date">Mo 02.11.</div>
-          <div class="node-topic">Mathearbeit</div>
+          <div class="node-topic">Alle Seiten geschafft</div>
           <div class="node-quota">
-            <span class="goal-hint" id="goal-hint">Alle Seiten schaffen, dann bist du bereit!</span>
+            <span class="goal-chip">✍️ <b id="goal-schreib">0</b> / {SCHREIB_TOTAL} Seiten Schreiblernheft</span>
+            <span class="goal-chip">🔢 <b id="goal-mathe">0</b> / {MATHE_TOTAL} Seiten Mathe</span>
           </div>
         </div>
       </div>
@@ -203,47 +169,7 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
   }
   .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
   .panel-title { font-size: 1.3rem; font-weight: 900; color: #0f172a; margin: 0; }
-  .percent-badge {
-    background: #eef2ff; color: #4338ca; border: 2px solid #c7d2fe;
-    border-radius: 9999px; padding: 0.25rem 0.9rem; font-weight: 900; font-size: 1.05rem;
-  }
   .hint { margin: 0 0 1rem; color: #64748b; font-size: 0.9rem; line-height: 1.5; }
-
-  .big-track {
-    position: relative;
-    height: 22px;
-    background: #e2e8f0;
-    border-radius: 9999px;
-    overflow: visible;
-    margin-bottom: 1.25rem;
-  }
-  .big-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #22c55e, #10b981);
-    border-radius: 9999px;
-    transition: width 0.5s ease;
-  }
-  .plan-marker {
-    position: absolute;
-    top: -5px;
-    width: 4px;
-    height: 32px;
-    background: #6366f1;
-    border-radius: 2px;
-    transform: translateX(-50%);
-    transition: left 0.5s ease;
-  }
-  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.85rem; }
-  .stat {
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;
-    padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.15rem;
-  }
-  .stat-label { font-size: 0.8rem; font-weight: 800; color: #64748b; }
-  .stat strong { font-size: 1.4rem; font-weight: 900; color: #0f172a; }
-  .stat-rest { font-size: 0.8rem; color: #64748b; font-weight: 600; }
-  .plan-status { margin: 1rem 0 0; font-weight: 800; font-size: 0.95rem; color: #475569; }
-  .plan-status.ahead { color: #15803d; }
-  .plan-status.behind { color: #c2410c; }
 
   .entry-list { display: flex; flex-direction: column; gap: 0.75rem; }
   .entry-row {
@@ -318,12 +244,13 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
   .node-date { font-size: 0.82rem; font-weight: 700; color: #94a3b8; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
   .node-topic { font-size: 1.05rem; font-weight: 800; color: #94a3b8; line-height: 1.25; }
   .node-quota { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
-  .quota-chip, .reward-chip, .goal-hint {
+  .quota-chip, .reward-chip, .goal-chip {
     font-size: 0.78rem; font-weight: 800; border-radius: 9999px; padding: 0.15rem 0.6rem;
     background: #f1f5f9; color: #64748b;
   }
   .reward-chip { background: #fef3c7; color: #b45309; }
-  .goal-hint { background: transparent; padding-left: 0; font-size: 0.88rem; }
+  .goal-chip { font-size: 0.85rem; padding: 0.25rem 0.75rem; }
+  .goal-chip b { font-weight: 900; }
   .today-pill, .catchup-pill { font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
   .today-pill { background: #6366f1; color: white; }
   .catchup-pill { background: #ffedd5; color: #c2410c; }
@@ -347,7 +274,6 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 
   .goal-node .node-circle { background: #fde68a; color: #92400e; box-shadow: 0 5px 0 #f59e0b; font-size: 1.8rem; }
   .goal-node .node-topic { color: #0f172a; }
-  .goal-node .node-date { color: #b45309; }
   .goal-node.is-reached .node-circle { background: #22c55e; box-shadow: 0 5px 0 #15803d; }
 
   @keyframes node-pulse {
@@ -372,8 +298,6 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 
   const YELLOW_TOTAL = 17;
   const BLUE_TOTAL = 17;
-  const TOTAL_PAGES = SCHREIB_TOTAL + MATHE_TOTAL;
-  const MAX_STARS = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
 
   function localDateStr(d = new Date()): string {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -424,45 +348,11 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
   function render() {
     const { sg, mg, schreibDone, matheDone } = progress();
     const today = localDateStr();
-    const claimed = StorageService.getClaimedDays();
 
     // Countdown
     const left = Math.max(0, daysUntil(EXAM_DATE));
     const cd = $('countdown-days-count');
     if (cd) cd.textContent = left === 0 ? 'Heute!' : `${left} ${left === 1 ? 'Tag' : 'Tage'}`;
-
-    // Gesamtfortschritt
-    const done = schreibDone + matheDone;
-    const pct = Math.round((done / TOTAL_PAGES) * 100);
-    $('total-percent')!.textContent = `${pct}%`;
-    $('total-fill')!.style.width = `${pct}%`;
-    $('stat-schreib')!.textContent = `${schreibDone} / ${SCHREIB_TOTAL}`;
-    $('stat-mathe')!.textContent = `${matheDone} / ${MATHE_TOTAL}`;
-    const sRest = SCHREIB_TOTAL - schreibDone;
-    const mRest = MATHE_TOTAL - matheDone;
-    $('stat-schreib-rest')!.textContent = sRest === 0 ? '✓ geschafft' : `noch ${sRest} ${sRest === 1 ? 'Seite' : 'Seiten'}`;
-    $('stat-mathe-rest')!.textContent = mRest === 0 ? '✓ geschafft' : `noch ${mRest} ${mRest === 1 ? 'Seite' : 'Seiten'}`;
-    const starsEarned = PLAN_DAYS.filter((d) => claimed.includes(d.date)).reduce((s, d) => s + d.reward, 0);
-    $('stat-stars')!.textContent = `${starsEarned} / ${MAX_STARS}`;
-
-    // Wo sollte Jamie laut Plan heute sein?
-    let todayIndex = PLAN_DAYS.findIndex((d) => d.date === today);
-    if (todayIndex === -1) todayIndex = today < PLAN_DAYS[0].date ? -1 : PLAN_DAYS.length - 1;
-    const planned = todayIndex < 0 ? 0 : cumulativeTarget(SCHREIB_TOTAL, todayIndex) + cumulativeTarget(MATHE_TOTAL, todayIndex);
-    $('plan-marker')!.style.left = `${Math.round((planned / TOTAL_PAGES) * 100)}%`;
-    const status = $('plan-status')!;
-    const diff = done - planned;
-    status.className = 'plan-status';
-    if (done >= TOTAL_PAGES) {
-      status.textContent = '🎉 Alle Seiten geschafft!';
-      status.classList.add('ahead');
-    } else if (diff >= 0) {
-      status.textContent = diff === 0 ? '✅ Genau im Plan (Strich = Soll für heute)' : `🚀 ${diff} ${diff === 1 ? 'Seite' : 'Seiten'} vor dem Plan`;
-      status.classList.add('ahead');
-    } else {
-      status.textContent = `⏳ ${-diff} ${-diff === 1 ? 'Seite' : 'Seiten'} aufzuholen (Strich = Soll für heute)`;
-      status.classList.add('behind');
-    }
 
     // Eingabe-Zeilen
     $('schreib-current-text')!.textContent = `Seite ${sg.currentPage} von ${sg.targetPage}`;
@@ -497,12 +387,10 @@ const maxStars = PLAN_DAYS.reduce((sum, d) => sum + d.reward, 0);
       mChip.querySelector('.q-val')!.textContent = String(Math.min(mq, Math.max(0, matheDone - prevM)));
     });
 
-    const goalNode = $('goal-node')!;
-    const allDone = done >= TOTAL_PAGES;
-    goalNode.classList.toggle('is-reached', allDone);
-    $('goal-hint')!.textContent = allDone
-      ? 'Alles geübt – du bist bereit! 💪'
-      : `Noch ${TOTAL_PAGES - done} Seiten bis alles geübt ist`;
+    // Ziel ganz unten: nötige Seitenzahl je Fach
+    $('goal-schreib')!.textContent = String(schreibDone);
+    $('goal-mathe')!.textContent = String(matheDone);
+    $('goal-node')!.classList.toggle('is-reached', schreibDone >= SCHREIB_TOTAL && matheDone >= MATHE_TOTAL);
   }
 
   function change(fn: () => void, praise?: string) {
