@@ -51,6 +51,8 @@ const STORAGE_KEYS = {
   LAST_LOGIN: 'jamie_last_login' + SFX,
   RESET_VERSION: 'jamie_reset_version' + SFX,
   CLAIMED_DAYS: 'jamie_claimed_days' + SFX,
+  MODIFIED: 'jamie_modified' + SFX,
+  SYNCED: 'jamie_synced' + SFX,
   CLOUD_CONFIG: 'jamie_cloud_config',
   GOAL_SCHREIBHEFT: 'jamie_goal_schreibheft' + SFX,
   GOAL_MATHE: 'jamie_goal_mathe' + SFX,
@@ -60,6 +62,9 @@ const STORAGE_KEYS = {
 // Einmaliger Reset (lokal + Firestore): Sterne 0, alle Pokémon-Karten gesperrt.
 // Für einen weiteren Reset einfach den Wert ändern.
 const RESET_VERSION = '2026-10-17';
+
+// Wird true, sobald der Cloud-Stand dieses Geräts gelesen wurde (vorher wird nie hochgeladen).
+let remoteKnown = false;
 
 export const StorageService = {
   getStars(): number {
@@ -275,6 +280,7 @@ export const StorageService = {
         localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(data.claimedDays));
         this.dispatchUpdate('claimed_days', data.claimedDays);
       }
+      this.syncToCloud();
       return true;
     } catch (e) {
       console.error('Fehler beim Import', e);
@@ -291,9 +297,17 @@ export const StorageService = {
   },
 
   // Cloud Sync mit Firebase Firestore + Supabase Fallback
-  async syncToCloud(): Promise<void> {
+  async syncToCloud(force = false): Promise<void> {
     if (typeof window === 'undefined') return;
-    
+
+    // Zeitpunkt der letzten lokalen Änderung merken (der neuere Stand gewinnt später)
+    const now = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEYS.MODIFIED, now);
+
+    // Solange der Cloud-Stand noch nicht bekannt ist, nichts hochladen:
+    // ein frisches oder veraltetes Gerät darf den Cloud-Stand nie überschreiben.
+    if (!force && !remoteKnown) return;
+
     // 1. Firebase Firestore Sync
     try {
       const state = {
@@ -303,7 +317,7 @@ export const StorageService = {
         matheGoal: this.getMatheGoal(),
         claimedDays: this.getClaimedDays(),
         resetVersion: RESET_VERSION,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: now
       };
       await FirebaseSync.save(state);
     } catch (err) {
@@ -337,53 +351,83 @@ export const StorageService = {
     }
   },
 
+  /** Übernimmt einen neueren Cloud-Stand oder lädt einen neueren lokalen Stand hoch. */
+  handleRemote(remoteData: any): void {
+    if (!remoteData) return;
+    // Veraltete Cloud-Daten (vor dem Reset) nicht übernehmen, sondern überschreiben
+    if (remoteData.resetVersion !== RESET_VERSION) {
+      this.syncToCloud(true);
+      return;
+    }
+    const remoteTs: string = [remoteData.updatedAt, remoteData.lastUpdated].filter(Boolean).sort().pop() || '';
+    const localTs = localStorage.getItem(STORAGE_KEYS.MODIFIED) || '';
+
+    // Ein Gerät, das noch nie mit der Cloud abgeglichen war, übernimmt immer den Cloud-Stand
+    const synced = localStorage.getItem(STORAGE_KEYS.SYNCED) === '1';
+    if (synced && localTs > remoteTs) {
+      // Dieses Gerät hat Neueres (z. B. offline gesammelt): hochladen
+      this.syncToCloud(true);
+      return;
+    }
+    if (synced && remoteTs === localTs) return;
+    localStorage.setItem(STORAGE_KEYS.SYNCED, '1');
+
+    // Cloud ist neuer: übernehmen. Gesammelte Karten gehen nie verloren (Vereinigung).
+    if (typeof remoteData.stars === 'number' && remoteData.stars !== this.getStars()) {
+      localStorage.setItem(STORAGE_KEYS.STARS, remoteData.stars.toString());
+      this.dispatchUpdate('stars', remoteData.stars);
+    }
+    let needRepair = false;
+    if (Array.isArray(remoteData.unlockedPokemon)) {
+      const local = this.getUnlockedPokemon();
+      const union = Array.from(new Set([...remoteData.unlockedPokemon, ...local]));
+      if (JSON.stringify(union) !== JSON.stringify(local)) {
+        localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(union));
+        this.dispatchUpdate('pokemon', union);
+      }
+      needRepair = union.length !== remoteData.unlockedPokemon.length;
+    }
+    if (Array.isArray(remoteData.claimedDays)) {
+      const merged = Array.from(new Set([...this.getClaimedDays(), ...remoteData.claimedDays]));
+      if (merged.length !== this.getClaimedDays().length) {
+        localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(merged));
+        this.dispatchUpdate('claimed_days', merged);
+      }
+    }
+    if (remoteData.schreibheftGoal) {
+      localStorage.setItem(STORAGE_KEYS.GOAL_SCHREIBHEFT, JSON.stringify(remoteData.schreibheftGoal));
+      this.dispatchUpdate('goal_schreibheft', remoteData.schreibheftGoal);
+    }
+    if (remoteData.matheGoal) {
+      localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(remoteData.matheGoal));
+      this.dispatchUpdate('goal_mathe', remoteData.matheGoal);
+    }
+    localStorage.setItem(STORAGE_KEYS.MODIFIED, remoteTs);
+    // Karten, die nur lokal waren, zurück in die Cloud schreiben
+    if (needRepair) this.syncToCloud(true);
+  },
+
   // Realtime Cloud Synchronisierung starten
   initCloudSync(): void {
     if (typeof window === 'undefined') return;
-    
-    // Live-Update von Firebase empfangen (z. B. wenn auf dem iPad Sterne verdient werden)
-    FirebaseSync.subscribe((remoteData: any) => {
-      if (!remoteData) return;
-      // Veraltete Cloud-Daten (vor dem Reset) nicht übernehmen, sondern überschreiben
-      if (remoteData.resetVersion !== RESET_VERSION) {
-        this.syncToCloud();
-        return;
-      }
-      if (typeof remoteData.stars === 'number') {
-        const localStars = this.getStars();
-        if (remoteData.stars !== localStars) {
-          localStorage.setItem(STORAGE_KEYS.STARS, remoteData.stars.toString());
-          this.dispatchUpdate('stars', remoteData.stars);
-        }
-      }
-      if (Array.isArray(remoteData.unlockedPokemon)) {
-        const localPoke = this.getUnlockedPokemon();
-        if (JSON.stringify(remoteData.unlockedPokemon) !== JSON.stringify(localPoke)) {
-          localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(remoteData.unlockedPokemon));
-          this.dispatchUpdate('pokemon', remoteData.unlockedPokemon);
-        }
-      }
-      if (Array.isArray(remoteData.claimedDays)) {
-        const merged = Array.from(new Set([...this.getClaimedDays(), ...remoteData.claimedDays]));
-        if (merged.length !== this.getClaimedDays().length) {
-          localStorage.setItem(STORAGE_KEYS.CLAIMED_DAYS, JSON.stringify(merged));
-          this.dispatchUpdate('claimed_days', merged);
-        }
-      }
-      if (remoteData.schreibheftGoal) {
-        localStorage.setItem(STORAGE_KEYS.GOAL_SCHREIBHEFT, JSON.stringify(remoteData.schreibheftGoal));
-        this.dispatchUpdate('goal_schreibheft', remoteData.schreibheftGoal);
-      }
-      if (remoteData.matheGoal) {
-        localStorage.setItem(STORAGE_KEYS.GOAL_MATHE, JSON.stringify(remoteData.matheGoal));
-        this.dispatchUpdate('goal_mathe', remoteData.matheGoal);
+
+    // Erst den Cloud-Stand lesen, danach darf dieses Gerät schreiben.
+    FirebaseSync.loadChecked().then((res) => {
+      if (!res.ok) return; // offline/Fehler: lokal weiterarbeiten, nichts überschreiben
+      remoteKnown = true;
+      if (res.data) this.handleRemote(res.data);
+      else {
+        // Noch kein Cloud-Dokument (z. B. neues Profil): eigenen Stand als Grundlage hochladen
+        localStorage.setItem(STORAGE_KEYS.SYNCED, '1');
+        if (localStorage.getItem(STORAGE_KEYS.MODIFIED)) this.syncToCloud(true);
       }
     });
 
-    // Ersten Sync anstoßen, falls Firestore noch leer ist
-    setTimeout(() => {
-      this.syncToCloud();
-    }, 1500);
+    // Live-Updates von anderen Geräten (z. B. wenn auf dem iPad Sterne verdient werden)
+    FirebaseSync.subscribe((remoteData: any) => {
+      remoteKnown = true;
+      this.handleRemote(remoteData);
+    });
   }
 };
 

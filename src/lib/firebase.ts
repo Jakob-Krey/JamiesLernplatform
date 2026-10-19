@@ -41,7 +41,8 @@ export const FirebaseSync = {
       const ref = doc(db, COLLECTION_NAME, docId);
       await setDoc(ref, {
         ...data,
-        updatedAt: new Date().toISOString()
+        // gleicher Zeitstempel wie lastUpdated, damit das eigene Echo nicht als "neuer" gilt
+        updatedAt: data?.lastUpdated ?? new Date().toISOString()
       }, { merge: true });
       return true;
     } catch (err) {
@@ -65,6 +66,20 @@ export const FirebaseSync = {
     } catch (err) {
       console.warn('Firebase load error:', err);
       return null;
+    }
+  },
+
+  /**
+   * Wie load(), unterscheidet aber "Dokument existiert nicht" (ok, data=null) von einem Fehler (ok=false).
+   */
+  async loadChecked(docId: string = ownDocId()): Promise<{ ok: boolean; data: any | null }> {
+    if (!this.isAvailable() || !db) return { ok: false, data: null };
+    try {
+      const snap = await getDoc(doc(db, COLLECTION_NAME, docId));
+      return { ok: true, data: snap.exists() ? snap.data() : null };
+    } catch (err) {
+      console.warn('Firebase load error:', err);
+      return { ok: false, data: null };
     }
   },
 
