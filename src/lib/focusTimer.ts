@@ -130,7 +130,14 @@ export const FocusTimerService = {
     AudioFX.playChime();
   },
 
+  /** Läuft gerade die Pause? Dann kann sie nicht pausiert, zurückgesetzt oder übersprungen werden. */
+  isBreakLocked(): boolean {
+    const state = this.getState();
+    return state.mode === 'break' && state.isRunning;
+  },
+
   pause(): void {
+    if (this.isBreakLocked()) return;
     const state = this.getState();
     state.isRunning = false;
     state.targetEndTime = null;
@@ -152,6 +159,7 @@ export const FocusTimerService = {
   },
 
   reset(): void {
+    if (this.isBreakLocked()) return;
     const state = this.getState();
     state.isRunning = false;
     state.targetEndTime = null;
@@ -166,6 +174,7 @@ export const FocusTimerService = {
   },
 
   setMode(mode: TimerMode): void {
+    if (this.isBreakLocked()) return;
     const state = this.getState();
     state.mode = mode;
     state.isRunning = false;

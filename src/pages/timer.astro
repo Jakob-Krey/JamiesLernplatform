@@ -108,6 +108,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </button>
     </div>
 
+    <p id="break-lock-hint" style="margin: -1rem 0 1.5rem; font-weight: 800; color: #047857;">
+      🍎 Pausenzeit! Die Pause läuft bis zum Ende. Streck dich, trink etwas, atme durch.
+    </p>
+
     <!-- Today's Focus Stats -->
     <div class="focus-hide" style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.5rem; display: inline-flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm);">
       <span style="font-size: 1.8rem;">🏆</span>
@@ -130,6 +134,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   body.focus-active .bg-decoration {
     display: none !important;
   }
+  body.break-active #btn-timer-toggle { display: none !important; }
+  #break-lock-hint { display: none; }
+  body.break-active #break-lock-hint { display: block; }
   body.focus-active main {
     padding-top: 15vh !important;
   }
@@ -170,7 +177,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       displayEl.textContent = FocusTimerService.formatTime(state.timeLeft);
     }
 
-    document.body.classList.toggle('focus-active', state.isRunning && state.mode === 'work');
+    // Läuft Fokus oder Pause: alles andere ausblenden. In der Pause gibt es zusätzlich keinen Pause-Knopf.
+    document.body.classList.toggle('focus-active', state.isRunning);
+    document.body.classList.toggle('break-active', state.isRunning && state.mode === 'break');
 
     if (toggleBtn) {
       toggleBtn.innerHTML = state.isRunning ? '⏸️ Pause' : '▶️ Start';
