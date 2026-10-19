@@ -42,7 +42,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <div class="math-game-box">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 800; font-size: 0.85rem; color: #64748b; text-transform: uppercase;" id="quiz-tag">Quiz</span>
-          <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="quiz-streak">🔥 Serie: 0</span>
+          <span style="display: inline-flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end;">
+            <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="quiz-stars-today">⭐ 0/30 heute</span>
+            <span style="background: #fef3c7; color: #b45309; padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 800; font-size: 0.85rem;" id="quiz-streak">🔥 Serie: 0</span>
+          </span>
         </div>
         <div style="font-size: 4rem; margin-top: 1rem;" id="quiz-emoji">🐶</div>
         <div class="math-equation" id="quiz-word" style="font-size: 2.6rem; margin: 0.5rem 0 0.75rem;">Dog</div>
@@ -64,7 +67,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <script>
   import { VOCAB_DATA, VOCAB_CATEGORIES, type VocabCategoryId, type VocabItem } from '../data/vocab';
-  import { currentProfile } from '../lib/profile';
+  import { currentProfile, pkey } from '../lib/profile';
   import { StorageService } from '../lib/storage';
   import { AudioFX, speakEnglish, triggerConfetti, showStarToast } from '../lib/audio';
 
@@ -92,6 +95,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   function shuffle<T>(arr: T[]): T[] {
     return [...arr].sort(() => Math.random() - 0.5);
+  }
+
+  // Höchstens 30 Sterne pro Tag fürs Englisch-Quiz (zählt je Gerät und Kind)
+  const DAILY_STAR_LIMIT = 30;
+  function todayKey(): string {
+    const d = new Date();
+    return pkey(`jamie_english_stars_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+  }
+  function starsToday(): number {
+    try {
+      return Number(localStorage.getItem(todayKey())) || 0;
+    } catch {
+      return 0;
+    }
+  }
+  function addStarsToday(n: number) {
+    try {
+      localStorage.setItem(todayKey(), String(starsToday() + n));
+    } catch {}
+  }
+  function updateStarsToday() {
+    const el = document.getElementById('quiz-stars-today');
+    if (el) el.textContent = starsToday() >= DAILY_STAR_LIMIT ? '⭐ 30/30 heute – geschafft!' : `⭐ ${starsToday()}/${DAILY_STAR_LIMIT} heute`;
   }
 
   function updateStreak() {
@@ -144,14 +170,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       updateStreak();
       AudioFX.playChime();
       if (dir === 'de-en' && current) speakEnglish(current.en);
-      if (streak % 5 === 0) {
-        StorageService.addStars(2);
-        showStarToast(2, `${streak}er Serie! Du bist ein Englisch-Profi! 🌟`);
-        triggerConfetti();
+      const bonus = streak % 5 === 0;
+      const give = Math.min(bonus ? 2 : 1, DAILY_STAR_LIMIT - starsToday());
+      if (give > 0) {
+        StorageService.addStars(give);
+        addStarsToday(give);
+        if (bonus) {
+          showStarToast(give, `${streak}er Serie! Du bist ein Englisch-Profi! 🌟`);
+          triggerConfetti();
+        } else {
+          showStarToast(give, 'Richtig! Well done! 🎯');
+        }
+        if (starsToday() >= DAILY_STAR_LIMIT) {
+          setTimeout(() => showStarToast(0, 'Heute hast du die 30 Sterne fürs Englisch geschafft! Üben geht trotzdem weiter 💪'), 1200);
+        }
       } else {
-        StorageService.addStars(1);
-        showStarToast(1, 'Richtig! Well done! 🎯');
+        showStarToast(0, 'Richtig! Für heute gibt es keine Sterne mehr, üben darfst du trotzdem 💪');
       }
+      updateStarsToday();
       document.querySelectorAll<HTMLButtonElement>('#quiz-options .math-opt-btn').forEach((b) => (b.disabled = true));
       setTimeout(nextQuestion, 900);
     } else {
@@ -183,5 +219,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     })
   );
 
+  updateStarsToday();
   nextQuestion();
 </script>
