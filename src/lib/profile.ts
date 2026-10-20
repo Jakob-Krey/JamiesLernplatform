@@ -6,7 +6,7 @@
    behält seine bisherigen Speicher-Schlüssel (nichts geht verloren).
    ========================================================================== */
 
-export type ProfileId = 'jamie' | 'maya';
+export type ProfileId = 'jamie' | 'maya' | 'jakob';
 
 export type PageId =
   | 'stundenplan'
@@ -40,6 +40,14 @@ export interface Profile {
   defaultTopic: string;
   /** Kleiner Hinweis auf der Startseite */
   greeting: string;
+  /** Farbe der Browserleiste / App */
+  themeColor: string;
+  /** Startseite dieses Kindes ('' = Startseite, sonst z. B. 'timer/') */
+  home: string;
+  /** Wird in „Wer lernt gerade?“ angeboten */
+  inSwitcher: boolean;
+  /** Fokus-Timer: Voreinstellungen in Minuten, Pausen-Sperre und Sterne-Belohnung */
+  timer: { presets: { work: number; pause: number }[]; lockBreak: boolean; stars: boolean };
 }
 
 const ALL_PAGES: PageId[] = ['stundenplan', 'deutsch', 'mathe', 'englisch', 'pokemon', 'lernziele', 'timer', 'uebungen'];
@@ -57,7 +65,11 @@ export const PROFILES: Record<ProfileId, Profile> = {
     vocabLevels: [1, 2],
     showTopic: (id) => !id.startsWith('k4_'),
     defaultTopic: 'plusminus',
-    greeting: 'Hallo, Jamie!'
+    greeting: 'Hallo, Jamie!',
+    themeColor: '#ec4899',
+    home: '',
+    inSwitcher: true,
+    timer: { presets: [{ work: 15, pause: 5 }], lockBreak: true, stars: true }
   },
   maya: {
     id: 'maya',
@@ -71,7 +83,36 @@ export const PROFILES: Record<ProfileId, Profile> = {
     vocabLevels: [3],
     showTopic: (id) => id.startsWith('k4_'),
     defaultTopic: 'k4_plusminus',
-    greeting: 'Hallo, Maya!'
+    greeting: 'Hallo, Maya!',
+    themeColor: '#e11d48',
+    home: '',
+    inSwitcher: true,
+    timer: { presets: [{ work: 15, pause: 5 }], lockBreak: true, stars: true }
+  },
+  jakob: {
+    id: 'jakob',
+    name: 'Jakob',
+    emoji: '🦉',
+    docId: 'progress_jakob',
+    suffix: '__jakob',
+    color: '#16a34a',
+    pages: ['timer'],
+    mathDefault: 'mix_schwer',
+    vocabLevels: [3],
+    showTopic: () => false,
+    defaultTopic: 'k4_plusminus',
+    greeting: 'Hallo, Jakob!',
+    themeColor: '#16a34a',
+    home: 'timer/',
+    inSwitcher: false,
+    timer: {
+      presets: [
+        { work: 15, pause: 5 },
+        { work: 45, pause: 15 }
+      ],
+      lockBreak: false,
+      stars: false
+    }
   }
 };
 
@@ -102,7 +143,8 @@ export function currentProfile(): Profile {
 /** Das jeweils andere Kind (für „Wer hat welche Pokémon?“). */
 export function otherProfiles(): Profile[] {
   const me = currentProfileId();
-  return PROFILE_IDS.filter((id) => id !== me).map((id) => PROFILES[id]);
+  // nur Kinder mit Pokémon-Sammlung
+  return PROFILE_IDS.filter((id) => id !== me && PROFILES[id].pages.includes('pokemon')).map((id) => PROFILES[id]);
 }
 
 /** Lokalen Speicher-Schlüssel für das aktuelle Kind. */
@@ -129,7 +171,7 @@ export function buildManifest(id: ProfileId, base: string) {
     display: 'standalone',
     orientation: 'any',
     background_color: '#eef2ff',
-    theme_color: id === DEFAULT_PROFILE ? '#ec4899' : '#e11d48',
+    theme_color: p.themeColor,
     icons: [
       { src: `${base}icons/${prefix}icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: `${base}icons/${prefix}icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },

@@ -1268,3 +1268,15 @@ html[data-kind="maya"] {
 html[data-kind="jamie"] .node-date, html[data-kind="maya"] .node-date,
 html[data-kind="jamie"] .node-topic, html[data-kind="maya"] .node-topic { color: #475569; }
 html[data-kind="jamie"] .path-node.is-current .node-topic, html[data-kind="maya"] .path-node.is-current .node-topic { color: #0f172a; }
+
+html[data-kind="jakob"] {
+  --bg-gradient-start: #f0fdf4;
+  --bg-gradient-mid: #bbf7d0;
+  --bg-gradient-end: #86efac;
+  --blob-1: #4ade80;
+  --blob-2: #2dd4bf;
+  --blob-3: #d9f99d;
+  --text-muted: #334155;
+  --text-light: #475569;
+}
+html[data-kind="jakob"] .node-date, html[data-kind="jakob"] .node-topic { color: #475569; }

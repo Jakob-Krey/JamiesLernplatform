@@ -90,6 +90,7 @@ Ein automatischer GitHub-Workflow ist bereits eingerichtet unter [`.github/workf
 Die Seite unterstützt mehrere Kinder über die Adresse:
 
 - `…/` oder `…/?kind=jamie` – Jamie (Standard, alle Seiten)
+- `…/?kind=jakob` – Jakob (nur Fokus-Timer mit 15/5 und 45/15 Minuten, grünes Thema, keine Sterne)
 - `…/?kind=maya` – Maya, 4. Klasse (Start, Übungen mit Klasse-4-Themen, Mathe mit schweren Aufgaben, Englisch, Pokémon, Fokus-Timer)
 
 Das Profil wird im Browser gemerkt. Profile und ihre Rechte stehen in `src/lib/profile.ts`

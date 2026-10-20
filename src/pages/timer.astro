@@ -4,15 +4,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<BaseLayout title="Jamies Fokus-Timer ⏱️ • 15 Min Lernen & 5 Min Pause" activePage="timer">
+<BaseLayout title="Jamies Fokus-Timer ⏱️ • Lernen & Pause" activePage="timer">
   <main class="container" style="padding-top: 1.5rem; max-width: 600px; text-align: center;">
 
     <!-- Top Back Link -->
-    <div class="focus-hide" style="margin-bottom: 1.25rem; text-align: left;">
+    <div class="focus-hide" data-profiles="jamie maya" style="margin-bottom: 1.25rem; text-align: left;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
         <span>⬅️</span> Zurück <span data-profiles="jamie">zum Stundenplan</span><span data-profiles="maya">zum Start</span>
       </a>
     </div>
+
+    <!-- Zeit-Voreinstellungen (nur wenn ein Profil mehrere hat, z. B. Jakob: 15/5 und 45/15) -->
+    <div id="preset-bar" class="focus-hide" style="display: none; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;"></div>
 
     <!-- Mode Switcher -->
     <div class="focus-hide" style="display: inline-flex; background: #e2e8f0; padding: 0.35rem; border-radius: 9999px; gap: 0.35rem; margin-bottom: 2rem;">
@@ -155,6 +158,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <script>
   import { FocusTimerService, type FocusTimerState } from '../lib/focusTimer';
+  import { currentProfile } from '../lib/profile';
+
+  const timerCfg = currentProfile().timer;
 
   FocusTimerService.init();
 
@@ -172,6 +178,25 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const btnBreak = document.getElementById('btn-mode-break');
   const completedEl = document.getElementById('timer-completed-count');
 
+  // Voreinstellungen als Knöpfe (nur bei mehr als einer)
+  const presetBar = document.getElementById('preset-bar');
+  const presetBtns: HTMLButtonElement[] = [];
+  if (presetBar && timerCfg.presets.length > 1) {
+    presetBar.style.display = 'flex';
+    timerCfg.presets.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'switch-btn';
+      b.textContent = `${p.work} Min Fokus + ${p.pause} Min Pause`;
+      b.addEventListener('click', () => {
+        FocusTimerService.setPreset(i);
+        updateUI(FocusTimerService.getState());
+      });
+      presetBar.appendChild(b);
+      presetBtns.push(b);
+    });
+  }
+
   function updateUI(state: FocusTimerState) {
     if (displayEl) {
       displayEl.textContent = FocusTimerService.formatTime(state.timeLeft);
@@ -179,7 +204,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     // Läuft Fokus oder Pause: alles andere ausblenden. In der Pause gibt es zusätzlich keinen Pause-Knopf.
     document.body.classList.toggle('focus-active', state.isRunning);
-    document.body.classList.toggle('break-active', state.isRunning && state.mode === 'break');
+    document.body.classList.toggle('break-active', timerCfg.lockBreak && state.isRunning && state.mode === 'break');
 
     if (toggleBtn) {
       toggleBtn.innerHTML = state.isRunning ? '⏸️ Pause' : '▶️ Start';
@@ -190,6 +215,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       }
     }
 
+    // Beschriftung je nach Zeit-Voreinstellung (z. B. 15/5 oder 45/15)
+    const cur = timerCfg.presets[state.preset] ?? timerCfg.presets[0];
+    if (btnWork) btnWork.textContent = `🎯 ${cur.work} Min Fokus`;
+    if (btnBreak) btnBreak.textContent = `🍎 ${cur.pause} Min Pause`;
+    presetBtns.forEach((b, i) => {
+      b.classList.toggle('active', i === state.preset);
+      b.disabled = state.isRunning;
+    });
+
     // Colors & Labels
     const isWork = state.mode === 'work';
     if (modeLabelEl) {
@@ -198,7 +232,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
 
     if (rewardBadgeEl) {
-      if (isWork) {
+      if (!timerCfg.stars) {
+        rewardBadgeEl.style.display = 'none';
+      } else if (isWork) {
         rewardBadgeEl.textContent = '+2 Sterne Belohnung ⭐';
         rewardBadgeEl.style.display = 'inline-block';
       } else {
@@ -229,7 +265,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (completedEl) {
       const count = state.completedToday;
       const starsEarned = count * 2;
-      completedEl.textContent = `${count} Fokus-Einheiten (+${starsEarned} Sterne)`;
+      completedEl.textContent = timerCfg.stars ? `${count} Fokus-Einheiten (+${starsEarned} Sterne)` : `${count} Fokus-Einheiten`;
     }
   }
 

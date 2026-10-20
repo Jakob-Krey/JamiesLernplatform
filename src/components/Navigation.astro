@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <nav class="main-nav" aria-label="Hauptnavigation">
-  <a href={`${base}/`} class:list={['nav-link', { active: activePage === 'stundenplan' }]}>
+  <a data-profiles="jamie maya" href={`${base}/`} class:list={['nav-link', { active: activePage === 'stundenplan' }]}>
     <span class="nav-emoji" data-profiles="jamie">📅</span><span class="nav-emoji" data-profiles="maya">🏠</span> <span data-profiles="jamie">Stundenplan</span><span data-profiles="maya">Start</span>
   </a>
   <a href={`${base}/timer/`} class:list={['nav-link', { active: activePage === 'timer' }]}>
@@ -17,19 +17,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <a data-profiles="jamie" href={`${base}/lernziele/`} class:list={['nav-link', { active: activePage === 'lernziele' }]}>
     <span class="nav-emoji">🏔️</span> Lernziele
   </a>
-  <a href={`${base}/uebungen/`} class:list={['nav-link', { active: activePage === 'uebungen' }]}>
+  <a data-profiles="jamie maya" href={`${base}/uebungen/`} class:list={['nav-link', { active: activePage === 'uebungen' }]}>
     <span class="nav-emoji">✏️</span> Übungen
   </a>
   <a data-profiles="jamie" href={`${base}/deutsch/`} class:list={['nav-link', { active: activePage === 'deutsch' }]}>
     <span class="nav-emoji">📖</span> Deutsch
   </a>
-  <a href={`${base}/mathe/`} class:list={['nav-link', { active: activePage === 'mathe' }]}>
+  <a data-profiles="jamie maya" href={`${base}/mathe/`} class:list={['nav-link', { active: activePage === 'mathe' }]}>
     <span class="nav-emoji">🔢</span> Mathe
   </a>
-  <a href={`${base}/englisch/`} class:list={['nav-link', { active: activePage === 'englisch' }]}>
+  <a data-profiles="jamie maya" href={`${base}/englisch/`} class:list={['nav-link', { active: activePage === 'englisch' }]}>
     <span class="nav-emoji">🇬🇧</span> Englisch
   </a>
-  <a href={`${base}/pokemon/`} class:list={['nav-link', { active: activePage === 'pokemon' }]}>
+  <a data-profiles="jamie maya" href={`${base}/pokemon/`} class:list={['nav-link', { active: activePage === 'pokemon' }]}>
     <span class="nav-emoji">⚡</span> Pokémon
   </a>
 </nav>

@@ -5,7 +5,7 @@
    ========================================================================== */
 
 import { StorageService } from './storage';
-import { pkey } from './profile';
+import { pkey, currentProfile } from './profile';
 import { AudioFX, triggerConfetti, showStarToast } from './audio';
 
 export type TimerMode = 'work' | 'break';
@@ -14,6 +14,7 @@ export interface FocusTimerState {
   mode: TimerMode;
   timeLeft: number;
   totalDuration: number;
+  preset: number; // Index der gewählten Zeit-Voreinstellung (z. B. 15/5 oder 45/15)
   isRunning: boolean;
   targetEndTime: number | null; // epoch ms
   completedToday: number;
@@ -24,14 +25,23 @@ const TIMER_KEYS = {
   COMPLETED: pkey('jamie_focus_completed_today_v1')
 };
 
-const WORK_DURATION = 15 * 60; // 15 minutes = 900 seconds
-const BREAK_DURATION = 5 * 60;  // 5 minutes = 300 seconds
+/** Zeiten in Sekunden für die gewählte Voreinstellung (je Kind in profile.ts). */
+function presets() {
+  return currentProfile().timer.presets;
+}
+function workSeconds(preset = 0): number {
+  return (presets()[preset] ?? presets()[0]).work * 60;
+}
+function breakSeconds(preset = 0): number {
+  return (presets()[preset] ?? presets()[0]).pause * 60;
+}
 
 let tickInterval: any = null;
 
 export const FocusTimerService = {
-  WORK_DURATION,
-  BREAK_DURATION,
+  workSeconds,
+  breakSeconds,
+  presets,
 
   getCompletedToday(): number {
     if (typeof window === 'undefined') return 0;
@@ -51,8 +61,9 @@ export const FocusTimerService = {
   getState(): FocusTimerState {
     const defaultState: FocusTimerState = {
       mode: 'work',
-      timeLeft: WORK_DURATION,
-      totalDuration: WORK_DURATION,
+      timeLeft: workSeconds(0),
+      totalDuration: workSeconds(0),
+      preset: 0,
       isRunning: false,
       targetEndTime: null,
       completedToday: this.getCompletedToday()
@@ -66,6 +77,7 @@ export const FocusTimerService = {
     try {
       const state = JSON.parse(raw) as FocusTimerState;
       state.completedToday = this.getCompletedToday();
+      if (typeof state.preset !== 'number' || !presets()[state.preset]) state.preset = 0;
 
       // Check if it was running while page was reloaded or closed
       if (state.isRunning && state.targetEndTime) {
@@ -119,7 +131,7 @@ export const FocusTimerService = {
   start(): void {
     const state = this.getState();
     if (state.timeLeft <= 0) {
-      state.timeLeft = state.mode === 'work' ? WORK_DURATION : BREAK_DURATION;
+      state.timeLeft = state.mode === 'work' ? workSeconds(state.preset) : breakSeconds(state.preset);
       state.totalDuration = state.timeLeft;
     }
 
@@ -133,7 +145,7 @@ export const FocusTimerService = {
   /** Läuft gerade die Pause? Dann kann sie nicht pausiert, zurückgesetzt oder übersprungen werden. */
   isBreakLocked(): boolean {
     const state = this.getState();
-    return state.mode === 'break' && state.isRunning;
+    return currentProfile().timer.lockBreak && state.mode === 'break' && state.isRunning;
   },
 
   pause(): void {
@@ -163,7 +175,7 @@ export const FocusTimerService = {
     const state = this.getState();
     state.isRunning = false;
     state.targetEndTime = null;
-    state.timeLeft = state.mode === 'work' ? WORK_DURATION : BREAK_DURATION;
+    state.timeLeft = state.mode === 'work' ? workSeconds(state.preset) : breakSeconds(state.preset);
     state.totalDuration = state.timeLeft;
     this.saveState(state);
 
@@ -179,7 +191,7 @@ export const FocusTimerService = {
     state.mode = mode;
     state.isRunning = false;
     state.targetEndTime = null;
-    state.timeLeft = mode === 'work' ? WORK_DURATION : BREAK_DURATION;
+    state.timeLeft = mode === 'work' ? workSeconds(state.preset) : breakSeconds(state.preset);
     state.totalDuration = state.timeLeft;
     this.saveState(state);
 
@@ -187,6 +199,17 @@ export const FocusTimerService = {
       clearInterval(tickInterval);
       tickInterval = null;
     }
+  },
+
+  /** Andere Zeit-Voreinstellung wählen (nur wenn der Timer nicht läuft). */
+  setPreset(index: number): void {
+    const state = this.getState();
+    if (state.isRunning || !presets()[index]) return;
+    state.preset = index;
+    state.mode = 'work';
+    state.timeLeft = workSeconds(index);
+    state.totalDuration = state.timeLeft;
+    this.saveState(state);
   },
 
   startCountdown(): void {
@@ -213,17 +236,23 @@ export const FocusTimerService = {
           const completed = this.addCompletedSession();
           state.completedToday = completed;
           
-          // Reward Jamie with +2 stars!
-          StorageService.addStars(2);
-          AudioFX.playSuccessFanfare();
-          AudioFX.playTimerBell();
-          triggerConfetti();
-          showStarToast(2, '🎉 15 Min Fokus geschafft! (+2 Sterne)');
+          const minutes = Math.round(workSeconds(state.preset) / 60);
+          if (currentProfile().timer.stars) {
+            // Belohnung: +2 Sterne
+            StorageService.addStars(2);
+            AudioFX.playSuccessFanfare();
+            AudioFX.playTimerBell();
+            triggerConfetti();
+            showStarToast(2, `🎉 ${minutes} Min Fokus geschafft! (+2 Sterne)`);
+          } else {
+            AudioFX.playTimerBell();
+            showStarToast(0, `🎉 ${minutes} Min Fokus geschafft!`);
+          }
 
           // Automatically switch to Break
           state.mode = 'break';
-          state.timeLeft = BREAK_DURATION;
-          state.totalDuration = BREAK_DURATION;
+          state.timeLeft = breakSeconds(state.preset);
+          state.totalDuration = breakSeconds(state.preset);
         } else {
           // Break finished
           AudioFX.playTimerBell();
@@ -231,8 +260,8 @@ export const FocusTimerService = {
 
           // Switch to Work
           state.mode = 'work';
-          state.timeLeft = WORK_DURATION;
-          state.totalDuration = WORK_DURATION;
+          state.timeLeft = workSeconds(state.preset);
+          state.totalDuration = workSeconds(state.preset);
         }
 
         this.saveState(state);

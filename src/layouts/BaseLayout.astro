@@ -37,7 +37,8 @@ const profileClient = {
   icons: Object.fromEntries(PROFILE_IDS.map((id) => [id, `${base}/icons/${id === 'jamie' ? '' : id + '-'}apple-touch-icon.png`])),
   names: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].name])),
   emojis: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].emoji])),
-  themes: Object.fromEntries(PROFILE_IDS.map((id) => [id, id === 'jamie' ? '#ec4899' : '#e11d48']))
+  themes: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].themeColor])),
+  homes: Object.fromEntries(PROFILE_IDS.map((id) => [id, PROFILES[id].home]))
 };
 ---
 
@@ -72,7 +73,7 @@ const profileClient = {
       if (!k || pc.ids.indexOf(k) < 0) k = 'jamie';
       document.documentElement.setAttribute('data-kind', k);
       // Seiten, die zu diesem Kind nicht gehören (z. B. Lernziele bei Maya), führen zum Start
-      if (pc.pages[k].indexOf(pc.active) < 0) { location.replace(pc.base + '/'); return; }
+      if (pc.pages[k].indexOf(pc.active) < 0) { location.replace(pc.base + '/' + pc.homes[k]); return; }
       var m = document.getElementById('manifest-link'); if (m) m.setAttribute('href', pc.manifests[k]);
       var t = document.getElementById('touch-icon-link'); if (t) t.setAttribute('href', pc.icons[k]);
       var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute('content', pc.themes[k]);
@@ -100,9 +101,9 @@ const profileClient = {
   <header class="site-header">
     <div class="container nav-wrapper">
       <a href={`${base}/`} class="brand" aria-label="Zur Startseite">
-        <div class="brand-icon"><span data-profiles="jamie">🐱</span><span data-profiles="maya">🐰</span></div>
+        <div class="brand-icon"><span data-profiles="jamie">🐱</span><span data-profiles="maya">🐰</span><span data-profiles="jakob">🦉</span></div>
         <div class="brand-title">
-          <span data-profiles="jamie">Jamie's</span><span data-profiles="maya">Maya's</span>
+          <span data-profiles="jamie">Jamie's</span><span data-profiles="maya">Maya's</span><span data-profiles="jakob">Jakob's</span>
           <span class="brand-subtitle">Lernplattform 🌟</span>
         </div>
       </a>
@@ -137,7 +138,7 @@ const profileClient = {
   <footer class="site-footer" style="padding: 1.25rem 0; margin-top: 3rem;">
     <div class="container footer-content" style="text-align: center;">
       <p style="font-weight: 800; font-size: 0.95rem; color: #64748b; margin: 0;">
-        Für <span data-profiles="jamie" style="color: #ec4899;">Jamie</span><span data-profiles="maya" style="color: #ec4899;">Maya</span> ❤️
+        Für <span data-profiles="jamie" style="color: #ec4899;">Jamie</span><span data-profiles="maya" style="color: #ec4899;">Maya</span><span data-profiles="jakob" style="color: #16a34a;">Jakob</span> ❤️
       </p>
       <p style="font-size: 0.72rem; color: #94a3b8; margin: 0.4rem 0 0;">
         Fan-Projekt ohne Gewinnabsicht. Pokémon © Nintendo / Creatures / Game Freak. Bilder von PokéAPI.
