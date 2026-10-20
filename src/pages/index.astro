@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS } from '../data/stundenplan';
+import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS, HOLIDAYS } from '../data/stundenplan';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -20,6 +20,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;" id="hero-today-count">Lade Plan...</span>
       </div>
     </div>
+
+    <!-- ====================================================================
+         FERIEN (nur während der Ferien sichtbar, siehe HOLIDAYS)
+         ==================================================================== -->
+    <section data-profiles="jamie" class="ranzen-section ferien-section" id="ferien-section" style="margin-bottom: 2rem;" hidden>
+      <div class="ranzen-header" style="margin-bottom: 0.85rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.8rem;" id="ferien-icon">🍂</span>
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 900; color: #78350f; margin: 0;" id="ferien-title">Herbstferien</h2>
+            <p style="margin: 0; font-size: 0.9rem; font-weight: 700; color: #92400e;">Packliste für unterwegs</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ranzen-checklist" id="ferien-items-container"></div>
+
+      <div class="ranzen-success-banner" id="ferien-success" style="display: none;">
+        🎉 Alles eingepackt! Viel Spaß! 🍂
+      </div>
+    </section>
 
     <!-- ====================================================================
          STUNDENPLAN SECTION
@@ -92,7 +113,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </BaseLayout>
 
 <script>
-  import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS } from '../data/stundenplan';
+  import { SCHEDULE_DATA, LESSON_TIMES, SUBJECT_DETAILS, BASE_RANZEN_ITEMS, HOLIDAYS } from '../data/stundenplan';
   import { StorageService } from '../lib/storage';
   import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
 
@@ -326,6 +347,57 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   // Initial render of packlist
   renderRanzenPackliste(selectedTabDay);
+
+  // Ferien: Packliste oben zeigen, Ranzen-Packliste und Schultag-Hinweis ausblenden
+  (function setupHoliday() {
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const holiday = (HOLIDAYS as any[]).find((h) => today >= h.start && today <= h.end);
+    const section = document.getElementById('ferien-section');
+    if (!holiday || !section) return;
+
+    section.hidden = false;
+    document.getElementById('ferien-icon')!.textContent = holiday.icon;
+    document.getElementById('ferien-title')!.textContent = holiday.name;
+    const ranzen = document.getElementById('schulranzen-section');
+    if (ranzen) ranzen.style.display = 'none';
+    const ranzenBtn = document.getElementById('btn-view-ranzen');
+    if (ranzenBtn) ranzenBtn.style.display = 'none';
+    const todayName = document.getElementById('hero-today-name');
+    const todayCount = document.getElementById('hero-today-count');
+    if (todayName) todayName.textContent = holiday.name;
+    if (todayCount) todayCount.textContent = `${holiday.icon} Keine Schule`;
+
+    const key = 'ferien';
+    const container = document.getElementById('ferien-items-container')!;
+    const banner = document.getElementById('ferien-success')!;
+    const items: string[] = holiday.pack;
+
+    function draw() {
+      const packed = StorageService.getPackedItems(key);
+      container.innerHTML = '';
+      items.forEach((text) => {
+        const checked = packed.includes(text);
+        const el = document.createElement('div');
+        el.className = `check-item ${checked ? 'checked' : ''}`;
+        el.innerHTML = `<div class="check-box">${checked ? '✓' : ''}</div><span class="check-label">${text}</span>`;
+        el.addEventListener('click', () => {
+          let list = StorageService.getPackedItems(key);
+          if (list.includes(text)) list = list.filter((i) => i !== text);
+          else {
+            list.push(text);
+            AudioFX.playChime();
+          }
+          StorageService.setPackedItems(key, list);
+          draw();
+          if (list.length === items.length) triggerConfetti();
+        });
+        container.appendChild(el);
+      });
+      banner.style.display = packed.length === items.length && items.length > 0 ? 'block' : 'none';
+    }
+    draw();
+  })();
 </script>
 
 <style is:global>

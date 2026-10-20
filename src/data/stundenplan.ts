@@ -188,3 +188,22 @@ export const BASE_RANZEN_ITEMS = [
   'Leckere Brotdose 🥪',
   'Frische Trinkflasche 💧'
 ];
+
+/** Ferien: in diesem Zeitraum steht oben auf dem Stundenplan eine Ferien-Packliste (Start/Ende einschließlich). */
+export interface Holiday {
+  name: string;
+  icon: string;
+  start: string; // YYYY-MM-DD
+  end: string;   // YYYY-MM-DD
+  pack: string[];
+}
+
+export const HOLIDAYS: Holiday[] = [
+  {
+    name: 'Herbstferien',
+    icon: '🍂',
+    start: '2026-10-12',
+    end: '2026-10-31',
+    pack: ['Trinken 🥤', 'Essen 🍎']
+  }
+];
