@@ -167,6 +167,16 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     .ws-page input.ans.ok, .ws-page input.ans.bad { background: transparent !important; color: #000; border-bottom-color: #475569; }
     .ws-page input.ans.solved { color: #1d4ed8; }
     .ws-section { margin-bottom: 1.2rem; }
+    /* Sachaufgaben: zwei Spalten, kompakter, nie mitten in einer Aufgabe umbrechen */
+    .ws-grid.cols1:has(.ws-sach) { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .ws-sach { break-inside: avoid; page-break-inside: avoid; padding: 0.5rem 0.7rem; font-size: 0.9rem; }
+    .ws-sach p { margin-bottom: 0.35rem; line-height: 1.35; }
+    .ws-sach table { margin-bottom: 0.4rem; }
+    .ws-sach .sach-part { margin-top: 0.4rem; }
+    .ws-sach .sach-line { margin-top: 0.2rem; }
+    .ws-sach .sach-line > span:first-child { min-width: 4.4rem; }
+    /* Platz zum Rechnen */
+    .ws-sach input.free { height: 3.4rem; }
     .sheet-page + .sheet-page { margin-top: 0; padding-top: 0; border-top: none; break-before: page; page-break-before: always; }
   }
 </style>
@@ -197,6 +207,8 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  // Diese Themen sind schon ein ganzes (zweiseitiges) Blatt
+  const SINGLE_SHEET: string[] = ['probe', 'k4_mix'];
   const LAST_KEY = pkey('jamie_ws_last');
   const ANSWERS_KEY = pkey('jamie_ws_answers');
 
@@ -229,7 +241,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
   /* ---------- Zwischenspeichern der Antworten ---------- */
   function sheetKey(): string {
-    return `${topic}|${seed}|${topic === 'probe' ? 1 : pagesEl.value}|${helpEl.checked ? 'h' : 'n'}`;
+    return `${topic}|${seed}|${SINGLE_SHEET.includes(topic) ? 1 : pagesEl.value}|${helpEl.checked ? 'h' : 'n'}`;
   }
 
   function fields(): HTMLInputElement[] {
@@ -325,8 +337,8 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
   function render() {
     // Die Probearbeit ist schon 2 Seiten lang
-    const pages = topic === 'probe' ? 1 : Number(pagesEl.value);
-    pagesEl.disabled = topic === 'probe';
+    const pages = SINGLE_SHEET.includes(topic) ? 1 : Number(pagesEl.value);
+    pagesEl.disabled = SINGLE_SHEET.includes(topic);
     const first = generateSheet(topic, seed);
     sheetEl.innerHTML = Array.from({ length: pages }, (_, p) => {
       const sheet = p === 0 ? first : generateSheet(topic, `${seed}|seite${p + 1}`);
