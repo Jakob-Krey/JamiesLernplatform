@@ -47,7 +47,7 @@ export interface Profile {
   /** Wird in „Wer lernt gerade?“ angeboten */
   inSwitcher: boolean;
   /** Fokus-Timer: Voreinstellungen in Minuten, Pausen-Sperre und Sterne-Belohnung */
-  timer: { presets: { work: number; pause: number }[]; lockBreak: boolean; stars: boolean };
+  timer: { presets: { work: number; pause: number; stars: number }[]; lockBreak: boolean; stars: boolean };
 }
 
 const ALL_PAGES: PageId[] = ['stundenplan', 'deutsch', 'mathe', 'englisch', 'pokemon', 'lernziele', 'timer', 'uebungen'];
@@ -69,7 +69,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     themeColor: '#ec4899',
     home: '',
     inSwitcher: true,
-    timer: { presets: [{ work: 15, pause: 5 }], lockBreak: true, stars: true }
+    timer: { presets: [{ work: 15, pause: 5, stars: 2 }], lockBreak: true, stars: true }
   },
   maya: {
     id: 'maya',
@@ -87,16 +87,16 @@ export const PROFILES: Record<ProfileId, Profile> = {
     themeColor: '#e11d48',
     home: '',
     inSwitcher: true,
-    timer: { presets: [{ work: 15, pause: 5 }], lockBreak: true, stars: true }
+    timer: { presets: [{ work: 15, pause: 5, stars: 2 }], lockBreak: true, stars: true }
   },
   jakob: {
     id: 'jakob',
     name: 'Jakob',
-    emoji: '🦉',
+    emoji: '🐶',
     docId: 'progress_jakob',
     suffix: '__jakob',
     color: '#16a34a',
-    pages: ['timer'],
+    pages: ['timer', 'pokemon'],
     mathDefault: 'mix_schwer',
     vocabLevels: [3],
     showTopic: () => false,
@@ -107,11 +107,11 @@ export const PROFILES: Record<ProfileId, Profile> = {
     inSwitcher: false,
     timer: {
       presets: [
-        { work: 15, pause: 5 },
-        { work: 45, pause: 15 }
+        { work: 15, pause: 5, stars: 2 },
+        { work: 45, pause: 15, stars: 5 }
       ],
       lockBreak: false,
-      stars: false
+      stars: true
     }
   }
 };

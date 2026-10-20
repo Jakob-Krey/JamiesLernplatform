@@ -235,7 +235,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       if (!timerCfg.stars) {
         rewardBadgeEl.style.display = 'none';
       } else if (isWork) {
-        rewardBadgeEl.textContent = '+2 Sterne Belohnung ⭐';
+        rewardBadgeEl.textContent = `+${cur.stars} Sterne Belohnung ⭐`;
         rewardBadgeEl.style.display = 'inline-block';
       } else {
         rewardBadgeEl.textContent = 'Durchatmen & Entspannen 🌿';
@@ -264,8 +264,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     // Completed stats
     if (completedEl) {
       const count = state.completedToday;
-      const starsEarned = count * 2;
-      completedEl.textContent = timerCfg.stars ? `${count} Fokus-Einheiten (+${starsEarned} Sterne)` : `${count} Fokus-Einheiten`;
+      const starsEarned = count * cur.stars;
+      completedEl.textContent = timerCfg.stars && timerCfg.presets.length === 1 ? `${count} Fokus-Einheiten (+${starsEarned} Sterne)` : `${count} Fokus-Einheiten`;
     }
   }
 

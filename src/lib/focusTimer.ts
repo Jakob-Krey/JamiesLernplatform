@@ -83,10 +83,9 @@ export const FocusTimerService = {
       if (state.isRunning && state.targetEndTime) {
         const remaining = Math.round((state.targetEndTime - Date.now()) / 1000);
         if (remaining <= 0) {
-          // Timer finished while page was closed
+          // Zeit ist abgelaufen (auch wenn die Seite zu war): "läuft" bleibt gesetzt,
+          // damit der nächste Tick den Abschluss mit Belohnung und Moduswechsel erledigt.
           state.timeLeft = 0;
-          state.isRunning = false;
-          state.targetEndTime = null;
         } else {
           state.timeLeft = remaining;
         }
@@ -238,12 +237,13 @@ export const FocusTimerService = {
           
           const minutes = Math.round(workSeconds(state.preset) / 60);
           if (currentProfile().timer.stars) {
-            // Belohnung: +2 Sterne
-            StorageService.addStars(2);
+            // Belohnung je Voreinstellung (z. B. 15 Min = 2 Sterne, 45 Min = 5 Sterne)
+            const earned = (presets()[state.preset] ?? presets()[0]).stars;
+            StorageService.addStars(earned);
             AudioFX.playSuccessFanfare();
             AudioFX.playTimerBell();
             triggerConfetti();
-            showStarToast(2, `🎉 ${minutes} Min Fokus geschafft! (+2 Sterne)`);
+            showStarToast(earned, `🎉 ${minutes} Min Fokus geschafft! (+${earned} Sterne)`);
           } else {
             AudioFX.playTimerBell();
             showStarToast(0, `🎉 ${minutes} Min Fokus geschafft!`);
