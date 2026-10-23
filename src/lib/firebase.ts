@@ -4,7 +4,7 @@
    ========================================================================== */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, type Firestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, writeBatch, arrayUnion, arrayRemove, type Firestore } from 'firebase/firestore';
 import { currentProfile } from './profile';
 
 export const firebaseConfig = {
@@ -70,6 +70,34 @@ export const FirebaseSync = {
   },
 
   /**
+   * Eine Karte verschenken: aus dem Dokument des Gebers entfernen und beim Empfänger hinzufügen,
+   * in einem Schritt (entweder beides oder nichts).
+   */
+  async giftCard(fromDocId: string, toDocId: string, cardId: string, ts: string): Promise<boolean> {
+    if (!this.isAvailable() || !db) return false;
+    try {
+      const batch = writeBatch(db);
+      batch.set(doc(db, COLLECTION_NAME, fromDocId), {
+        unlockedPokemon: arrayRemove(cardId),
+        removedPokemon: arrayUnion(cardId),
+        lastUpdated: ts,
+        updatedAt: ts
+      }, { merge: true });
+      batch.set(doc(db, COLLECTION_NAME, toDocId), {
+        unlockedPokemon: arrayUnion(cardId),
+        removedPokemon: arrayRemove(cardId),
+        lastUpdated: ts,
+        updatedAt: ts
+      }, { merge: true });
+      await batch.commit();
+      return true;
+    } catch (err) {
+      console.warn('Firebase gift error:', err);
+      return false;
+    }
+  },
+
+  /**
    * Wie load(), unterscheidet aber "Dokument existiert nicht" (ok, data=null) von einem Fehler (ok=false).
    */
   async loadChecked(docId: string = ownDocId()): Promise<{ ok: boolean; data: any | null }> {
@@ -105,3 +133,5 @@ export const FirebaseSync = {
     }
   }
 };
+
+if (typeof window !== 'undefined') (window as any).FirebaseSync = FirebaseSync;

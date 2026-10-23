@@ -54,6 +54,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   </main>
 
   <!-- Modal for unlocking Pokémon -->
+  <!-- Modal: Karte verschenken -->
+  <div class="modal-overlay" id="gift-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" style="text-align: center;">
+      <button type="button" class="modal-close-btn" id="close-gift-modal-btn">✕</button>
+      <div id="gift-modal-body"></div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="unlock-modal">
     <div class="modal-content" role="dialog" aria-modal="true" style="text-align: center;">
       <button type="button" class="modal-close-btn" id="close-unlock-modal-btn">✕</button>
@@ -153,6 +161,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           ${isUnlocked ? `<span class="owner-chip" style="background:${me.color}" title="${me.name} hat die Karte">${me.name[0]}</span>` : ''}
           ${others.filter((o) => otherOwned[o.id].includes(poke.id)).map((o) => `<span class="owner-chip" style="background:${o.color}" title="${o.name} hat die Karte">${o.name[0]}</span>`).join('')}
         </div>
+        ${isUnlocked && poke.cost > 0 && others.length > 0 ? `<button type="button" class="poke-gift" aria-label="Karte verschenken" title="Verschenken">🎁</button>` : ''}
         ${isUnlocked ? `<button type="button" class="poke-fav" aria-label="Favorit" aria-pressed="${isFav}">${isFav ? '❤️' : '🤍'}</button>` : ''}
         <div class="pokemon-card-inner ${poke.typeClass}">
           <div class="poke-card-header">
@@ -181,6 +190,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           </div>
         ` : ''}
       `;
+
+      card.querySelector('.poke-gift')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openGiftModal(poke);
+      });
 
       card.querySelector('.poke-fav')?.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -237,6 +251,67 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       gif.src = pokemonGifUrl(poke.dex, shiny);
     }
   }
+
+  /* ---------- Karten verschenken ---------- */
+  function closeGiftModal() {
+    document.getElementById('gift-modal')?.classList.remove('active');
+  }
+
+  function openGiftModal(poke: PokemonCardData) {
+    const modal = document.getElementById('gift-modal');
+    const body = document.getElementById('gift-modal-body');
+    if (!modal || !body) return;
+    body.innerHTML = `
+      <div style="font-size: 3rem; margin-bottom: 0.25rem;">🎁</div>
+      <h2 style="font-size: 1.6rem; font-weight: 900; color: #0f172a; margin-bottom: 0.4rem;">${poke.name} verschenken?</h2>
+      <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.1rem;">Die Karte wandert zu dem Kind, das du auswählst. Du hast sie danach nicht mehr.</p>
+      <div id="gift-targets" style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.9rem;"></div>
+      <p id="gift-msg" style="min-height: 1.3em; font-weight: 800; color: #b91c1c; margin: 0 0 0.75rem;"></p>
+      <button type="button" class="btn-trainer btn-secondary" id="cancel-gift-btn" style="width: 100%; justify-content: center;">Abbrechen</button>
+    `;
+    const targets = body.querySelector('#gift-targets')!;
+    const msg = body.querySelector('#gift-msg') as HTMLElement;
+    others.forEach((o) => {
+      const hasIt = otherOwned[o.id].includes(poke.id);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn-trainer btn-primary';
+      b.style.cssText = 'width: 100%; justify-content: center;';
+      b.disabled = hasIt;
+      b.textContent = hasIt ? `${o.emoji} ${o.name} hat die Karte schon` : `${o.emoji} An ${o.name} schenken`;
+      b.addEventListener('click', async () => {
+        msg.textContent = 'Wird verschenkt …';
+        msg.style.color = '#475569';
+        targets.querySelectorAll('button').forEach((x) => ((x as HTMLButtonElement).disabled = true));
+        const ts = new Date().toISOString();
+        const ok = await FirebaseSync.giftCard(me.docId, o.docId, poke.id, ts);
+        if (!ok) {
+          msg.textContent = 'Das hat nicht geklappt. Brauchst du Internet? Bitte später nochmal versuchen.';
+          msg.style.color = '#b91c1c';
+          targets.querySelectorAll('button').forEach((x) => ((x as HTMLButtonElement).disabled = false));
+          return;
+        }
+        StorageService.applyGiftedAway(poke.id, ts);
+        otherOwned[o.id] = [...otherOwned[o.id], poke.id];
+        try {
+          localStorage.setItem(OTHER_KEY(o.id), JSON.stringify(otherOwned[o.id]));
+        } catch {}
+        closeGiftModal();
+        triggerConfetti();
+        AudioFX.playSuccessFanfare();
+        showStarToast(0, `${poke.name} gehört jetzt ${o.name}! 🎁`);
+        renderPokemonCollection();
+      });
+      targets.appendChild(b);
+    });
+    body.querySelector('#cancel-gift-btn')!.addEventListener('click', closeGiftModal);
+    modal.classList.add('active');
+  }
+
+  document.getElementById('close-gift-modal-btn')?.addEventListener('click', closeGiftModal);
+  document.getElementById('gift-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeGiftModal();
+  });
 
   function promptUnlock(poke: PokemonCardData) {
     targetPokeToUnlock = poke;

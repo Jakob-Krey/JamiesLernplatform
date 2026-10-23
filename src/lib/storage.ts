@@ -47,6 +47,7 @@ const SFX = typeof window !== 'undefined' ? currentProfile().suffix : '';
 const STORAGE_KEYS = {
   STARS: 'jamie_stars_count' + SFX,
   UNLOCKED_POKEMON: 'jamie_unlocked_pokemon' + SFX,
+  REMOVED_POKEMON: 'jamie_removed_pokemon' + SFX,
   PACKED_ITEMS: 'jamie_packed_items_date' + SFX,
   LAST_LOGIN: 'jamie_last_login' + SFX,
   RESET_VERSION: 'jamie_reset_version' + SFX,
@@ -101,10 +102,34 @@ export const StorageService = {
     return [];
   },
 
+  /** Verschenkte Karten (Markierung, damit ein altes Gerät sie nicht zurückbringt). */
+  getRemovedPokemon(): string[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.REMOVED_POKEMON) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Nach einem erfolgreichen Verschenken in der Cloud: lokal nachziehen. */
+  applyGiftedAway(id: string, ts: string): void {
+    const list = this.getUnlockedPokemon().filter((c) => c !== id);
+    const removed = Array.from(new Set([...this.getRemovedPokemon(), id]));
+    localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(list));
+    localStorage.setItem(STORAGE_KEYS.REMOVED_POKEMON, JSON.stringify(removed));
+    localStorage.setItem(STORAGE_KEYS.MODIFIED, ts);
+    localStorage.setItem(STORAGE_KEYS.SYNCED, '1');
+    this.dispatchUpdate('pokemon', list);
+  },
+
   unlockPokemon(id: string): boolean {
     const list = this.getUnlockedPokemon();
     if (!list.includes(id)) {
       list.push(id);
+      // Wieder gekaufte Karte ist nicht mehr "verschenkt"
+      localStorage.setItem(STORAGE_KEYS.REMOVED_POKEMON, JSON.stringify(this.getRemovedPokemon().filter((c) => c !== id)));
       localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(list));
       this.dispatchUpdate('pokemon', list);
       this.syncToCloud();
@@ -313,6 +338,7 @@ export const StorageService = {
       const state = {
         stars: this.getStars(),
         unlockedPokemon: this.getUnlockedPokemon(),
+        removedPokemon: this.getRemovedPokemon(),
         schreibheftGoal: this.getSchreibheftGoal(),
         matheGoal: this.getMatheGoal(),
         claimedDays: this.getClaimedDays(),
@@ -379,13 +405,16 @@ export const StorageService = {
     }
     let needRepair = false;
     if (Array.isArray(remoteData.unlockedPokemon)) {
+      // Cloud-Liste mit lokaler Liste vereinen, verschenkte Karten (Markierung der Cloud) abziehen
+      const removed: string[] = Array.isArray(remoteData.removedPokemon) ? remoteData.removedPokemon : [];
+      localStorage.setItem(STORAGE_KEYS.REMOVED_POKEMON, JSON.stringify(removed));
       const local = this.getUnlockedPokemon();
-      const union = Array.from(new Set([...remoteData.unlockedPokemon, ...local]));
+      const union = Array.from(new Set([...remoteData.unlockedPokemon, ...local])).filter((c) => !removed.includes(c));
       if (JSON.stringify(union) !== JSON.stringify(local)) {
         localStorage.setItem(STORAGE_KEYS.UNLOCKED_POKEMON, JSON.stringify(union));
         this.dispatchUpdate('pokemon', union);
       }
-      needRepair = union.length !== remoteData.unlockedPokemon.length;
+      needRepair = union.some((c) => !remoteData.unlockedPokemon.includes(c));
     }
     if (Array.isArray(remoteData.claimedDays)) {
       const merged = Array.from(new Set([...this.getClaimedDays(), ...remoteData.claimedDays]));
