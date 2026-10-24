@@ -96,6 +96,8 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   .ws-section h3 { display: flex; align-items: center; gap: 0.6rem; font-size: 1.1rem; font-weight: 800; margin: 0 0 0.35rem; color: #0f172a; }
   .ws-section .nr { display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: #0f172a; color: white; font-size: 1rem; flex: 0 0 auto; }
   .ws-section .pts { margin-left: auto; font-size: 0.85rem; font-weight: 700; border: 1.5px solid #475569; border-radius: 6px; padding: 0.1rem 0.5rem; color: #334155; }
+  .ws-challenge { display: flex; align-items: center; gap: 0.75rem; margin: 0.2rem 0 0.7rem; padding: 0.4rem 0.9rem 0.4rem 0.5rem; border: 2px dashed #f59e0b; border-radius: 16px; background: #fffbeb; font-weight: 800; color: #92400e; }
+  .ws-challenge img { width: 64px; height: 64px; object-fit: contain; flex: 0 0 auto; }
   .ws-section .ws-hint { margin: 0 0 0.6rem; font-size: 0.88rem; color: #64748b; }
 
   .ws-grid { display: grid; gap: 0.8rem 1.5rem; align-items: start; }
@@ -136,6 +138,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 
   .ws-mauer.big .stone, .ws-page .ws-mauer.big input.ans.stone { width: 4.6rem; }
   .ws-eq.wide { font-size: 1.05rem; }
+  .ws-eq.long { white-space: normal; flex-wrap: wrap; row-gap: 0.3rem; }
   .ws-sach { border: 2px solid #cbd5e1; border-radius: 10px; padding: 0.8rem 1rem; }
   .ws-sach p { margin: 0 0 0.6rem; font-weight: 600; line-height: 1.5; }
   .ws-sach table { border-collapse: collapse; margin: 0 0 0.8rem; }
@@ -182,6 +185,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
 </style>
 
 <script>
+  import { pokemonArtUrl } from '../data/pokemon';
   import { TOPICS, generateSheet, type Item, type Section, type TopicId } from '../lib/worksheets';
   import { currentProfile, pkey } from '../lib/profile';
 
@@ -280,9 +284,11 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   function renderItem(it: Item, help: boolean): string {
     switch (it.kind) {
       case 'eq':
-        return `<div class="ws-eq"><span>${it.text}</span>${ans(it.answer)}</div>`;
+        return `<div class="ws-eq${it.text.length > 38 ? ' wide long' : ''}"><span>${it.text}</span>${ans(it.answer)}</div>`;
       case 'produkt':
         return `<div class="ws-eq"><span>${it.a} und ${it.b} =</span>${ans(it.a * it.b)}</div>`;
+      case 'duo':
+        return `<div class="ws-eq wide long"><span>${it.text}  ➜  ${it.l1}</span>${ans(it.a1)}<span>${it.l2}</span>${ans(it.a2)}</div>`;
       case 'rest':
         return `<div class="ws-eq"><span>${it.dividend} : ${it.divisor} =</span>${ans(it.q, 'small')}<span>R</span>${ans(it.r, 'small')}</div>`;
       case 'steps': {
@@ -330,6 +336,7 @@ const groups = Array.from(new Set(TOPICS.map((t) => t.group)));
   function renderSection(s: Section, help: boolean): string {
     return `<section class="ws-section">
       <h3><span class="nr">${s.nr}</span><span>${s.title}</span>${s.points ? `<span class="pts">Punkte: ${s.points}</span>` : ''}</h3>
+      ${s.badge ? `<div class="ws-challenge"><img src="${pokemonArtUrl(s.badge.dex)}" alt="" loading="lazy" onerror="this.style.display='none'" /><span>${s.badge.text}</span></div>` : ''}
       ${s.hint ? `<p class="ws-hint">${s.hint}</p>` : ''}
       <div class="ws-grid ${s.layout}">${s.items.map((it) => renderItem(it, help)).join('')}</div>
     </section>`;

@@ -9,6 +9,7 @@ export type Item =
   | { kind: 'eq'; text: string; answer: number }
   | { kind: 'steps'; a: number; op: '+' | '-'; b: number; mid: number; answer: number }
   | { kind: 'rest'; dividend: number; divisor: number; q: number; r: number }
+  | { kind: 'duo'; text: string; l1: string; a1: number; l2: string; a2: number }
   | { kind: 'pfeil'; factor: number; rows: { from: number; to: number }[] }
   | { kind: 'produkt'; a: number; b: number }
   | { kind: 'mauer'; levels: number[][]; hidden: boolean[][]; big?: boolean }
@@ -27,6 +28,8 @@ export interface Section {
   points?: number;
   layout: 'cols4' | 'cols3' | 'cols2' | 'cols1';
   items: Item[];
+  /** Herausforderung: Pokémon-Bild und lustiger Spruch neben der Überschrift */
+  badge?: { dex: number; text: string };
 }
 
 export interface Sheet {
@@ -57,6 +60,9 @@ export const TOPICS = [
   { id: 'k4_runden', label: 'Runden & Zahlen bis 100.000', group: 'Klasse 4: Rechnen' },
   { id: 'k4_punkt', label: 'Klammern & Punkt-vor-Strich', group: 'Klasse 4: Rechnen' },
   { id: 'k4_mauer', label: 'Große Zahlenmauern', group: 'Klasse 4: Rechnen' },
+  { id: 'k4_gl_a', label: 'Gleichungen: X finden (wie an der Tafel)', group: 'Klasse 4: Gleichungen (X und Y)' },
+  { id: 'k4_gl_b', label: 'Gleichungen: Mal & Geteilt', group: 'Klasse 4: Gleichungen (X und Y)' },
+  { id: 'k4_gl_c', label: '🏆 Gleichungen: Herausforderung', group: 'Klasse 4: Gleichungen (X und Y)' },
   { id: 'k4_groessen', label: 'Größen umrechnen', group: 'Klasse 4: Größen & Sachaufgaben' },
   { id: 'k4_sach', label: 'Sachaufgaben (mehrere Schritte)', group: 'Klasse 4: Größen & Sachaufgaben' },
   { id: 'k4_mix', label: 'Gemischte Übungsarbeit Klasse 4', group: 'Klasse 4: Größen & Sachaufgaben' }
@@ -615,6 +621,94 @@ function sachK4(r: Rng, variant: number): Item {
   }
 }
 
+// ---------- Klasse 4: Gleichungen mit X und Y ----------
+
+const VARS = ['X', 'Y', 'Z'];
+
+/** Einfache Gleichung wie an der Tafel: X − 50 = 4.660 → X = 4.710 */
+function glPlusMinus(r: Rng, big = false): Item {
+  const v = r.pick(VARS);
+  const x = big ? r.int(12000, 89000) : r.int(1200, 8900);
+  const a = big ? r.int(300, 9800) : r.pick([r.int(10, 95), r.int(100, 980), 50, 405, 10, 99]);
+  switch (r.int(0, 3)) {
+    case 0: return eqText(`${v} − ${fmt(a)} = ${fmt(x - a)}  ➜  ${v} =`, x);
+    case 1: return eqText(`${v} + ${fmt(a)} = ${fmt(x + a)}  ➜  ${v} =`, x);
+    case 2: return eqText(`${fmt(x + a)} − ${v} = ${fmt(a)}  ➜  ${v} =`, x);
+    default: return eqText(`${fmt(a)} + ${v} = ${fmt(x + a)}  ➜  ${v} =`, x);
+  }
+}
+
+/** X steht auf der rechten Seite oder hinten: 5.000 − X = 1.250 */
+function glSubtractFrom(r: Rng): Item {
+  const v = r.pick(VARS);
+  const x = r.int(300, 4800);
+  const b = x + r.int(200, 4900);
+  return eqText(`${fmt(b)} − ${v} = ${fmt(b - x)}  ➜  ${v} =`, x);
+}
+
+function glMulDiv(r: Rng): Item {
+  const v = r.pick(VARS);
+  switch (r.int(0, 3)) {
+    case 0: { const m = r.int(3, 12), x = r.int(12, 480); return eqText(`${v} · ${m} = ${fmt(m * x)}  ➜  ${v} =`, x); }
+    case 1: { const m = r.int(3, 12), x = r.int(12, 480); return eqText(`${m} · ${v} = ${fmt(m * x)}  ➜  ${v} =`, x); }
+    case 2: { const d = r.int(2, 12), q = r.int(20, 420); return eqText(`${v} : ${d} = ${fmt(q)}  ➜  ${v} =`, q * d); }
+    default: { const q = r.int(3, 12), x = r.int(8, 90); return eqText(`${fmt(q * x)} : ${v} = ${q}  ➜  ${v} =`, x); }
+  }
+}
+
+/** Zwei Rechenschritte */
+function glTwoStep(r: Rng): Item {
+  const v = r.pick(VARS);
+  switch (r.int(0, 4)) {
+    case 0: { const m = r.int(2, 9), x = r.int(30, 400), a = r.int(10, 60); return eqText(`${m} · ${v} − ${a} = ${fmt(m * x - a)}  ➜  ${v} =`, x); }
+    case 1: { const m = r.int(2, 9), x = r.int(20, 400), a = r.int(10, 90); return eqText(`${m} · ${v} + ${a} = ${fmt(m * x + a)}  ➜  ${v} =`, x); }
+    case 2: { const m = r.int(2, 9), x = r.int(20, 300), a = r.int(5, 80); return eqText(`(${v} + ${a}) · ${m} = ${fmt((x + a) * m)}  ➜  ${v} =`, x); }
+    case 3: { const d = r.int(2, 9), q = r.int(20, 300), a = r.int(10, 400); return eqText(`${v} : ${d} + ${a} = ${fmt(q + a)}  ➜  ${v} =`, q * d); }
+    default: { const x = r.int(40, 900), a = r.int(10, 400); return eqText(`${v} + ${v} + ${fmt(a)} = ${fmt(2 * x + a)}  ➜  ${v} =`, x); }
+  }
+}
+
+/** Zusammenfassen: 3 · X + 4 · X = 1.400 */
+function glCombine(r: Rng): Item {
+  const v = r.pick(VARS);
+  const m1 = r.int(2, 6), m2 = r.int(2, 6), x = r.int(20, 300);
+  return eqText(`${m1} · ${v} + ${m2} · ${v} = ${fmt((m1 + m2) * x)}  ➜  ${v} =`, x);
+}
+
+/** Zwei Zahlen: X + Y = 1.000 und X − Y = 200 */
+function glSystem(r: Rng): Item {
+  const y = r.int(100, 700);
+  const x = y + r.int(50, 600);
+  return {
+    kind: 'duo',
+    text: `X + Y = ${fmt(x + y)}  und  X − Y = ${fmt(x - y)}`,
+    l1: 'X =', a1: x, l2: 'Y =', a2: y
+  };
+}
+
+/** Zahlenrätsel: "Ich denke mir eine Zahl …" */
+function glPuzzle(r: Rng): Item {
+  switch (r.int(0, 3)) {
+    case 0: { const x = r.int(40, 900), a = r.int(10, 300); return eqText(`Ich verdopple meine Zahl und addiere ${a}. Ergebnis: ${fmt(2 * x + a)}. Meine Zahl ist`, x); }
+    case 1: { const x = r.int(80, 600), a = r.int(10, 200); return eqText(`Ich nehme meine Zahl mal 3 und ziehe ${a} ab. Ergebnis: ${fmt(3 * x - a)}. Meine Zahl ist`, x); }
+    case 2: { const q = r.int(20, 400), a = r.int(50, 500); return eqText(`Ich teile meine Zahl durch 4 und addiere ${a}. Ergebnis: ${fmt(q + a)}. Meine Zahl ist`, q * 4); }
+    default: { const x = r.int(50, 900), a = r.int(20, 400); return eqText(`Ich addiere ${a} zu meiner Zahl und verdopple. Ergebnis: ${fmt((x + a) * 2)}. Meine Zahl ist`, x); }
+  }
+}
+
+const CHALLENGE_POKEMON = [25, 6, 150, 149, 94, 143, 130, 249, 384, 448];
+const CHALLENGE_TEXTS = [
+  'Yeah! Herausforderung! Das schaffst du! 💪',
+  'Boss-Aufgaben! Nur für Profis! 👑',
+  'Knack die Nuss! 🥜🔥',
+  'Level up! Jetzt wird es spannend! 🚀',
+  'Für echte Rechen-Champions! 🏆'
+];
+
+function challengeBadge(r: Rng): { dex: number; text: string } {
+  return { dex: r.pick(CHALLENGE_POKEMON), text: r.pick(CHALLENGE_TEXTS) };
+}
+
 function sec(
   nr: number,
   title: string,
@@ -841,6 +935,43 @@ export function generateSheet(topic: TopicId, seed: string): Sheet {
         sections: [
           sec(1, 'Fülle die Zahlenmauern aus.', 'cols2', uniq(4, () => pyramidFill(r, 4, 20, 300))),
           sec(2, 'Welche Steine fehlen?', 'cols2', uniq(4, () => pyramidMissing(r, 4, 5, 20, 300)))
+        ]
+      };
+    case 'k4_gl_a':
+      return {
+        title: label,
+        sections: [
+          sec(1, 'Finde X (oder Y oder Z), wie an der Tafel.', 'cols2', uniq(10, () => glPlusMinus(r)), {
+            hint: 'Tipp: Mit der Umkehraufgabe geht es ganz leicht!'
+          }),
+          sec(2, 'Jetzt mit größeren Zahlen.', 'cols2', uniq(6, () => glPlusMinus(r, true))),
+          sec(3, 'Das Gesuchte steht hinten.', 'cols2', uniq(4, () => glSubtractFrom(r))),
+          sec(4, '🏆 Herausforderung', 'cols1', [...uniq(2, () => glTwoStep(r)), glPuzzle(r)], { badge: challengeBadge(r) })
+        ]
+      };
+    case 'k4_gl_b':
+      return {
+        title: label,
+        sections: [
+          sec(1, 'Finde die gesuchte Zahl: Mal und Geteilt.', 'cols2', uniq(10, () => glMulDiv(r)), {
+            hint: 'Mal ↔ Geteilt sind Umkehraufgaben.'
+          }),
+          sec(2, 'Mal, Geteilt, Plus und Minus gemischt.', 'cols2', [...uniq(4, () => glMulDiv(r)), ...uniq(4, () => glPlusMinus(r, true))]),
+          sec(3, 'Zwei Rechenschritte.', 'cols2', uniq(4, () => glTwoStep(r))),
+          sec(4, '🏆 Herausforderung', 'cols1', [glCombine(r), glSystem(r), glPuzzle(r)], { badge: challengeBadge(r) })
+        ]
+      };
+    case 'k4_gl_c':
+      return {
+        title: label,
+        sections: [
+          sec(1, 'Zwei Rechenschritte.', 'cols2', uniq(8, () => glTwoStep(r))),
+          sec(2, 'Zusammenfassen.', 'cols2', uniq(4, () => glCombine(r)), { hint: 'Tipp: 3 · X + 4 · X sind zusammen 7 · X.' }),
+          sec(3, 'Zahlenrätsel.', 'cols1', uniq(4, () => glPuzzle(r))),
+          sec(4, '🏆 Mega-Herausforderung: Zwei Zahlen gesucht!', 'cols1', uniq(3, () => glSystem(r)), {
+            badge: challengeBadge(r),
+            hint: 'Tipp: Zähle beide Gleichungen zusammen, dann bleibt nur X übrig.'
+          })
         ]
       };
     case 'k4_groessen':
