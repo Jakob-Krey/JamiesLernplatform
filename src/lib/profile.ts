@@ -32,6 +32,8 @@ export interface Profile {
   pages: PageId[];
   /** Standard-Modus beim Kopfrechnen (Mathe-Seite) */
   mathDefault: string;
+  /** Englisch-Quiz: höchstens so viele Vokabeln pro Tag bringen Sterne (sonst gilt das Sterne-Limit von 30) */
+  englishWordLimit?: number;
   /** Welche Vokabel-Stufen dieses Kind sieht (1 = Klasse 2, 2 = Klasse 3, 3 = Klasse 4) */
   vocabLevels: number[];
   /** Welche Übungsblatt-Themen dieses Kind sieht */
@@ -80,6 +82,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     color: '#db2777',
     pages: ['stundenplan', 'mathe', 'englisch', 'pokemon', 'timer', 'uebungen'],
     mathDefault: 'mix_schwer',
+    englishWordLimit: 20,
     vocabLevels: [3],
     showTopic: (id) => id.startsWith('k4_'),
     defaultTopic: 'k4_plusminus',

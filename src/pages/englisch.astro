@@ -97,11 +97,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return [...arr].sort(() => Math.random() - 0.5);
   }
 
-  // Höchstens 30 Sterne pro Tag fürs Englisch-Quiz (zählt je Gerät und Kind)
+  // Tageslimit fürs Englisch-Quiz (zählt je Gerät und Kind):
+  // Standard höchstens 30 Sterne, für Kinder mit englishWordLimit höchstens so viele Vokabeln mit Sternen.
+  const WORD_LIMIT = profile.englishWordLimit ?? 0;
   const DAILY_STAR_LIMIT = 30;
+  const limitValue = WORD_LIMIT > 0 ? WORD_LIMIT : DAILY_STAR_LIMIT;
   function todayKey(): string {
     const d = new Date();
-    return pkey(`jamie_english_stars_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    const kind = WORD_LIMIT > 0 ? 'words' : 'stars';
+    return pkey(`jamie_english_${kind}_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
   }
   function starsToday(): number {
     try {
@@ -115,9 +119,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       localStorage.setItem(todayKey(), String(starsToday() + n));
     } catch {}
   }
+  function limitReached(): boolean {
+    return starsToday() >= limitValue;
+  }
   function updateStarsToday() {
     const el = document.getElementById('quiz-stars-today');
-    if (el) el.textContent = starsToday() >= DAILY_STAR_LIMIT ? '⭐ 30/30 heute – geschafft!' : `⭐ ${starsToday()}/${DAILY_STAR_LIMIT} heute`;
+    if (!el) return;
+    const unit = WORD_LIMIT > 0 ? 'Vokabeln' : 'heute';
+    el.textContent = limitReached()
+      ? `⭐ ${limitValue}/${limitValue} ${unit === 'heute' ? 'heute' : 'Vokabeln heute'} – geschafft!`
+      : `⭐ ${starsToday()}/${limitValue} ${unit === 'heute' ? 'heute' : 'Vokabeln heute'}`;
   }
 
   function updateStreak() {
@@ -171,18 +182,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       AudioFX.playChime();
       if (dir === 'de-en' && current) speakEnglish(current.en);
       const bonus = streak % 5 === 0;
-      const give = Math.min(bonus ? 2 : 1, DAILY_STAR_LIMIT - starsToday());
-      if (give > 0) {
-        StorageService.addStars(give);
-        addStarsToday(give);
+      // Mit Vokabel-Limit zählt jede belohnte Antwort 1, sonst zählen die vergebenen Sterne
+      const give = limitReached() ? 0 : bonus ? 2 : 1;
+      const counted = WORD_LIMIT > 0 ? (give > 0 ? 1 : 0) : Math.min(give, limitValue - starsToday());
+      const stars = WORD_LIMIT > 0 ? give : Math.min(give, limitValue - starsToday());
+      if (stars > 0) {
+        StorageService.addStars(stars);
+        addStarsToday(counted);
         if (bonus) {
-          showStarToast(give, `${streak}er Serie! Du bist ein Englisch-Profi! 🌟`);
+          showStarToast(stars, `${streak}er Serie! Du bist ein Englisch-Profi! 🌟`);
           triggerConfetti();
         } else {
-          showStarToast(give, 'Richtig! Well done! 🎯');
+          showStarToast(stars, 'Richtig! Well done! 🎯');
         }
-        if (starsToday() >= DAILY_STAR_LIMIT) {
-          setTimeout(() => showStarToast(0, 'Heute hast du die 30 Sterne fürs Englisch geschafft! Üben geht trotzdem weiter 💪'), 1200);
+        if (limitReached()) {
+          setTimeout(
+            () => showStarToast(0, WORD_LIMIT > 0 ? `Heute hast du ${limitValue} Vokabeln mit Sternen geschafft! Üben geht trotzdem weiter 💪` : 'Heute hast du die 30 Sterne fürs Englisch geschafft! Üben geht trotzdem weiter 💪'),
+            1200
+          );
         }
       } else {
         showStarToast(0, 'Richtig! Für heute gibt es keine Sterne mehr, üben darfst du trotzdem 💪');
