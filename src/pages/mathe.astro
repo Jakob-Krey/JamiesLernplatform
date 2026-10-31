@@ -132,7 +132,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="explain-body">
           <div class="explain-question">
             <span class="explain-label">Frage</span>
-            Wie oft passt die <b>5</b> in die <b>17</b>, ohne drüber zu gehen?
+            <b class="question-task">17 : 5 = ?</b>
+            <span class="question-text">Wie oft passt die <b>5</b> in die <b>17</b>, ohne drüber zu gehen?</span>
           </div>
 
           <!-- Bild: 17 Punkte, in Fünfer-Gruppen sortiert -->
@@ -210,6 +211,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   .explain-label { display: inline-block; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.6rem; border-radius: 9999px; margin-right: 0.4rem; vertical-align: middle; }
   .explain-question { background: #eff6ff; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 600; }
   .explain-question .explain-label { background: #2563eb; color: white; }
+  .question-task { font-size: 1.6rem; font-weight: 900; color: #1e3a8a; font-variant-numeric: tabular-nums; vertical-align: middle; }
+  .question-text { display: block; margin-top: 0.35rem; }
 
   .dots-demo { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
   .dots-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
