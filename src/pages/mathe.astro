@@ -115,8 +115,126 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <button type="submit" class="btn-trainer btn-primary" id="math-submit">✅ Prüfen</button>
       </form>
     </div>
+
+    <!-- ====================================================================
+         ERKLÄR RECHNUNGEN: Schritt-für-Schritt-Erklärungen zum Aufklappen
+         ==================================================================== -->
+    <section class="explain-section">
+      <h2 class="explain-title">📚 Erklär Rechnungen</h2>
+      <p class="explain-sub">Tippe auf ein Thema, um die Erklärung zu öffnen.</p>
+
+      <details class="explain-card">
+        <summary>
+          <span class="explain-icon">➗</span>
+          <span><b>Division mit Rest</b><small>Beispiel: 17 : 5</small></span>
+        </summary>
+
+        <div class="explain-body">
+          <div class="explain-question">
+            <span class="explain-label">Frage</span>
+            Wie oft passt die <b>5</b> in die <b>17</b>, ohne drüber zu gehen?
+          </div>
+
+          <!-- Bild: 17 Punkte, in Fünfer-Gruppen sortiert -->
+          <div class="dots-demo" aria-label="17 Punkte: drei Gruppen mit je 5 Punkten und 2 Punkte übrig">
+            {[1, 2, 3].map((g) => (
+              <div class="dots-group">
+                <div class="dots">{[1, 2, 3, 4, 5].map(() => <span class="dot" />)}</div>
+                <small>{g}. Fünfer</small>
+              </div>
+            ))}
+            <div class="dots-group rest">
+              <div class="dots">{[1, 2].map(() => <span class="dot" />)}</div>
+              <small>Rest</small>
+            </div>
+          </div>
+
+          <div class="explain-step">
+            <span class="step-nr">1</span>
+            <div>
+              <b>Die 5er-Reihe aufsagen</b>
+              <ul class="times-list">
+                <li>5 · 1 = 5</li>
+                <li>5 · 2 = 10</li>
+                <li class="fits">5 · 3 = 15 <em>passt, ganz nah dran! ✅</em></li>
+                <li class="too-big">5 · 4 = 20 <em>zu groß ❌</em></li>
+              </ul>
+              <p>Die 5 passt also <b>3-mal</b> in die 17.</p>
+            </div>
+          </div>
+
+          <div class="explain-step">
+            <span class="step-nr">2</span>
+            <div>
+              <b>Was bleibt übrig?</b>
+              <p class="calc">17 − 15 = <b>2</b></p>
+              <p>Das ist der <b>Rest</b>.</p>
+            </div>
+          </div>
+
+          <div class="explain-result">
+            <span class="explain-label">Ergebnis</span>
+            <span class="result-eq">17 : 5 = 3 R 2</span>
+          </div>
+
+          <div class="explain-check">
+            <span class="explain-label">Probe</span>
+            3 · 5 + 2 = 15 + 2 = 17 ✓
+          </div>
+        </div>
+      </details>
+    </section>
   </main>
 </BaseLayout>
+
+<style>
+  .explain-section { max-width: 640px; margin: 2.5rem auto 3rem; }
+  .explain-title { font-size: 1.6rem; font-weight: 900; color: #0f172a; margin: 0 0 0.2rem; text-align: center; }
+  .explain-sub { text-align: center; color: var(--text-muted); font-weight: 600; margin: 0 0 1rem; }
+
+  .explain-card { background: white; border: 2px solid #bfdbfe; border-radius: 20px; box-shadow: var(--shadow-md); overflow: hidden; }
+  .explain-card + .explain-card { margin-top: 0.9rem; }
+  .explain-card summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.9rem;
+    padding: 1rem 1.2rem; min-height: 44px; font-size: 1.15rem; color: #1e3a8a;
+  }
+  .explain-card summary::-webkit-details-marker { display: none; }
+  .explain-card summary::after { content: '▾'; margin-left: auto; font-size: 1.3rem; transition: transform 0.2s; }
+  .explain-card[open] summary::after { transform: rotate(180deg); }
+  .explain-card summary b { display: block; font-weight: 900; }
+  .explain-card summary small { display: block; color: #64748b; font-weight: 700; font-size: 0.85rem; }
+  .explain-icon { font-size: 1.8rem; width: 48px; height: 48px; border-radius: 14px; background: #eff6ff; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+
+  .explain-body { padding: 0 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 1rem; color: #1e293b; font-size: 1.05rem; line-height: 1.5; }
+  .explain-body p { margin: 0.2rem 0 0; }
+  .explain-label { display: inline-block; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.6rem; border-radius: 9999px; margin-right: 0.4rem; vertical-align: middle; }
+  .explain-question { background: #eff6ff; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 600; }
+  .explain-question .explain-label { background: #2563eb; color: white; }
+
+  .dots-demo { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+  .dots-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+  .dots-group small { font-weight: 800; color: #475569; font-size: 0.8rem; }
+  .dots { display: flex; gap: 5px; padding: 0.5rem 0.6rem; border: 2px solid #93c5fd; border-radius: 12px; background: #eff6ff; }
+  .dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; }
+  .dots-group.rest .dots { border-color: #fca5a5; border-style: dashed; background: #fff1f2; }
+  .dots-group.rest .dot { background: #ef4444; }
+  .dots-group.rest small { color: #b91c1c; }
+
+  .explain-step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-nr { flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%; background: #0f172a; color: white; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; }
+  .times-list { list-style: none; padding: 0; margin: 0.4rem 0 0; display: flex; flex-direction: column; gap: 0.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .times-list li { padding: 0.25rem 0.7rem; border-radius: 10px; background: #f8fafc; }
+  .times-list em { font-style: normal; font-weight: 800; margin-left: 0.4rem; font-size: 0.92rem; }
+  .times-list .fits { background: #dcfce7; color: #166534; }
+  .times-list .too-big { background: #fee2e2; color: #991b1b; }
+  .calc { font-size: 1.25rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .explain-result { background: #fef3c7; border: 2px solid #fcd34d; border-radius: 14px; padding: 0.8rem 1rem; display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+  .explain-result .explain-label { background: #d97706; color: white; }
+  .result-eq { font-size: 1.6rem; font-weight: 900; color: #78350f; font-variant-numeric: tabular-nums; }
+  .explain-check { background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 800; color: #166534; font-variant-numeric: tabular-nums; }
+  .explain-check .explain-label { background: #16a34a; color: white; }
+</style>
 
 <script>
   import { StorageService } from "../lib/storage";
