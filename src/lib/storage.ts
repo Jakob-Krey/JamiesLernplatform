@@ -138,18 +138,30 @@ export const StorageService = {
     return false;
   },
 
+  /**
+   * Datum des Schultags, für den gepackt wird (nächster passender Wochentag ab heute).
+   * So bleiben Häkchen vom Vorabend (z. B. Sonntag für Montag) am Morgen erhalten.
+   */
+  packDate(dayKey: string): string {
+    const weekday: Record<string, number> = { montag: 1, dienstag: 2, mittwoch: 3, donnerstag: 4, freitag: 5 };
+    const d = new Date();
+    const target = weekday[dayKey];
+    if (target !== undefined) {
+      while (d.getDay() !== target) d.setDate(d.getDate() + 1);
+    }
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  },
+
   getPackedItems(dayKey: string): string[] {
     if (typeof window === 'undefined') return [];
-    const todayStr = new Date().toISOString().split('T')[0];
-    const key = `${STORAGE_KEYS.PACKED_ITEMS}_${todayStr}_${dayKey}`;
+    const key = `${STORAGE_KEYS.PACKED_ITEMS}_${this.packDate(dayKey)}_${dayKey}`;
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   },
 
   setPackedItems(dayKey: string, items: string[]): void {
     if (typeof window === 'undefined') return;
-    const todayStr = new Date().toISOString().split('T')[0];
-    const key = `${STORAGE_KEYS.PACKED_ITEMS}_${todayStr}_${dayKey}`;
+    const key = `${STORAGE_KEYS.PACKED_ITEMS}_${this.packDate(dayKey)}_${dayKey}`;
     localStorage.setItem(key, JSON.stringify(items));
     this.dispatchUpdate('ranzen', { dayKey, items });
     this.syncToCloud();
