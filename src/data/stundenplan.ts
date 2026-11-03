@@ -25,6 +25,8 @@ export interface DaySchedule {
   dayIndex: number;
   motto: string;
   lessons: ScheduledLesson[];
+  /** Zusätzliche Sachen nur für diesen Tag (z. B. Flöte am Montag) */
+  pack?: string[];
 }
 
 export const LESSON_TIMES: LessonTime[] = [
@@ -124,8 +126,10 @@ export const SCHEDULE_DATA: Record<string, DaySchedule> = {
       { num: 2, subject: 'Mathe' },
       { num: 3, subject: 'Englisch' },
       { num: 4, subject: 'Kunst' },
-      { num: 5, subject: 'Kunst' }
-    ]
+      { num: 5, subject: 'Kunst' },
+      { num: 6, subject: 'Musik' }
+    ],
+    pack: ['Musikflöte 🪈', 'Flötenheft 🎼', 'Musikschnellhefter 📁']
   },
   dienstag: {
     name: 'Dienstag',

@@ -242,6 +242,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         meta.pack.forEach(p => requiredItems.add(p));
       }
     });
+    (day.pack || []).forEach((p: string) => requiredItems.add(p));
 
     const packedList = StorageService.getPackedItems(dayKey);
     container.innerHTML = '';
