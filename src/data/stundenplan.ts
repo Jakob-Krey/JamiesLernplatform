@@ -45,73 +45,79 @@ export const SUBJECT_DETAILS: Record<string, SubjectDetail> = {
     icon: '🔢',
     class: 'lesson-mathe',
     description: 'Rechnen, Zahlen & Knobelaufgaben',
-    pack: ['Mathe-Buch 📘', 'Mathe-Heft 📐', 'Lineal & Bleistift ✏️']
+    pack: ['Mathe-Schnellhefter 📁', 'Mathebuch „Flex und Flo“ blau 🔵', 'Mathebuch „Flex und Flo“ lila 🟣', 'Mathebuch „Flex und Flo“ gelb 🟡']
   },
   'Deutsch': {
     icon: '📖',
     class: 'lesson-deutsch',
     description: 'Lesen, Schreiben & Rechtschreibung',
-    pack: ['Deutsch-Buch 📕', 'Schreibheft 📝', 'Füller & Tintenpatrone 🖋️']
+    pack: ['Deutsch-Schnellhefter 📁', 'Deutschheft 📝']
   },
   'Englisch': {
     icon: '🇬🇧',
     class: 'lesson-englisch',
     description: 'Colors, Animals & Fun Words',
-    pack: ['Englisch-Workbook 🇬🇧', 'Vokabelheft 🗂️']
+    pack: ['Englischbuch „Playway 3“ 📗', 'Vokabelheft 🗂️', 'Englisch-Schnellhefter 📁']
   },
   'Sachunterricht': {
     icon: '🌍',
     class: 'lesson-sachunterricht',
     description: 'Natur, Umwelt & Experimente',
-    pack: ['Sachunterrichts-Mappe 🌿', 'Forscher-Heft 🔍']
+    pack: ['Sachunterrichts-Schnellhefter 📁']
   },
   'Kunst': {
     icon: '🎨',
     class: 'lesson-kunst',
     description: 'Malen, Basteln & Kreatives Gestalten',
-    pack: ['Malkittel 🥼', 'Wasserfarbkasten & Pinsel 🎨', 'Zeichenblock 📄']
+    pack: [] // alles liegt in der Kunstbox in der Schule
   },
   'Sport': {
     icon: '🏃‍♀️',
     class: 'lesson-sport',
     description: 'Turnen, Spiele & Auspowern',
-    pack: ['Turnbeutel mit Sportsachen 👟', 'Hallenschuhe 🎽', 'Extra Trinkflasche 💧']
+    pack: ['Turnschuhe 👟', 'Turnbeutel 🎒', 'Extra-Trinkflasche 💧']
   },
   'Bewegungsstunde': {
     icon: '🤸',
     class: 'lesson-bewegungsstunde',
     description: 'Bewegungsspiele & Koordination',
-    pack: ['Bequeme Kleidung / Schläppchen 🧦']
+    pack: []
   },
   'Religion': {
     icon: '🕊️',
     class: 'lesson-religion',
     description: 'Geschichten, Werte & Gemeinschaft',
-    pack: ['Religions-Heft 🕊️']
+    pack: ['Religions-Schnellhefter 📁']
   },
   'Musik': {
     icon: '🎵',
     class: 'lesson-musik',
     description: 'Singen, Rhythmen & Musikinstrumente',
-    pack: ['Musikmappe & Liederheft 🎶']
+    pack: ['Musik-Schnellhefter 📁']
+  },
+  'Flöte': {
+    icon: '🪈',
+    class: 'lesson-musik',
+    description: 'Flötenunterricht',
+    pack: ['Blockflöte 🪈', 'Flöten-Schnellhefter 📁', 'Flötenheft 🎼']
   },
   'Erzählkreis': {
     icon: '💬',
     class: 'lesson-erzaehlkreis',
     description: 'Morgenkreis, Wochenstart & Plaudern',
-    pack: ['Wochenziel-Zettel 💭']
+    pack: []
   },
   'Klassenrat': {
     icon: '🤝',
     class: 'lesson-klassenrat',
     description: 'Gemeinsam planen & Ideen teilen',
-    pack: ['Ideen für die Klasse 💡']
+    pack: []
   },
   'Förderunterricht': {
     icon: '⭐',
     class: 'lesson-foerderunterricht',
     description: 'Stärken trainieren & vertiefen',
-    pack: ['Förderheft / Übungsblätter ⭐']
+    pack: []
   }
 };
 
@@ -127,9 +133,8 @@ export const SCHEDULE_DATA: Record<string, DaySchedule> = {
       { num: 3, subject: 'Englisch' },
       { num: 4, subject: 'Kunst' },
       { num: 5, subject: 'Kunst' },
-      { num: 6, subject: 'Musik' }
-    ],
-    pack: ['Musikflöte 🪈', 'Flötenheft 🎼', 'Musikschnellhefter 📁']
+      { num: 6, subject: 'Flöte' }
+    ]
   },
   dienstag: {
     name: 'Dienstag',
@@ -187,10 +192,10 @@ export const SCHEDULE_DATA: Record<string, DaySchedule> = {
 };
 
 export const BASE_RANZEN_ITEMS = [
-  'Federtasche (Füller, Buntstifte, Lineal) ✏️',
+  'Federtasche (Füller, Buntstifte, Lineal, Schere, Kleber) ✏️',
   'Postmappe & Hausaufgabenheft 📝',
-  'Leckere Brotdose 🥪',
-  'Frische Trinkflasche 💧'
+  'Brotdose 🥪',
+  'Trinkflasche 💧'
 ];
 
 /** Ferien: in diesem Zeitraum steht oben auf dem Stundenplan eine Ferien-Packliste (Start/Ende einschließlich). */
