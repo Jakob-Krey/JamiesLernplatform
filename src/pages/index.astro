@@ -133,7 +133,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   if (todayBadge && todayCount) {
     const todayInfo = (SCHEDULE_DATA as any)[activeDayKey];
     todayBadge.textContent = todayInfo.name;
-    todayCount.textContent = `${todayInfo.lessons.length} Schulstunden heute`;
+    todayCount.textContent = `${todayInfo.lessons.filter((l: any) => l.subject !== '(Frei)').length} Schulstunden heute`;
   }
 
   let selectedTabDay = activeDayKey;
@@ -202,7 +202,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       col.innerHTML = `
         <div class="day-col-header">
           <div class="day-col-title">${day.name}</div>
-          <div class="day-col-hours">${day.lessons.length} Stunden • ${day.short}</div>
+          <div class="day-col-hours">${day.lessons.filter((l: any) => l.subject !== '(Frei)').length} Stunden • ${day.short}</div>
         </div>
         <div class="lessons-list">
           ${lessonsHtml}

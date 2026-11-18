@@ -113,10 +113,10 @@ export const SUBJECT_DETAILS: Record<string, SubjectDetail> = {
     description: 'Gemeinsam planen & Ideen teilen',
     pack: []
   },
-  'Förderunterricht': {
-    icon: '⭐',
+  '(Frei)': {
+    icon: '😊',
     class: 'lesson-foerderunterricht',
-    description: 'Stärken trainieren & vertiefen',
+    description: 'Freistunde',
     pack: []
   }
 };
@@ -158,7 +158,7 @@ export const SCHEDULE_DATA: Record<string, DaySchedule> = {
     lessons: [
       { num: 1, subject: 'Deutsch' },
       { num: 2, subject: 'Mathe' },
-      { num: 3, subject: 'Förderunterricht' },
+      { num: 3, subject: '(Frei)' },
       { num: 4, subject: 'Sachunterricht' },
       { num: 5, subject: 'Englisch' }
     ]
