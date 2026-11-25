@@ -1,31 +1,462 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { CARD_TOPICS } from '../data/grammatik';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<BaseLayout title="Jamies Deutsch 📖 • Aktuell nichts zu lernen" activePage="deutsch">
-  <main class="container" style="padding-top: 2rem;">
+<BaseLayout title="Jamies Deutsch 📖 • Satzglieder & Wortarten" activePage="deutsch">
+  <main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
     <div style="margin-bottom: 1.5rem;">
       <a href={`${base}/`} style="text-decoration: none; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
         <span>⬅️</span> Zurück <span data-profiles="jamie">zum Stundenplan</span><span data-profiles="maya">zum Start</span>
       </a>
     </div>
 
-    <div style="text-align: center; max-width: 520px; margin: 3rem auto; background: white; border: 2px solid #e2e8f0; border-radius: 24px; padding: 2.5rem 1.5rem; box-shadow: var(--shadow-md);">
-      <div style="font-size: 3.5rem; margin-bottom: 0.75rem;" aria-hidden="true">📖</div>
-      <h1 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin: 0 0 0.75rem;">
-        Deutsch
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 1.5rem;">
+      <h1 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 0.4rem;">
+        Deutsch 📖 Satzglieder
       </h1>
-      <p style="font-size: 1.15rem; font-weight: 700; color: #475569; margin: 0 0 0.5rem;">
-        Hier musst du aktuell nichts lernen.
+      <p style="color: #64748b; margin: 0 0 1.25rem; font-weight: 600;">
+        Lerne die Begriffe und finde sie dann in echten Sätzen.
       </p>
-      <p style="font-size: 0.95rem; color: #64748b; margin: 0;">
-        Dein Schreiblernheft findest du bei den Lernzielen.
-      </p>
-      <a href={`${base}/lernziele/`} class="btn-trainer btn-primary" style="display: inline-flex; margin-top: 1.5rem; text-decoration: none;">
-        🏔️ Zu den Lernzielen
-      </a>
+
+      <div class="view-switch-controls" style="display: inline-flex;" id="gram-mode-bar">
+        <button type="button" class="switch-btn active" data-view="karten">🃏 Lernkarten</button>
+        <button type="button" class="switch-btn" data-view="finden">👆 Im Satz finden</button>
+      </div>
     </div>
+
+    <!-- ===================== LERNKARTEN ===================== -->
+    <section id="view-karten">
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;" id="card-topic-bar">
+        {CARD_TOPICS.map((t, idx) => (
+          <button type="button" class:list={['switch-btn', { active: idx === 0 }]} data-topic={t.id}>{t.label}</button>
+        ))}
+      </div>
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <label class="gram-toggle">
+          <input type="checkbox" id="card-reverse" />
+          🔄 Umgedreht (erst die Erklärung, dann den Begriff raten)
+        </label>
+      </div>
+
+      <div id="card-area">
+        <div class="flashcard-container gram-card" id="gram-card">
+          <div class="flashcard-inner">
+            <div class="flashcard-front" id="gram-front"></div>
+            <div class="flashcard-back" id="gram-back"></div>
+          </div>
+        </div>
+
+        <p class="gram-progress" id="card-progress"></p>
+
+        <div class="flashcard-actions">
+          <button type="button" class="btn-trainer btn-secondary" id="card-again-btn">🔁 Nochmal</button>
+          <button type="button" class="btn-trainer btn-primary" id="card-known-btn">✅ Gewusst!</button>
+        </div>
+      </div>
+
+      <div class="gram-panel" id="card-done" hidden>
+        <div style="font-size: 3rem;">🏆</div>
+        <h2>Alle Karten gewusst!</h2>
+        <p>Super! Willst du sie noch einmal üben?</p>
+        <button type="button" class="btn-trainer btn-primary" id="card-restart-btn">🔁 Noch eine Runde</button>
+      </div>
+    </section>
+
+    <!-- ===================== IM SATZ FINDEN ===================== -->
+    <section id="view-finden" hidden>
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;" id="find-mode-bar">
+        <button type="button" class="switch-btn active" data-mode="S">🙋 Subjekt</button>
+        <button type="button" class="switch-btn" data-mode="P">⚡ Prädikat</button>
+        <button type="button" class="switch-btn" data-mode="O">🎯 Wen? / 🎁 Wem?</button>
+        <button type="button" class="switch-btn" data-mode="mix">🌈 Gemischt</button>
+      </div>
+
+      <div class="gram-panel" id="find-area">
+        <p class="gram-progress" id="find-progress" style="margin-top: 0;"></p>
+        <p class="find-task" id="find-task"></p>
+        <p class="find-sentence" id="find-sentence"></p>
+        <div class="find-feedback" id="find-feedback" hidden></div>
+        <div class="flashcard-actions" style="flex-wrap: wrap;">
+          <button type="button" class="btn-trainer btn-secondary" id="find-hint-btn">💡 Tipp</button>
+          <button type="button" class="btn-trainer btn-primary" id="find-next-btn" hidden>Weiter ➡️</button>
+        </div>
+      </div>
+
+      <div class="gram-panel" id="find-done" hidden>
+        <div style="font-size: 3rem;" id="find-done-emoji">🏆</div>
+        <h2>Runde geschafft!</h2>
+        <p id="find-done-text"></p>
+        <button type="button" class="btn-trainer btn-primary" id="find-restart-btn">🔁 Neue Runde</button>
+      </div>
+
+      <div class="gram-legend">
+        <span><i class="role-S"></i>Subjekt</span>
+        <span><i class="role-P"></i>Prädikat</span>
+        <span><i class="role-A"></i>Wen oder was?</span>
+        <span><i class="role-D"></i>Wem?</span>
+      </div>
+    </section>
   </main>
 </BaseLayout>
+
+<style is:global>
+  main [hidden] { display: none !important; }
+
+  .gram-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #475569;
+    cursor: pointer;
+  }
+  .gram-toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--color-primary); }
+
+  .gram-card .flashcard-inner { height: 340px; }
+  .gram-card { min-height: 340px; }
+  .gram-card .flashcard-front,
+  .gram-card .flashcard-back { padding: 1.5rem; gap: 0.35rem; }
+  .gram-term { font-size: 2rem; font-weight: 900; color: #0f172a; line-height: 1.15; }
+  .gram-alias { font-size: 1rem; font-weight: 700; color: #64748b; }
+  .gram-question {
+    font-size: 1.2rem; font-weight: 900; color: #4338ca;
+    background: #eef2ff; border-radius: 999px; padding: 0.3rem 0.9rem; margin: 0.25rem 0;
+  }
+  .gram-text { font-size: 1rem; font-weight: 600; color: #1e293b; max-width: 360px; line-height: 1.4; margin: 0.2rem 0; }
+  .gram-example {
+    font-size: 0.95rem; color: #334155; background: rgba(255, 255, 255, 0.75);
+    border-radius: 12px; padding: 0.5rem 0.8rem; max-width: 380px; line-height: 1.5; margin-top: 0.35rem;
+  }
+  .gram-example mark { border-radius: 6px; padding: 0.05rem 0.3rem; font-weight: 800; background: #fde68a; color: inherit; }
+
+  .gram-progress { text-align: center; color: #64748b; font-weight: 700; font-size: 0.9rem; margin: -0.75rem 0 0.25rem; }
+
+  .gram-panel {
+    background: white; border: 3px solid #e2e8f0; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); padding: 2rem 1.5rem; max-width: 620px; margin: 0 auto 1.5rem; text-align: center;
+  }
+  .gram-panel h2 { font-size: 1.5rem; font-weight: 900; margin: 0.25rem 0; color: #0f172a; }
+  .gram-panel p { color: #475569; font-weight: 600; }
+
+  /* Farben der Satzglieder */
+  .role-S { --role: #2563eb; --role-bg: #dbeafe; }
+  .role-P { --role: #dc2626; --role-bg: #fee2e2; }
+  .role-A { --role: #16a34a; --role-bg: #dcfce7; }
+  .role-D { --role: #ea580c; --role-bg: #ffedd5; }
+  .gram-example mark.role-S, .gram-example mark.role-P,
+  .gram-example mark.role-A, .gram-example mark.role-D { background: var(--role-bg); color: var(--role); }
+
+  .find-task { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0 1.25rem !important; }
+  .find-task strong { color: var(--role); }
+  .find-sentence {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline;
+    gap: 0.5rem 0.4rem; font-size: 1.6rem; font-weight: 700; margin: 0 0 1.25rem !important; color: #0f172a !important;
+  }
+  .chunk {
+    font: inherit; color: inherit; background: #f8fafc; border: 2px solid #cbd5e1;
+    border-radius: 12px; padding: 0.25rem 0.6rem; cursor: pointer; transition: var(--transition-bounce);
+  }
+  .chunk:hover:not(:disabled) { border-color: var(--color-primary); background: #eef2ff; transform: translateY(-2px); }
+  .chunk:disabled { cursor: default; }
+  .chunk.is-wrong { background: #f1f5f9; color: #94a3b8; border-style: dashed; animation: shake 0.4s ease; }
+  .chunk.is-right, .chunk.is-shown { background: var(--role-bg); border-color: var(--role); color: var(--role); }
+  .chunk.is-right { animation: popIn 0.3s ease; }
+  .punct { margin-left: -0.35rem; }
+
+  .find-feedback {
+    border-radius: 14px; padding: 0.75rem 1rem; font-weight: 700; margin: 0 auto 1rem; max-width: 480px; line-height: 1.45;
+  }
+  .find-feedback.ok { background: #dcfce7; color: #14532d; }
+  .find-feedback.no { background: #fef3c7; color: #78350f; }
+  .find-feedback.hint { background: #eef2ff; color: #3730a3; }
+
+  .gram-legend {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem 1.25rem;
+    font-size: 0.85rem; font-weight: 700; color: #475569;
+  }
+  .gram-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .gram-legend i { width: 0.9rem; height: 0.9rem; border-radius: 4px; background: var(--role-bg); border: 2px solid var(--role); }
+</style>
+
+<script>
+  import {
+    GRAMMAR_CARDS, SENTENCES, ROLE_INFO, parseSentence, explain,
+    type CardTopicId, type GrammarCard, type Role, type SentencePart
+  } from '../data/grammatik';
+  import { AudioFX, triggerConfetti, showStarToast } from '../lib/audio';
+
+  const $ = (id: string) => document.getElementById(id)!;
+
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  function shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /* ---------------- Ansicht wechseln ---------------- */
+  document.querySelectorAll<HTMLButtonElement>('#gram-mode-bar .switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      document.querySelectorAll('#gram-mode-bar .switch-btn').forEach(b => b.classList.toggle('active', b === btn));
+      $('view-karten').hidden = view !== 'karten';
+      $('view-finden').hidden = view !== 'finden';
+    });
+  });
+
+  /* ================= LERNKARTEN ================= */
+  let topic: CardTopicId = 'satzglieder';
+  let deck: GrammarCard[] = [];
+  let deckSize = 0;
+  let reverse = false;
+
+  function exampleHtml(card: GrammarCard) {
+    const cls = card.role ? ` class="role-${card.role}"` : '';
+    return esc(card.example).replace(/\[([^\]]+)\]/g, `<mark${cls}>$1</mark>`);
+  }
+
+  function termHtml(card: GrammarCard) {
+    return `
+      <div class="flashcard-emoji" style="margin-bottom: 0.25rem;">${card.emoji}</div>
+      <div class="gram-term">${esc(card.term)}</div>
+      ${card.alias ? `<div class="gram-alias">(${esc(card.alias)})</div>` : ''}`;
+  }
+
+  function explanationHtml(card: GrammarCard) {
+    return `
+      ${card.question ? `<div class="gram-question">${esc(card.question)}</div>` : ''}
+      <p class="gram-text">${esc(card.text)}</p>`;
+  }
+
+  function renderCard() {
+    const card = deck[0];
+    const done = !card;
+    $('card-area').hidden = done;
+    $('card-done').hidden = !done;
+    if (done) return;
+
+    $('gram-card').classList.remove('is-flipped');
+    const front = $('gram-front');
+    const back = $('gram-back');
+    // kurz warten, damit die Rückseite beim Zurückdrehen nicht schon die neue Lösung zeigt
+    setTimeout(() => {
+      if (!reverse) {
+        front.innerHTML = `${termHtml(card)}<p class="flashcard-hint" style="margin-top: 0.75rem;">Was bedeutet das? Tippen zum Aufdecken</p>`;
+        back.innerHTML = `${explanationHtml(card)}<div class="gram-example">${exampleHtml(card)}</div>`;
+      } else {
+        front.innerHTML = `<div class="flashcard-category">Wie heißt das?</div>${explanationHtml(card)}<p class="flashcard-hint" style="margin-top: 0.75rem;">Tippen zum Aufdecken</p>`;
+        back.innerHTML = `${termHtml(card)}<div class="gram-example">${exampleHtml(card)}</div>`;
+      }
+    }, $('gram-card').dataset.flipped === '1' ? 250 : 0);
+    $('gram-card').dataset.flipped = '0';
+
+    const learned = deckSize - deck.length;
+    $('card-progress').textContent = `✅ ${learned} von ${deckSize} gewusst`;
+  }
+
+  function newDeck() {
+    const cards = topic === 'alle' ? GRAMMAR_CARDS : GRAMMAR_CARDS.filter(c => c.topic === topic);
+    deck = shuffle(cards);
+    deckSize = cards.length;
+    renderCard();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('#card-topic-bar .switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      topic = btn.dataset.topic as CardTopicId;
+      document.querySelectorAll('#card-topic-bar .switch-btn').forEach(b => b.classList.toggle('active', b === btn));
+      newDeck();
+    });
+  });
+
+  ($('card-reverse') as HTMLInputElement).addEventListener('change', e => {
+    reverse = (e.target as HTMLInputElement).checked;
+    renderCard();
+  });
+
+  $('gram-card').addEventListener('click', () => {
+    const el = $('gram-card');
+    el.classList.toggle('is-flipped');
+    el.dataset.flipped = el.classList.contains('is-flipped') ? '1' : '0';
+  });
+
+  $('card-known-btn').addEventListener('click', () => {
+    deck.shift();
+    AudioFX.playChime();
+    if (deck.length === 0) {
+      triggerConfetti();
+      showStarToast(0, 'Alle Begriffe gewusst!');
+    }
+    renderCard();
+  });
+
+  $('card-again-btn').addEventListener('click', () => {
+    const card = deck.shift();
+    if (card) deck.push(card);
+    renderCard();
+  });
+
+  $('card-restart-btn').addEventListener('click', newDeck);
+
+  newDeck();
+
+  /* ================= IM SATZ FINDEN ================= */
+  type FindMode = Role | 'O' | 'mix';
+  const ROUND = 10;
+
+  let mode: FindMode = 'S';
+  let queue: SentencePart[][] = [];
+  let parts: SentencePart[] = [];
+  let target: Role = 'S';
+  let solved = false;
+  let mistakes = 0;
+  let firstTry = 0;
+  let index = 0;
+
+  function rolesFor(m: FindMode): Role[] {
+    if (m === 'O') return ['A', 'D'];
+    if (m === 'mix') return ['S', 'P', 'A', 'D'];
+    return [m];
+  }
+
+  function newRound() {
+    const allowed = rolesFor(mode);
+    const pool = SENTENCES.map(parseSentence).filter(p => p.some(x => x.role && allowed.includes(x.role)));
+    queue = shuffle(pool).slice(0, ROUND);
+    index = 0;
+    firstTry = 0;
+    $('find-area').hidden = false;
+    $('find-done').hidden = true;
+    nextSentence();
+  }
+
+  function nextSentence() {
+    if (index >= queue.length) return finishRound();
+    parts = queue[index];
+    const options = rolesFor(mode).filter(r => parts.some(p => p.role === r));
+    target = options[Math.floor(Math.random() * options.length)];
+    solved = false;
+    mistakes = 0;
+
+    const info = ROLE_INFO[target];
+    $('find-task').className = `find-task role-${target}`;
+    $('find-task').innerHTML = `Tippe auf das <strong>${esc(info.name)}</strong>${target === 'A' || target === 'D' ? ` <span style="color:#64748b;">(${esc(info.short)})</span>` : ''}`;
+
+    const sentence = $('find-sentence');
+    sentence.innerHTML = '';
+    parts.forEach(part => {
+      if (part.role === undefined) {
+        const s = document.createElement('span');
+        s.className = 'punct';
+        s.textContent = part.text;
+        sentence.appendChild(s);
+        return;
+      }
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chunk';
+      b.textContent = part.text;
+      b.addEventListener('click', () => pick(b, part));
+      sentence.appendChild(b);
+    });
+
+    const fb = $('find-feedback');
+    fb.hidden = true;
+    $('find-hint-btn').hidden = false;
+    $('find-next-btn').hidden = true;
+    $('find-progress').textContent = `Satz ${index + 1} von ${queue.length} · ⭐ ${firstTry} beim ersten Versuch`;
+  }
+
+  function feedback(kind: 'ok' | 'no' | 'hint', html: string) {
+    const fb = $('find-feedback');
+    fb.className = `find-feedback ${kind}`;
+    fb.innerHTML = html;
+    fb.hidden = false;
+  }
+
+  function pick(btn: HTMLButtonElement, part: SentencePart) {
+    if (solved) return;
+    if (part.role === target) {
+      solved = true;
+      if (mistakes === 0) firstTry++;
+      btn.classList.add('is-right', `role-${target}`);
+      document.querySelectorAll<HTMLButtonElement>('#find-sentence .chunk').forEach(c => (c.disabled = true));
+      AudioFX.playChime();
+      const { question, answer } = explain(parts, target);
+      feedback('ok', `🎉 Richtig! <br>${esc(question)} → <strong>${esc(answer)}</strong>`);
+      $('find-hint-btn').hidden = true;
+      $('find-next-btn').hidden = false;
+      $('find-progress').textContent = `Satz ${index + 1} von ${queue.length} · ⭐ ${firstTry} beim ersten Versuch`;
+      $('find-next-btn').focus();
+    } else {
+      mistakes++;
+      btn.classList.remove('is-wrong');
+      void btn.offsetWidth; // Animation neu starten
+      btn.classList.add('is-wrong');
+      const what = part.role ? `Das ist das <strong>${esc(ROLE_INFO[part.role].name)}</strong>.` : 'Das passt noch nicht.';
+      feedback('no', `${what} ${esc(ROLE_INFO[target].hint)}`);
+      if (mistakes >= 3) showSolution();
+    }
+  }
+
+  function showSolution() {
+    solved = true;
+    const chunks = document.querySelectorAll<HTMLButtonElement>('#find-sentence .chunk');
+    const withRole = parts.filter(p => p.role !== undefined);
+    chunks.forEach((c, i) => {
+      c.disabled = true;
+      if (withRole[i].role === target) c.classList.add('is-shown', `role-${target}`);
+    });
+    const { question, answer } = explain(parts, target);
+    feedback('hint', `Schau mal: ${esc(question)} → <strong>${esc(answer)}</strong>`);
+    $('find-hint-btn').hidden = true;
+    $('find-next-btn').hidden = false;
+  }
+
+  $('find-hint-btn').addEventListener('click', () => {
+    if (solved) return;
+    const p = parts.find(x => x.role === 'P')?.text ?? '';
+    let hint = ROLE_INFO[target].hint;
+    if (target === 'S') hint = `Frag: „Wer oder was ${p}?“`;
+    if (target === 'P') hint = 'Welches Wort sagt, was passiert? Es ist ein Verb und steht an 2. Stelle.';
+    if (target === 'A' || target === 'D') hint = `Frag: „${explain(parts, target).question}“`;
+    feedback('hint', `💡 ${esc(hint)}`);
+  });
+
+  $('find-next-btn').addEventListener('click', () => {
+    index++;
+    nextSentence();
+  });
+
+  function finishRound() {
+    $('find-area').hidden = true;
+    $('find-done').hidden = false;
+    const total = queue.length;
+    $('find-done-emoji').textContent = firstTry >= total * 0.8 ? '🏆' : firstTry >= total * 0.5 ? '🌟' : '💪';
+    $('find-done-text').textContent =
+      `Du hast ${firstTry} von ${total} Sätzen beim ersten Versuch richtig gehabt.` +
+      (firstTry >= total * 0.8 ? ' Klasse!' : ' Übung macht den Meister!');
+    if (firstTry >= total * 0.8) triggerConfetti();
+  }
+
+  $('find-restart-btn').addEventListener('click', newRound);
+
+  document.querySelectorAll<HTMLButtonElement>('#find-mode-bar .switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode as FindMode;
+      document.querySelectorAll('#find-mode-bar .switch-btn').forEach(b => b.classList.toggle('active', b === btn));
+      newRound();
+    });
+  });
+
+  newRound();
+</script>
