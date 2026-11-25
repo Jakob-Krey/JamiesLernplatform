@@ -225,10 +225,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   function termHtml(card: GrammarCard) {
-    return `
-      <div class="flashcard-emoji" style="margin-bottom: 0.25rem;">${card.emoji}</div>
-      <div class="gram-term">${esc(card.term)}</div>
-      ${card.alias ? `<div class="gram-alias">(${esc(card.alias)})</div>` : ''}`;
+    return `<div class="gram-term">${esc(card.term)}</div>`;
   }
 
   function explanationHtml(card: GrammarCard) {
